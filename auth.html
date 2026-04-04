@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SyllaBot – כניסה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f2eb;
+    --accent: #e8522a;
+    --muted: #6b6760;
+    --border: rgba(0,0,0,0.1);
+    --card: #ffffff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  .bg-circle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-circle.c1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(232,82,42,0.1) 0%, transparent 70%);
+    top: -150px; right: -100px;
+  }
+  .bg-circle.c2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(42,110,232,0.08) 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    text-align: center;
+    margin-bottom: 32px;
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .logo span { color: var(--accent); }
+
+  .card {
+    background: var(--card);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.07);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 32px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'Heebo', sans-serif;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: var(--card);
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .form { display: flex; flex-direction: column; gap: 14px; }
+  .form.hidden { display: none; }
+
+  label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--paper);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    direction: ltr;
+    text-align: right;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,82,42,0.1);
+    background: white;
+  }
+  input::placeholder { color: rgba(107,103,96,0.5); }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: var(--ink);
+    color: white;
+    transition: background 0.2s, transform 0.15s;
+    margin-top: 4px;
+  }
+  .btn:hover { background: var(--accent); transform: translateY(-1px); }
+  .btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .btn-google {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--ink);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-google:hover { border-color: var(--ink); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+  .google-icon {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+  }
+
+  .msg {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    text-align: center;
+    display: none;
+  }
+  .msg.error { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; display: block; }
+  .msg.success { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; display: block; }
+
+  .footer-note {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+  .footer-note a { color: var(--accent); text-decoration: none; }
+
+  /* Dashboard preview after login */
+  .dashboard-redirect {
+    text-align: center;
+    display: none;
+  }
+  .dashboard-redirect .checkmark {
+    width: 64px; height: 64px;
+    background: #f6ffed;
+    border: 2px solid #b7eb8f;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin: 0 auto 20px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+  .dashboard-redirect h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 8px; }
+  .dashboard-redirect p { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+  .btn-dashboard {
+    display: inline-block;
+    background: var(--ink);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 100px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-dashboard:hover { background: var(--accent); }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="bg-circle c1"></div>
+<div class="bg-circle c2"></div>
+
+<div class="container">
+  <a href="index.html" class="logo">Sylla<span>Bot</span></a>
+
+  <div class="card">
+
+    <!-- Auth forms -->
+    <div id="auth-section">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">כניסה</button>
+        <button class="tab" onclick="switchTab('signup')">הרשמה</button>
+      </div>
+
+      <div id="msg" class="msg"></div>
+
+      <!-- Login -->
+      <div class="form" id="form-login">
+        <div>
+          <label>אימייל</label>
+          <input type="email" id="login-email" placeholder="you@example.com">
+        </div>
+        <div>
+          <label>סיסמה</label>
+          <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+        <button class="btn" id="btn-login" onclick="login()">כניסה</button>
+
+        <div class="divider">או</div>
+        <button class="btn-google" onclick="loginGoogle()">
+          <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          כניסה עם Google
+        </button>
+
+        <div style="text-align:center;margin-top:4px">
+          <a href="#" onclick="showForgot()" style="font-size:0.82rem;color:var(--muted);text-decoration:none">שכחת סיסמה?</a>
+        </div>
+      </div>
+
+      <!-- Signup -->
+      <div class="form hidden" id="form-signup">
+        <div>
+          <label>שם מלא</label>
+          <input type="text" id="signup-name" placeholder="ישראל ישראלי">
+        </div>
+        <div>
+          <label>אימייל</label>
+          <input type="email" id="signup-email" placeholder="you@example.com">
+        </div>
+        <div>
+          <label>סיסמה</label>
+          <input type="password" id="signup-password" placeholder="לפחות 6 תווים">
+        </div>
+        <button class="btn" id="btn-signup" onclick="signup()">יצירת חשבון</button>
+
+        <div class="divider">או</div>
+        <button class="btn-google" onclick="loginGoogle()">
+          <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          הרשמה עם Google
+        </button>
+      </div>
+
+      <!-- Forgot password -->
+      <div class="form hidden" id="form-forgot">
+        <p style="font-size:0.9rem;color:var(--muted);margin-bottom:4px">נשלח לך קישור לאיפוס סיסמה</p>
+        <div>
+          <label>אימייל</label>
+          <input type="email" id="forgot-email" placeholder="you@example.com">
+        </div>
+        <button class="btn" onclick="resetPassword()">שלח קישור</button>
+        <button onclick="switchTab('login')" style="background:none;border:none;color:var(--muted);font-family:'Heebo',sans-serif;font-size:0.85rem;cursor:pointer;text-align:center;margin-top:4px">← חזרה לכניסה</button>
+      </div>
+    </div>
+
+    <!-- Success state -->
+    <div class="dashboard-redirect" id="success-section">
+      <div class="checkmark">✓</div>
+      <h3 id="success-title">ברוך הבא!</h3>
+      <p id="success-msg">מעביר אותך ללוח הבקרה...</p>
+      <button class="btn-dashboard" onclick="goToDashboard()">לוח הבקרה שלי ←</button>
+    </div>
+
+  </div>
+
+  <p class="footer-note">
+    בהרשמה אתה מסכים ל<a href="#">תנאי השימוש</a> ול<a href="#">מדיניות הפרטיות</a>
+  </p>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Check if already logged in
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) showSuccess(data.session.user);
+  });
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) showSuccess(session.user);
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+    });
+    document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('form-signup').classList.toggle('hidden', tab !== 'signup');
+    document.getElementById('form-forgot').classList.toggle('hidden', tab !== 'forgot');
+    clearMsg();
+  }
+
+  function showForgot() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('form-login').classList.add('hidden');
+    document.getElementById('form-signup').classList.add('hidden');
+    document.getElementById('form-forgot').classList.remove('hidden');
+    clearMsg();
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+  function clearMsg() {
+    const el = document.getElementById('msg');
+    el.className = 'msg';
+    el.textContent = '';
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (loading) {
+      btn.disabled = true;
+      btn.innerHTML = btn.textContent + '<span class="spinner"></span>';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = btn.getAttribute('data-label') || btn.textContent.replace('...', '');
+    }
+  }
+
+  async function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return showMsg('אנא מלא אימייל וסיסמה', 'error');
+
+    document.getElementById('btn-login').disabled = true;
+    document.getElementById('btn-login').innerHTML = 'נכנס... <span class="spinner"></span>';
+    clearMsg();
+
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+
+    document.getElementById('btn-login').disabled = false;
+    document.getElementById('btn-login').innerHTML = 'כניסה';
+
+    if (error) showMsg(translateError(error.message), 'error');
+  }
+
+  async function signup() {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    if (!name || !email || !password) return showMsg('אנא מלא את כל השדות', 'error');
+    if (password.length < 6) return showMsg('הסיסמה חייבת להכיל לפחות 6 תווים', 'error');
+
+    document.getElementById('btn-signup').disabled = true;
+    document.getElementById('btn-signup').innerHTML = 'יוצר חשבון... <span class="spinner"></span>';
+    clearMsg();
+
+    const { error } = await sb.auth.signUp({
+      email, password,
+      options: { data: { full_name: name } }
+    });
+
+    document.getElementById('btn-signup').disabled = false;
+    document.getElementById('btn-signup').innerHTML = 'יצירת חשבון';
+
+    if (error) {
+      showMsg(translateError(error.message), 'error');
+    } else {
+      showMsg('נשלח אליך אימייל לאישור. בדוק את תיבת הדואר שלך!', 'success');
+    }
+  }
+
+  async function loginGoogle() {
+    await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+  }
+
+  async function resetPassword() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) return showMsg('אנא הכנס אימייל', 'error');
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset.html'
+    });
+
+    if (error) {
+      showMsg(translateError(error.message), 'error');
+    } else {
+      showMsg('נשלח קישור לאיפוס סיסמה לאימייל שלך', 'success');
+    }
+  }
+
+  function showSuccess(user) {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('success-section').style.display = 'block';
+    const name = user.user_metadata?.full_name || user.email;
+    document.getElementById('success-title').textContent = `שלום, ${name.split(' ')[0]}! 👋`;
+    setTimeout(goToDashboard, 2000);
+  }
+
+  function goToDashboard() {
+    window.location.href = 'dashboard.html';
+  }
+
+  function translateError(msg) {
+    const map = {
+      'Invalid login credentials': 'אימייל או סיסמה שגויים',
+      'Email not confirmed': 'האימייל לא אושר עדיין. בדוק את תיבת הדואר שלך',
+      'User already registered': 'כבר קיים חשבון עם האימייל הזה',
+      'Password should be at least 6 characters': 'הסיסמה חייבת להכיל לפחות 6 תווים',
+      'Unable to validate email address: invalid format': 'כתובת אימייל לא תקינה',
+    };
+    return map[msg] || 'אירעה שגיאה. נסה שוב';
+  }
+</script>
+</body>
+</html>
