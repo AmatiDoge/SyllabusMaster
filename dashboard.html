@@ -262,6 +262,7 @@
         try {
             const { data, error } = await sb.from('user_data').select('*').eq('user_id', currentUser.id).single();
             if (error && error.code !== 'PGRST116') throw error;
+            console.log('User data from DB:', JSON.stringify(data));
 
             const isPaid = stripeSuccess || !!data?.paid;
 
