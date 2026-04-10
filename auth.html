@@ -355,7 +355,7 @@
     <div class="dashboard-redirect" id="success-section">
       <div class="checkmark">✓</div>
       <h3 id="success-title">ברוך הבא!</h3>
-      <p id="success-msg">מעביר אותך ללוח הבקרה...</p>
+      <p id="success-msg">מכין את הרכישה שלך...</p>
       <button class="btn-dashboard" onclick="goToDashboard()">לוח הבקרה שלי ←</button>
     </div>
 
@@ -486,16 +486,31 @@
     }
   }
 
-  function showSuccess(user) {
+  async function showSuccess(user) {
     document.getElementById('auth-section').style.display = 'none';
     document.getElementById('success-section').style.display = 'block';
     const name = user.user_metadata?.full_name || user.email;
     document.getElementById('success-title').textContent = `שלום, ${name.split(' ')[0]}! 👋`;
-    setTimeout(goToDashboard, 2000);
-  }
 
-  function goToDashboard() {
-    window.location.href = 'dashboard.html';
+    try {
+      const { data } = await sb.auth.getSession();
+      const token = data.session?.access_token;
+
+      const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const { url, error } = await res.json();
+      if (error) throw new Error(error);
+      window.location.href = url;
+    } catch (err) {
+      document.getElementById('success-msg').textContent = 'אירעה שגיאה. נסה שוב.';
+      console.error('Checkout error:', err.message);
+    }
   }
 
   function translateError(msg) {
