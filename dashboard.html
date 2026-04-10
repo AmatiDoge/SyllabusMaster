@@ -240,9 +240,42 @@
 
     async function loadFromSupabase() {
         setSyncStatus('syncing');
+
+        // Handle Stripe success redirect
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('paid') === 'true') {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/confirm-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                });
+            }
+            // Remove ?paid=true from URL without reloading
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+
         try {
             const { data, error } = await sb.from('user_data').select('*').eq('user_id', currentUser.id).single();
             if (error && error.code !== 'PGRST116') throw error;
+
+            // Payment gate
+            if (!data?.paid) {
+                const { data: { session } } = await sb.auth.getSession();
+                const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session?.access_token}`,
+                    },
+                });
+                const { url } = await res.json();
+                if (url) { window.location.href = url; return; }
+            }
+
             if (data && (data.syllabus?.length > 0 || data.exams?.length > 0)) {
                 userTasks    = data.tasks        || [];
                 userExams    = data.exams        || [];
