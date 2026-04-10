@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyllaBot – Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            --bg: #f0f2f5; --card: #fff; --exam: #8e44ad; --task: #2980b9;
+            --syllabus: #27ae60; --red: #d63031; --orange: #e67e22; --green: #2ecc71; --text: #2d3436;
+        }
+        body { font-family: 'Heebo', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+
+        /* AUTH LOADING */
+        #auth-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 12px; }
+        #auth-loading.hidden { display: none; }
+        .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: var(--syllabus); border-radius: 50%; animation: spin 0.7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #auth-loading p { font-size: 0.85rem; color: #999; }
+
+        /* ONBOARDING */
+        #onboarding { position: fixed; inset: 0; background: #f5f2eb; display: none; align-items: center; justify-content: center; z-index: 500; padding: 20px; overflow-y: auto; }
+        #onboarding.visible { display: flex; }
+        .ob-card { background: white; border-radius: 24px; padding: 44px 40px; max-width: 560px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.1); animation: fadeUp 0.5s ease; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .ob-logo { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 32px; display: block; font-family: 'Heebo', sans-serif; }
+        .ob-logo span { color: #e8522a; }
+        .ob-step-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #27ae60; margin-bottom: 8px; }
+        .ob-title { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 10px; }
+        .ob-sub { font-size: 0.88rem; color: #636e72; line-height: 1.65; margin-bottom: 28px; }
+
+        .drop-zone { border: 2px dashed #ddd; border-radius: 14px; padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .drop-zone:hover, .drop-zone.drag-over { border-color: #27ae60; background: #f6ffed; }
+        .drop-zone input { display: none; }
+        .drop-icon { font-size: 2rem; margin-bottom: 10px; }
+        .drop-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+        .drop-sub { font-size: 0.8rem; color: #636e72; }
+        .drop-sub strong { color: #27ae60; }
+
+        .file-list { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
+        .file-item { display: flex; align-items: center; gap: 10px; background: #f8f9fa; border-radius: 10px; padding: 9px 13px; font-size: 0.8rem; }
+        .file-item-name { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-status { font-size: 0.72rem; padding: 2px 10px; border-radius: 20px; white-space: nowrap; font-weight: 600; }
+        .s-waiting  { background: #f0f0f0; color: #999; }
+        .s-analyzing { background: #fff3e0; color: #e67e22; }
+        .s-done  { background: #f6ffed; color: #27ae60; }
+        .s-error { background: #fff1f0; color: #d63031; }
+        .file-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.1rem; padding: 0; line-height: 1; }
+        .file-remove:hover { color: #d63031; }
+
+        .progress-wrap { margin-top: 18px; display: none; }
+        .progress-meta { font-size: 0.78rem; color: #636e72; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #27ae60; border-radius: 3px; transition: width 0.4s; width: 0%; }
+
+        .courses-found { margin-top: 14px; display: none; flex-wrap: wrap; gap: 7px; }
+        .course-chip { background: #f0f0f0; border-radius: 20px; padding: 4px 13px; font-size: 0.76rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        .ob-btn { width: 100%; padding: 14px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.97rem; font-weight: 700; cursor: pointer; border: none; background: #0d0d0d; color: white; transition: background 0.2s, transform 0.15s; margin-top: 22px; }
+        .ob-btn:hover { background: #27ae60; transform: translateY(-1px); }
+        .ob-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .ob-note { font-size: 0.74rem; color: #aaa; text-align: center; margin-top: 10px; }
+
+        /* DASHBOARD */
+        #dashboard { width: 100%; display: none; flex-direction: column; align-items: center; }
+        #dashboard.visible { display: flex; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }
+        .top-bar h1 { font-size: 1.2rem; margin: 0; }
+        #date-display { font-size: 0.8rem; background: #fff; padding: 4px 12px; border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .user-bar { display: flex; align-items: center; gap: 8px; }
+        .user-name { font-size: 0.78rem; color: #636e72; background: #fff; padding: 4px 12px; border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-sm { font-size: 0.75rem; color: white; border: none; padding: 4px 12px; border-radius: 15px; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+        .btn-add-course { background: #27ae60; }
+        .btn-add-course:hover { background: #219a52; }
+        .btn-logout { background: #ff4d4f; }
+        .btn-logout:hover { background: #cf1322; }
+        .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; display: inline-block; transition: background 0.3s; }
+        .sync-dot.synced { background: var(--green); }
+        .sync-dot.syncing { background: var(--orange); animation: pulse 1s ease-in-out infinite; }
+        .sync-dot.error { background: var(--red); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        .container { display: flex; flex-wrap: wrap; gap: 15px; width: 100%; max-width: 1400px; align-items: flex-start; justify-content: center; }
+        .box { background: var(--card); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); flex: 1; min-width: 350px; max-width: 480px; overflow: hidden; display: flex; flex-direction: column; }
+        .header { padding: 12px; color: white; text-align: center; font-weight: bold; font-size: 0.95rem; }
+        .h-exams { background: var(--exam); }
+        .h-tasks { background: var(--task); }
+        .h-syllabus { background: var(--syllabus); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
+        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; font-size: 1rem; }
+        .inputs { padding: 10px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; gap: 6px; flex-wrap: wrap; }
+        .inputs input, .inputs select { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; flex: 1; font-family: inherit; }
+        .btn-add { background: #2d3436; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #f1f1f1; transition: 0.2s; font-size: 0.82rem; cursor: pointer; }
+        .item-row:hover { background: #f9f9f9; }
+        .row-right { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .course-label { font-weight: bold; color: #fff; padding: 4px 15px; font-size: 0.72rem; border-bottom: 1px solid #eee; margin-top: 4px; }
+        .badge { font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; white-space: nowrap; }
+        .tag-קריאה { background:#e8f5e9;color:#2e7d32; } .tag-סרטון { background:#e3f2fd;color:#1565c0; }
+        .tag-מטלה { background:#fff3e0;color:#ef6c00; } .tag-בוחן { background:#fce4ec;color:#c2185b; }
+        .tag-שיעור { background:#f3e5f5;color:#7b1fa2; } .tag-תרגול { background:#e0f2f1;color:#00796b; }
+        .tag-מבחן { background:#ffebee;color:#c62828; } .tag-מועד-ב { background:#2d3436;color:white; }
+        .tag-פרזנטציה { background:#e0f2f1;color:#00897b; } .tag-צפייה { background:#fffde7;color:#f57f17; }
+        .timer { font-weight: bold; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; white-space: nowrap; }
+        .bg-red { background:#fff1f0;color:var(--red); } .bg-green { background:#f6ffed;color:var(--green); } .bg-passed { background:#f5f5f5;color:#bfbfbf; }
+        .done { opacity: 0.5; } .done span { text-decoration: line-through; }
+        .del-btn { color: #ff4d4f; cursor: pointer; border: none; background: none; font-size: 1rem; padding: 0; }
+        .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
+        .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-loading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+    <div class="ob-card">
+        <span class="ob-logo">Sylla<span>Bot</span></span>
+        <div class="ob-step-label">Setup · Upload your syllabuses</div>
+        <h1 class="ob-title">Let's build your dashboard</h1>
+        <p class="ob-sub">Upload all your course PDFs at once. Our AI will automatically detect each course name, extract all important dates, tasks, readings and exams — and build your personal academic dashboard.</p>
+
+        <div class="drop-zone" id="ob-drop"
+             onclick="document.getElementById('ob-file-input').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="obDrop(event)">
+            <input type="file" id="ob-file-input" accept=".pdf" multiple onchange="obSelectFiles(event)">
+            <div class="drop-icon">📂</div>
+            <div class="drop-title">Drop your syllabus PDFs here</div>
+            <div class="drop-sub">or <strong>click to browse</strong> · Multiple files at once</div>
+        </div>
+
+        <div class="file-list" id="ob-file-list"></div>
+        <div class="progress-wrap" id="ob-progress-wrap">
+            <div class="progress-meta">
+                <span id="ob-progress-text">Analyzing...</span>
+                <span id="ob-progress-count">0 / 0</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="ob-progress-fill"></div></div>
+        </div>
+        <div class="courses-found" id="ob-courses-found"></div>
+
+        <button class="ob-btn" id="ob-btn" onclick="obAnalyzeAll()" disabled>Build my dashboard ✨</button>
+        <p class="ob-note">Usually takes 10–30 seconds per file</p>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+    <div class="top-bar">
+        <h1>My Academic Dashboard</h1>
+        <div id="date-display"></div>
+        <div class="user-bar">
+            <span class="sync-dot" id="sync-dot"></span>
+            <span class="user-name" id="user-name">...</span>
+            <button class="btn-sm btn-add-course" onclick="showOnboarding()">+ Add course</button>
+            <button class="btn-sm btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="box">
+            <div class="header h-exams">Exams & Deadlines</div>
+            <div class="inputs">
+                <input type="text" id="exT" placeholder="Event name">
+                <input type="datetime-local" id="exD">
+                <select id="exTag" style="flex:0.6">
+                    <option value="מבחן">Exam</option>
+                    <option value="מועד-ב">Moed B</option>
+                    <option value="מטלה">Assignment</option>
+                    <option value="פרזנטציה">Presentation</option>
+                </select>
+                <button class="btn-add" onclick="addEx()">+</button>
+            </div>
+            <div id="exList"></div>
+        </div>
+        <div class="box">
+            <div class="header h-tasks">Current Tasks</div>
+            <div class="inputs">
+                <input type="text" id="tkT" placeholder="New task...">
+                <button class="btn-add" onclick="addTask()">+</button>
+            </div>
+            <div id="tkList"></div>
+        </div>
+        <div class="box">
+            <div class="header h-syllabus">
+                <button class="nav-btn" onclick="changeWeek(-1)">›</button>
+                <span id="week-title">Week 1</span>
+                <button class="nav-btn" onclick="changeWeek(1)">‹</button>
+            </div>
+            <div id="syllabus-content"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
+    const EDGE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/analyze-syllabus';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const COLOR_PALETTE = ['#27ae60','#2980b9','#8e44ad','#e67e22','#16a085','#3f51b5','#c0392b','#b8860b','#1abc9c','#d35400'];
+
+    let currentUser = null, saveTimer = null, currentWeekIdx = 0;
+    let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
+    let obFiles = [], obResults = [];
+
+    const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
+
+    function getCourseColor(course) {
+        if (!courseColors[course]) {
+            courseColors[course] = COLOR_PALETTE[Object.keys(courseColors).length % COLOR_PALETTE.length];
+        }
+        return courseColors[course];
+    }
+
+    // ── AUTH ──
+    async function initAuth() {
+        const { data } = await sb.auth.getSession();
+        if (!data.session) { window.location.href = 'auth.html'; return; }
+        currentUser = data.session.user;
+        const name = currentUser.user_metadata?.full_name || currentUser.email;
+        document.getElementById('user-name').textContent = name.split(' ')[0] || currentUser.email;
+        document.getElementById('auth-loading').classList.add('hidden');
+        await loadFromSupabase();
+    }
+
+    async function logout() { await sb.auth.signOut(); window.location.href = 'auth.html'; }
+
+    // ── DATA ──
+    function setSyncStatus(s) { document.getElementById('sync-dot').className = 'sync-dot ' + s; }
+
+    async function loadFromSupabase() {
+        setSyncStatus('syncing');
+        try {
+            const { data, error } = await sb.from('user_data').select('*').eq('user_id', currentUser.id).single();
+            if (error && error.code !== 'PGRST116') throw error;
+            if (data && (data.syllabus?.length > 0 || data.exams?.length > 0)) {
+                userTasks    = data.tasks        || [];
+                userExams    = data.exams        || [];
+                userSyllabus = data.syllabus     || [];
+                doneMap      = data.done_map     || {};
+                courseColors = data.course_colors || {};
+                setSyncStatus('synced');
+                showDashboard();
+            } else {
+                setSyncStatus('synced');
+                showOnboarding();
+            }
+        } catch(e) { console.error(e); setSyncStatus('error'); showOnboarding(); }
+    }
+
+    async function saveToSupabase() {
+        setSyncStatus('syncing');
+        try {
+            const { error } = await sb.from('user_data').upsert({
+                user_id: currentUser.id, tasks: userTasks, exams: userExams,
+                syllabus: userSyllabus, done_map: doneMap, course_colors: courseColors,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+            if (error) throw error;
+            setSyncStatus('synced');
+        } catch(e) { console.error(e); setSyncStatus('error'); }
+    }
+
+    function save() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToSupabase, 800); }
+
+    // ── VIEWS ──
+    function showDashboard() {
+        document.getElementById('onboarding').classList.remove('visible');
+        document.getElementById('dashboard').classList.add('visible');
+        startApp();
+    }
+
+    function showOnboarding() {
+        document.getElementById('dashboard').classList.remove('visible');
+        document.getElementById('onboarding').classList.add('visible');
+        resetOnboarding();
+    }
+
+    // ── ONBOARDING ──
+    function resetOnboarding() {
+        obFiles = []; obResults = [];
+        document.getElementById('ob-file-list').innerHTML = '';
+        document.getElementById('ob-courses-found').style.display = 'none';
+        document.getElementById('ob-courses-found').innerHTML = '';
+        document.getElementById('ob-progress-wrap').style.display = 'none';
+        document.getElementById('ob-progress-fill').style.width = '0%';
+        document.getElementById('ob-btn').disabled = true;
+        document.getElementById('ob-btn').textContent = 'Build my dashboard ✨';
+        document.getElementById('ob-btn').onclick = obAnalyzeAll;
+    }
+
+    function obDrop(e) {
+        e.preventDefault();
+        document.getElementById('ob-drop').classList.remove('drag-over');
+        [...e.dataTransfer.files].filter(f => f.type === 'application/pdf').forEach(addObFile);
+    }
+
+    function obSelectFiles(e) { [...e.target.files].forEach(addObFile); e.target.value = ''; }
+
+    function addObFile(file) {
+        if (obFiles.find(f => f.name === file.name)) return;
+        obFiles.push(file);
+        renderObFileList();
+        document.getElementById('ob-btn').disabled = false;
+    }
+
+    function removeObFile(idx) {
+        obFiles.splice(idx, 1);
+        renderObFileList();
+        document.getElementById('ob-btn').disabled = obFiles.length === 0;
+    }
+
+    function renderObFileList() {
+        document.getElementById('ob-file-list').innerHTML = obFiles.map((f, i) => `
+            <div class="file-item" id="fi-${i}">
+                <span>📄</span>
+                <span class="file-item-name">${f.name}</span>
+                <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
+                <button class="file-remove" onclick="removeObFile(${i})">×</button>
+            </div>`).join('');
+    }
+
+    function setFileStatus(i, cls, label) {
+        const el = document.getElementById(`fs-${i}`);
+        if (el) { el.className = `file-status ${cls}`; el.textContent = label; }
+    }
+
+    async function obAnalyzeAll() {
+        if (!obFiles.length) return;
+        const btn = document.getElementById('ob-btn');
+        btn.disabled = true;
+        btn.textContent = 'Analyzing...';
+        document.getElementById('ob-progress-wrap').style.display = 'block';
+        const { data: { session } } = await sb.auth.getSession();
+        obResults = [];
+        for (let i = 0; i < obFiles.length; i++) {
+            setFileStatus(i, 's-analyzing', 'Analyzing...');
+            document.getElementById('ob-progress-text').textContent = `Analyzing ${obFiles[i].name}...`;
+            document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
+            document.getElementById('ob-progress-fill').style.width = `${(i / obFiles.length) * 100}%`;
+            try {
+                const base64 = await fileToBase64(obFiles[i]);
+                const res = await fetch(EDGE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ pdfBase64: base64 })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const result = await res.json();
+                obResults.push(result);
+                const courseName = result.course || obFiles[i].name.replace('.pdf','');
+                setFileStatus(i, 's-done', `✓ ${courseName}`);
+                addCourseChip(courseName);
+            } catch(e) {
+                console.error(e);
+                setFileStatus(i, 's-error', 'Error');
+            }
+        }
+        document.getElementById('ob-progress-fill').style.width = '100%';
+        document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${obFiles.length}`;
+        document.getElementById('ob-progress-text').textContent = obResults.length === obFiles.length ? 'All done!' : `${obResults.length} of ${obFiles.length} succeeded`;
+        if (obResults.length > 0) {
+            btn.disabled = false;
+            btn.textContent = 'Open my dashboard →';
+            btn.onclick = finalizeOnboarding;
+        } else {
+            btn.textContent = 'Something went wrong. Try again.';
+            btn.disabled = false;
+        }
+    }
+
+    function addCourseChip(course) {
+        const color = getCourseColor(course);
+        const container = document.getElementById('ob-courses-found');
+        container.style.display = 'flex';
+        container.innerHTML += `<div class="course-chip"><span class="chip-dot" style="background:${color}"></span>${course}</div>`;
+    }
+
+    async function finalizeOnboarding() {
+        obResults.forEach(r => {
+            if (r.syllabus) userSyllabus = [...userSyllabus, ...r.syllabus];
+            if (r.exams)   userExams    = [...userExams,    ...r.exams];
+        });
+        userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
+        userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
+        await saveToSupabase();
+        showDashboard();
+    }
+
+    function fileToBase64(file) {
+        return new Promise((res, rej) => {
+            const r = new FileReader();
+            r.onload = e => res(e.target.result.split(',')[1]);
+            r.onerror = rej;
+            r.readAsDataURL(file);
+        });
+    }
+
+    // ── DASHBOARD ──
+    function addEx() {
+        const t = document.getElementById('exT').value, d = document.getElementById('exD').value, tag = document.getElementById('exTag').value;
+        if (t && d) { userExams.push({ t, d, tag }); document.getElementById('exT').value = ''; document.getElementById('exD').value = ''; render(); }
+    }
+    function addTask() {
+        const t = document.getElementById('tkT').value;
+        if (t) { userTasks.push({ t, f: false }); document.getElementById('tkT').value = ''; render(); }
+    }
+    function changeWeek(dir) { currentWeekIdx = Math.max(0, Math.min(weekRanges.length-1, currentWeekIdx+dir)); render(); }
+
+    function render() {
+        const now = new Date();
+        document.getElementById('date-display').innerText = now.toLocaleDateString('he-IL') + ' | ' + now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+
+        // Exams
+        const eL = document.getElementById('exList'); eL.innerHTML = '';
+        const sorted = [...userExams].sort((a,b) => new Date(a.d)-new Date(b.d));
+        if (!sorted.length) { eL.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div>No exams yet</div>'; }
+        else sorted.forEach(x => {
+            const diff = new Date(x.d)-now, days = Math.floor(diff/86400000);
+            const sc = diff<0?'bg-passed':days<=7?'bg-red':'bg-green';
+            const oi = userExams.indexOf(x);
+            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge tag-${x.tag}">${x.tag}</span><strong>${x.t}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?'Passed':days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+        });
+
+        // Tasks
+        const tL = document.getElementById('tkList'); tL.innerHTML = '';
+        if (!userTasks.length) { tL.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No tasks yet</div>'; }
+        else userTasks.forEach((x,i) => {
+            tL.innerHTML += `<div class="item-row ${x.f?'done':''}"><div class="row-right"><span onclick="userTasks[${i}].f=!userTasks[${i}].f;render();" style="cursor:pointer">${x.t}</span></div><button onclick="userTasks.splice(${i},1);render();" class="del-btn">×</button></div>`;
+        });
+
+        // Syllabus
+        document.getElementById('week-title').innerText = `Week ${currentWeekIdx+1} (${weekRanges[currentWeekIdx]||''})`;
+        const sC = document.getElementById('syllabus-content'); sC.innerHTML = '';
+        const weekItems = userSyllabus.filter(it => (it.w||0) === currentWeekIdx);
+        if (!weekItems.length) { sC.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Nothing this week</div>'; }
+        else {
+            const byCourse = {};
+            weekItems.forEach(item => { if (!byCourse[item.c]) byCourse[item.c]=[]; byCourse[item.c].push(item); });
+            Object.entries(byCourse).forEach(([course, items]) => {
+                sC.innerHTML += `<div class="course-label" style="background:${getCourseColor(course)}">${course}</div>`;
+                items.forEach(item => {
+                    const gi = userSyllabus.indexOf(item), key = `syl_${gi}`, isDone = doneMap[key];
+                    sC.innerHTML += `<div class="item-row ${isDone?'done':''}" onclick="doneMap['${key}']=!doneMap['${key}'];render();"><div class="row-right"><span class="badge tag-${item.t}">${item.t}</span><span>${item.txt}</span></div><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${isDone?'checked':''} onclick="event.stopPropagation()"><button onclick="event.stopPropagation();userSyllabus.splice(${gi},1);render();" class="del-btn">×</button></div></div>`;
+                });
+            });
+        }
+        save();
+    }
+
+    function startApp() {
+        const diffDays = Math.floor((new Date()-new Date("2026-03-15"))/86400000);
+        if (diffDays >= 0) currentWeekIdx = Math.min(weekRanges.length-1, Math.floor(diffDays/7));
+        render();
+        setInterval(render, 60000);
+    }
+
+    initAuth();
+</script>
+</body>
+</html>
