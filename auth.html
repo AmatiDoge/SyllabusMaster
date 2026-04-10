@@ -330,6 +330,13 @@
           <label>סיסמה</label>
           <input type="password" id="signup-password" placeholder="לפחות 6 תווים">
         </div>
+        <div>
+          <label>שפה / Language</label>
+          <select id="signup-lang" style="width:100%;padding:10px 14px;border:1.5px solid #e0ddd6;border-radius:10px;font-size:0.95rem;background:#faf9f7;color:#333;">
+            <option value="he" selected>עברית</option>
+            <option value="en">English</option>
+          </select>
+        </div>
         <button class="btn" id="btn-signup" onclick="signup()">יצירת חשבון</button>
 
         <div class="divider">או</div>
@@ -442,6 +449,7 @@
     const name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
+    const lang = document.getElementById('signup-lang').value;
     if (!name || !email || !password) return showMsg('אנא מלא את כל השדות', 'error');
     if (password.length < 6) return showMsg('הסיסמה חייבת להכיל לפחות 6 תווים', 'error');
 
@@ -451,7 +459,7 @@
 
     const { error } = await sb.auth.signUp({
       email, password,
-      options: { data: { full_name: name } }
+      options: { data: { full_name: name, lang } }
     });
 
     document.getElementById('btn-signup').disabled = false;
