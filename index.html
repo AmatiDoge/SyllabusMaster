@@ -857,7 +857,7 @@
 <!-- NAV -->
 <nav>
   <a href="#" class="logo">Sylla<span>Bot</span></a>
-  <button class="nav-cta" onclick="openModal()">הצטרף לרשימת ההמתנה</button>
+  <button class="nav-cta" onclick="window.location.href='auth.html'">הצטרף לרשימת ההמתנה</button>
 </nav>
 
 <!-- HERO -->
@@ -874,7 +874,7 @@
   </p>
 
   <div class="hero-actions">
-    <button class="btn-primary" onclick="openModal()">
+    <button class="btn-primary" onclick="window.location.href='auth.html'">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       התחל בחינם
     </button>
@@ -1037,7 +1037,7 @@
         <li>ניתוח PDF אחד</li>
         <li>לוח בקרה בסיסי</li>
       </ul>
-      <button class="price-btn" onclick="openModal()">התחל בחינם</button>
+      <button class="price-btn" onclick="window.location.href='auth.html'">התחל בחינם</button>
     </div>
 
     <div class="pricing-card featured reveal" style="transition-delay:0.1s">
@@ -1053,7 +1053,7 @@
         <li>ייצוא ל-Google Calendar</li>
         <li>תמיכה מהירה</li>
       </ul>
-      <button class="price-btn" onclick="openModal()">הצטרף עכשיו</button>
+      <button class="price-btn" onclick="window.location.href='auth.html'">הצטרף עכשיו</button>
     </div>
 
     <div class="pricing-card reveal" style="transition-delay:0.2s">
@@ -1067,7 +1067,7 @@
         <li>עדיפות בתמיכה</li>
         <li>גישה מוקדמת לפיצ'רים</li>
       </ul>
-      <button class="price-btn" onclick="openModal()">חסוך 40%</button>
+      <button class="price-btn" onclick="window.location.href='auth.html'">חסוך 40%</button>
     </div>
   </div>
 </section>
@@ -1114,7 +1114,7 @@
 <section class="cta-section">
   <h2>מוכן לסמסטר המסודר הראשון שלך?</h2>
   <p>הצטרף לרשימת ההמתנה וקבל גישה ראשון</p>
-  <button class="btn-white" onclick="openModal()">הצטרף בחינם</button>
+  <button class="btn-white" onclick="window.location.href='auth.html'">הצטרף בחינם</button>
   <p class="cta-note">ללא כרטיס אשראי · ביטול בכל עת</p>
 </section>
 
@@ -1125,41 +1125,8 @@
   <p style="font-size:0.8rem;color:var(--muted)">נבנה עם ❤️ לסטודנטים</p>
 </footer>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div id="modal-form">
-      <h2>הצטרף לרשימת ההמתנה</h2>
-      <p>נעדכן אותך ברגע שהכלי יהיה מוכן. הראשונים יקבלו 3 חודשים בחינם.</p>
-      <div class="input-group">
-        <input type="text" placeholder="שם מלא" id="wl-name">
-        <input type="email" placeholder="אימייל" id="wl-email">
-        <input type="text" placeholder="שם האוניברסיטה / המכללה" id="wl-uni">
-        <button class="modal-submit" onclick="submitWaitlist()">שמור לי מקום 🎉</button>
-      </div>
-    </div>
-    <div class="modal-success" id="modal-success">
-      <div class="success-emoji">🎉</div>
-      <h3>נרשמת בהצלחה!</h3>
-      <p>נשלח לך אימייל ברגע שהכלי יהיה מוכן.<br>תודה שאתה חלק מהמסע!</p>
-    </div>
-  </div>
-</div>
 
 <script>
-  // Modal
-  function openModal() { document.getElementById('modal').classList.add('open'); }
-  function closeModal() { document.getElementById('modal').classList.remove('open'); }
-
-  function submitWaitlist() {
-    const name = document.getElementById('wl-name').value;
-    const email = document.getElementById('wl-email').value;
-    if (!name || !email) { alert('אנא מלא שם ואימייל'); return; }
-    document.getElementById('modal-form').style.display = 'none';
-    document.getElementById('modal-success').style.display = 'block';
-  }
-
   // FAQ
   function toggleFaq(el) {
     const isOpen = el.classList.contains('open');
