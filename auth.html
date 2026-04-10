@@ -505,7 +505,10 @@
       const token = data.session?.access_token;
 
       // Check if already paid
-      const { data: userData } = await sb.from('user_data').select('paid').eq('user_id', user.id).single();
+      console.log('Checking paid status for user:', user.id);
+      const { data: userData, error: paidError } = await sb.from('user_data').select('paid').eq('user_id', user.id).single();
+      console.log('user_data query response:', JSON.stringify(userData), 'error:', JSON.stringify(paidError));
+      console.log('paid value:', userData?.paid);
       if (userData?.paid) {
         window.location.href = 'dashboard.html';
         return;
