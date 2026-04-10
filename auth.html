@@ -504,9 +504,11 @@
         },
       });
 
-      const { url, error } = await res.json();
-      if (error) throw new Error(error);
-      window.location.href = url;
+      const body = await res.json();
+      console.log('create-checkout response:', body);
+      if (body.error) throw new Error(body.error);
+      if (!body.url) throw new Error('No checkout URL returned');
+      window.location.href = body.url;
     } catch (err) {
       document.getElementById('success-msg').textContent = 'אירעה שגיאה. נסה שוב.';
       console.error('Checkout error:', err.message);

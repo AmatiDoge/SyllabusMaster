@@ -272,7 +272,9 @@
                         'Authorization': `Bearer ${session?.access_token}`,
                     },
                 });
-                const { url } = await res.json();
+                const checkoutData = await res.json();
+                console.log('create-checkout response:', checkoutData);
+                const url = checkoutData.url;
                 if (url) { window.location.href = url; return; }
             }
 
