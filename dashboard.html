@@ -262,6 +262,8 @@
     const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
     const EDGE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/analyze-syllabus';
+    const ANON_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
+    const EDGE_HEADERS = { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` };
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -308,10 +310,7 @@
             if (session) {
                 await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/confirm-payment', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`,
-                    },
+                    headers: EDGE_HEADERS,
                 });
             }
             window.history.replaceState({}, '', window.location.pathname);
@@ -329,10 +328,7 @@
                 const { data: { session } } = await sb.auth.getSession();
                 const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session?.access_token}`,
-                    },
+                    headers: EDGE_HEADERS,
                 });
                 const checkoutData = await res.json();
                 console.log('create-checkout response:', checkoutData);
@@ -663,7 +659,7 @@
             const body = await bodyFn();
             const res = await fetch(EDGE_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                headers: EDGE_HEADERS,
                 body
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -699,7 +695,7 @@
             try {
                 const res = await fetch(EDGE_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                    headers: EDGE_HEADERS,
                     body: JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) })
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
