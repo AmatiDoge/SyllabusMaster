@@ -285,7 +285,7 @@
             const lang = currentUser.user_metadata?.lang || 'he';
             applyLang(lang);
 
-            if (data && (data.syllabus?.length > 0 || data.exams?.length > 0)) {
+            if (data && (data.syllabus?.length > 0 || data.exams?.length > 0 || data.onboarding_complete)) {
                 userTasks    = data.tasks        || [];
                 userExams    = data.exams        || [];
                 userSyllabus = data.syllabus     || [];
@@ -339,14 +339,16 @@
         if (addBtn) addBtn.textContent = s.addCourse;
     }
 
-    async function saveToSupabase() {
+    async function saveToSupabase(onboardingComplete = false) {
         setSyncStatus('syncing');
         try {
-            const { error } = await sb.from('user_data').upsert({
+            const payload = {
                 user_id: currentUser.id, tasks: userTasks, exams: userExams,
                 syllabus: userSyllabus, done_map: doneMap, course_colors: courseColors,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
+            };
+            if (onboardingComplete) payload.onboarding_complete = true;
+            const { error } = await sb.from('user_data').upsert(payload, { onConflict: 'user_id' });
             if (error) throw error;
             setSyncStatus('synced');
         } catch(e) { console.error(e); setSyncStatus('error'); }
@@ -474,7 +476,7 @@
         });
         userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
         userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
-        await saveToSupabase();
+        await saveToSupabase(true);
         showDashboard();
     }
 
