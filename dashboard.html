@@ -494,7 +494,8 @@
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             ovState = { fileIdx, pdf, currentPage: 1, numPages: pdf.numPages, crops: {}, dragging: false, startX: 0, startY: 0, scale: 1 };
         }
-        document.getElementById('crop-filename').textContent = obFiles[fileIdx].name;
+        const fnEl = document.getElementById('crop-filename');
+        if (fnEl) fnEl.textContent = obFiles[fileIdx].name;
         document.getElementById('crop-overlay').classList.add('visible');
         await cropOverlayRenderPage();
         cropOverlayBindEvents();
