@@ -426,7 +426,6 @@
                 userSyllabus = data.syllabus     || [];
                 doneMap      = data.done_map     || {};
                 courseColors = data.course_colors || {};
-                console.log('Loaded course_colors:', JSON.stringify(data.course_colors));
                 if (data.semester_start) {
                     semesterStart = data.semester_start;
                     const newRanges = buildWeekRanges(semesterStart);
@@ -542,7 +541,6 @@
 
     async function saveToSupabase(onboardingComplete = false) {
         setSyncStatus('syncing');
-        console.log('Saving to Supabase, course_colors:', JSON.stringify(courseColors));
         try {
             const payload = {
                 user_id: currentUser.id, tasks: userTasks, exams: userExams,
@@ -1096,7 +1094,6 @@ function addCourseChip(course) {
     function pickColor(color) {
         if (!spColorPickerCourse) return;
         courseColors[spColorPickerCourse] = color;
-        console.log('Saving color:', spColorPickerCourse, color, 'courseColors:', JSON.stringify(courseColors));
         hideColorPicker();
         saveToSupabase();
         renderSpCourseList();
