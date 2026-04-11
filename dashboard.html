@@ -507,15 +507,17 @@
         const maxH = Math.floor(window.innerHeight * 0.82);
         const maxW = document.getElementById('crop-canvas-area').clientWidth - 32 || window.innerWidth - 32;
         const dpr = window.devicePixelRatio || 1;
-        const baseVP = page.getViewport({ scale: 1 });
+        const baseVP = page.getViewport({ scale: 1, rotation: 0 });
         const scale = Math.min(maxW / baseVP.width, maxH / baseVP.height, 2.0);
         s.scale = scale;
-        const vp = page.getViewport({ scale: scale * dpr });
+        const vp = page.getViewport({ scale: scale * dpr, rotation: 0 });
         canvas.width = vp.width;
         canvas.height = vp.height;
         canvas.style.width = (vp.width / dpr) + 'px';
         canvas.style.height = (vp.height / dpr) + 'px';
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        const ctx = canvas.getContext('2d');
+        ctx.direction = 'rtl';
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
         document.getElementById('crop-loading').style.display = 'none';
 
         // Update nav
