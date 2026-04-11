@@ -360,7 +360,7 @@
                         <option value="בוחן">בוחן</option>
                         <option value="צפייה">צפייה</option>
                         <option value="סרטון">סרטון</option>
-                        <option value="__other__" id="sylTypeOtherOpt">אחר (הזן בעצמך)</option>
+                        <option value="__other__" id="sylTypeOtherOpt">אחר...</option>
                     </select>
                 </div>
                 <div class="syl-row">
@@ -373,8 +373,8 @@
                 <div class="syl-row" id="sylNewCourseRow" style="display:none">
                     <input type="text" id="sylNewCourse" placeholder="שם קורס חדש...">
                 </div>
-                <div class="syl-row" id="sylCustomTypeRow" style="display:none">
-                    <input type="text" id="sylCustomType" placeholder="סוג מותאם...">
+                <div id="sylCustomTypeRow" style="display:none">
+                    <input type="text" id="sylCustomType" placeholder="סוג מותאם..." style="width:100%">
                 </div>
                 <button class="syl-add-btn" id="syl-add-btn" onclick="addSylItem()">+ הוסף</button>
             </div>
@@ -522,7 +522,7 @@
             sylNewCoursePh:'שם קורס חדש...',
             exOtherOpt:    'אחר (הזן בעצמך)',
             exCustomPh:    'תג מותאם...',
-            sylOtherOpt:   'אחר (הזן בעצמך)',
+            sylOtherOpt:   'אחר...',
             sylCustomTypePh: 'סוג מותאם...',
         },
         en: {
@@ -559,7 +559,7 @@
             sylNewCoursePh:'New course...',
             exOtherOpt:    'Other (custom)',
             exCustomPh:    'Custom tag...',
-            sylOtherOpt:   'Other (custom)',
+            sylOtherOpt:   'Other...',
             sylCustomTypePh: 'Custom type...',
         },
     };
