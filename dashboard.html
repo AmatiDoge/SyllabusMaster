@@ -364,12 +364,15 @@
                 </div>
                 <div class="syl-row">
                     <input type="text" id="sylTxt" placeholder="תיאור...">
-                    <input type="number" id="sylWeek" class="syl-week-input" min="1" placeholder="שבוע">
+                    <label id="sylWeekLabel" style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#636e72;flex-shrink:0;white-space:nowrap">
+                        <span id="sylWeekLabelText">שבוע</span>
+                        <input type="number" id="sylWeek" min="1" style="width:48px;flex:none">
+                    </label>
                 </div>
                 <div class="syl-row" id="sylNewCourseRow" style="display:none">
                     <input type="text" id="sylNewCourse" placeholder="שם קורס חדש...">
                 </div>
-                <button class="syl-add-btn" onclick="addSylItem()">+ הוסף</button>
+                <button class="syl-add-btn" id="syl-add-btn" onclick="addSylItem()">+ הוסף</button>
             </div>
             <div id="syllabus-content"></div>
         </div>
@@ -506,6 +509,15 @@
             weekLabel:     (n, r) => `שבוע ${n} (${r})`,
             passed:        'עבר',
             logout:        'יציאה',
+            sylAddBtn:     '+ הוסף',
+            sylTxtPh:      'תיאור...',
+            sylWeekLbl:    'שבוע',
+            sylCoursePh:   'קורס',
+            sylTypePh:     'סוג',
+            sylToggleTip:  'הוסף פריט',
+            sylNewCoursePh:'שם קורס חדש...',
+            exOtherOpt:    'אחר (הזן בעצמך)',
+            exCustomPh:    'תג מותאם...',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -532,6 +544,15 @@
             weekLabel:     (n, r) => `Week ${n} (${r})`,
             passed:        'Passed',
             logout:        'Logout',
+            sylAddBtn:     '+ Add',
+            sylTxtPh:      'Description...',
+            sylWeekLbl:    'Week',
+            sylCoursePh:   'Course',
+            sylTypePh:     'Type',
+            sylToggleTip:  'Add item',
+            sylNewCoursePh:'New course...',
+            exOtherOpt:    'Other (custom)',
+            exCustomPh:    'Custom tag...',
         },
     };
 
@@ -574,8 +595,21 @@
             if (opts[1]) opts[1].text = s.exOptMoedB;
             if (opts[2]) opts[2].text = s.exOptTask;
             if (opts[3]) opts[3].text = s.exOptPres;
-            // opts[4] is "אחר" — always Hebrew, no translation needed
+            if (opts[4]) opts[4].text = s.exOtherOpt;
         }
+        const exCustomTag = document.getElementById('exCustomTag');
+        if (exCustomTag) exCustomTag.placeholder = s.exCustomPh;
+        // Syllabus add panel
+        const sylAddBtn = document.getElementById('syl-add-btn');
+        if (sylAddBtn) sylAddBtn.textContent = s.sylAddBtn;
+        const sylTxt = document.getElementById('sylTxt');
+        if (sylTxt) sylTxt.placeholder = s.sylTxtPh;
+        const sylWeekLabelText = document.getElementById('sylWeekLabelText');
+        if (sylWeekLabelText) sylWeekLabelText.textContent = s.sylWeekLbl;
+        const sylNewCourse = document.getElementById('sylNewCourse');
+        if (sylNewCourse) sylNewCourse.placeholder = s.sylNewCoursePh;
+        const sylToggle = document.getElementById('syl-add-toggle');
+        if (sylToggle) sylToggle.title = s.sylToggleTip;
         // Re-render to update dynamic strings
         if (document.getElementById('dashboard').classList.contains('visible')) render();
     }
@@ -979,7 +1013,7 @@ function addCourseChip(course) {
         });
         const newOpt = document.createElement('option');
         newOpt.value = '__new__';
-        newOpt.textContent = '+ קורס חדש...';
+        newOpt.textContent = '+ ' + (STRINGS[currentLang]?.sylNewCoursePh || 'קורס חדש...');
         sel.appendChild(newOpt);
         sel.onchange = () => {
             document.getElementById('sylNewCourseRow').style.display = sel.value === '__new__' ? '' : 'none';
