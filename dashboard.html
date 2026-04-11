@@ -941,29 +941,53 @@ function addCourseChip(course) {
         hideColorPicker();
     }
 
+    let _spCourses = []; // stable index → course name lookup for settings panel
+
     function renderSpCourseList() {
-        const courses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
+        _spCourses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
         const list = document.getElementById('sp-course-list');
-        if (!courses.length) {
+        if (!_spCourses.length) {
             list.innerHTML = '<div style="font-size:0.8rem;color:#aaa;padding:4px 0">אין קורסים עדיין</div>';
             return;
         }
-        list.innerHTML = courses.map(c => {
-            const ec = encodeURIComponent(c);
+        list.innerHTML = _spCourses.map((c, idx) => {
             const color = getCourseColor(c);
-            return `<div class="sp-course-row">
-                <div class="sp-color-dot" style="background:${color}" onclick="showColorPicker(event,'${ec}')" title="שנה צבע"></div>
-                <input class="sp-course-input" value="${c.replace(/"/g,'&quot;')}"
-                       data-orig="${ec}"
-                       onblur="renameCourse(this.dataset.orig, this.value)"
-                       onkeydown="if(event.key==='Enter')this.blur()">
-                <button class="sp-del-btn" onclick="deleteCourse('${ec}')" title="מחק קורס">🗑️</button>
+            return `<div class="sp-course-row" data-idx="${idx}">
+                <div class="sp-color-dot" style="background:${color}" data-action="color" title="שנה צבע"></div>
+                <input class="sp-course-input" value="" data-action="rename">
+                <button class="sp-del-btn" data-action="delete" title="מחק קורס">🗑️</button>
             </div>`;
         }).join('');
+
+        // Set input values directly (safe — no HTML injection)
+        list.querySelectorAll('.sp-course-row').forEach((row, idx) => {
+            row.querySelector('input').value = _spCourses[idx];
+        });
+
+        // Attach event listeners — no course name in HTML attributes
+        list.querySelectorAll('[data-action="color"]').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = Number(dot.closest('[data-idx]').dataset.idx);
+                showColorPicker(e, idx);
+            });
+        });
+        list.querySelectorAll('[data-action="rename"]').forEach(input => {
+            input.addEventListener('blur', () => {
+                const idx = Number(input.closest('[data-idx]').dataset.idx);
+                renameCourse(_spCourses[idx], input.value);
+            });
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+        });
+        list.querySelectorAll('[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = Number(btn.closest('[data-idx]').dataset.idx);
+                deleteCourse(_spCourses[idx]);
+            });
+        });
     }
 
-    function renameCourse(encodedOld, newName) {
-        const oldName = decodeURIComponent(encodedOld);
+    function renameCourse(oldName, newName) {
         newName = newName.trim();
         if (!newName || newName === oldName) return;
         userSyllabus.forEach(item => { if (item.c === oldName) item.c = newName; });
@@ -977,8 +1001,7 @@ function addCourseChip(course) {
         render();
     }
 
-    function deleteCourse(encodedName) {
-        const name = decodeURIComponent(encodedName);
+    function deleteCourse(name) {
         if (!confirm(`למחוק את הקורס "${name}" וכל הפריטים שלו?`)) return;
         userSyllabus = userSyllabus.filter(i => i.c !== name);
         delete courseColors[name];
@@ -987,13 +1010,17 @@ function addCourseChip(course) {
         render();
     }
 
-    function showColorPicker(e, encodedCourse) {
-        e.stopPropagation();
-        spColorPickerCourse = decodeURIComponent(encodedCourse);
+    function showColorPicker(e, courseIdx) {
+        spColorPickerCourse = _spCourses[courseIdx];
         const picker = document.getElementById('sp-color-picker');
-        picker.innerHTML = COLOR_PALETTE.map(c =>
-            `<div class="sp-swatch" style="background:${c}" onclick="pickColor('${c}')"></div>`
-        ).join('');
+        picker.innerHTML = '';
+        COLOR_PALETTE.forEach(color => {
+            const swatch = document.createElement('div');
+            swatch.className = 'sp-swatch';
+            swatch.style.background = color;
+            swatch.addEventListener('click', () => pickColor(color));
+            picker.appendChild(swatch);
+        });
         const rect = e.target.getBoundingClientRect();
         const left = Math.min(rect.left - 8, window.innerWidth - 150);
         picker.style.left = Math.max(8, left) + 'px';
