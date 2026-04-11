@@ -155,13 +155,13 @@
     <div id="crop-topbar">
         <span id="crop-filename">file.pdf</span>
         <button class="crop-nav-btn" id="crop-prev" onclick="cropNav(-1)">‹</button>
-        <span id="crop-page-label">Page 1 / 1</span>
+        <span id="crop-page-label">עמוד 1 מתוך 1</span>
         <button class="crop-nav-btn" id="crop-next" onclick="cropNav(1)">›</button>
         <span id="crop-badges"></span>
-        <button id="crop-btn-done" onclick="cropDone()">Done & Analyze</button>
-        <button id="crop-btn-cancel" onclick="cropClose()">Cancel</button>
+        <button id="crop-btn-done" onclick="cropDone()">סיים ונתח ✨</button>
+        <button id="crop-btn-cancel" onclick="cropClose()">ביטול</button>
     </div>
-    <div id="crop-hint-bar">Click and drag on the page to select an area. Navigate pages with the arrows. Each page can have one selection.</div>
+    <div id="crop-hint-bar">לחץ וגרור על העמוד כדי לבחור אזור. נווט בין עמודים עם החיצים. ניתן לבחור אזור אחד לכל עמוד.</div>
     <div id="crop-canvas-area">
         <div id="crop-canvas-wrap">
             <canvas id="crop-canvas"></canvas>
@@ -467,8 +467,8 @@
                     <button class="file-remove" onclick="removeObFile(${i})">×</button>
                 </div>
                 <div class="file-actions" id="fa-${i}">
-                    <button class="btn-file-action btn-full-pdf" onclick="obAnalyzeFileFull(${i})">Analyze full PDF</button>
-                    <button class="btn-file-action btn-select-area" onclick="openCropOverlay(${i})">✂ Select area</button>
+                    <button class="btn-file-action btn-full-pdf" onclick="obAnalyzeFileFull(${i})">נתח את כל ה-PDF</button>
+                    <button class="btn-file-action btn-select-area" onclick="openCropOverlay(${i})">בחר אזור ✂</button>
                 </div>
             </div>`).join('');
     }
@@ -522,7 +522,7 @@
         document.getElementById('crop-loading').style.display = 'none';
 
         // Update nav
-        document.getElementById('crop-page-label').textContent = `Page ${s.currentPage} / ${s.numPages}`;
+        document.getElementById('crop-page-label').textContent = `עמוד ${s.currentPage} מתוך ${s.numPages}`;
         document.getElementById('crop-prev').disabled = s.currentPage <= 1;
         document.getElementById('crop-next').disabled = s.currentPage >= s.numPages;
 
@@ -540,7 +540,7 @@
     function cropOverlayUpdateBadges() {
         const pages = Object.keys(ovState.crops).sort((a,b) => a-b);
         document.getElementById('crop-badges').innerHTML = pages.map(p =>
-            `<span class="crop-page-badge">✓ Page ${p}</span>`
+            `<span class="crop-page-badge">✓ עמוד ${p}</span>`
         ).join(' ');
     }
 
