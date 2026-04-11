@@ -701,7 +701,7 @@
             <div id="fi-wrap-${i}">
                 <div class="file-item" id="fi-${i}">
                     <span>📄</span>
-                    <span class="file-item-name">${f.name}</span>
+                    <span class="file-item-name">${sanitize(f.name)}</span>
                     <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
                     <button class="file-remove" onclick="removeObFile(${i})">×</button>
                 </div>
@@ -978,6 +978,7 @@
     }
 
 function addCourseChip(course) {
+        course = sanitize(course);
         const color = getCourseColor(course);
         const container = document.getElementById('ob-courses-found');
         container.style.display = 'flex';
@@ -986,8 +987,17 @@ function addCourseChip(course) {
 
     async function finalizeOnboarding() {
         obResults.forEach(r => {
-            if (r.syllabus) userSyllabus = [...userSyllabus, ...r.syllabus];
-            if (r.exams)   userExams    = [...userExams,    ...r.exams];
+            if (r.syllabus) userSyllabus = [...userSyllabus, ...r.syllabus.map(item => ({
+                ...item,
+                c: sanitize(item.c || ''),
+                t: sanitize(item.t || ''),
+                txt: sanitize(item.txt || ''),
+            }))];
+            if (r.exams) userExams = [...userExams, ...r.exams.map(ex => ({
+                ...ex,
+                t: sanitize(ex.t || ''),
+                tag: sanitize(ex.tag || ''),
+            }))];
         });
         userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
         userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
@@ -1246,7 +1256,7 @@ function addCourseChip(course) {
     }
 
     function renameCourse(oldName, newName) {
-        newName = newName.trim();
+        newName = sanitize(newName);
         if (!newName || newName === oldName) return;
         userSyllabus.forEach(item => { if (item.c === oldName) item.c = newName; });
         userExams.forEach(item => { if (item.c === oldName) item.c = newName; });
