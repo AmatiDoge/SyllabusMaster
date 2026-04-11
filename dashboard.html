@@ -417,6 +417,7 @@
 
             // Set language from user metadata
             const lang = currentUser.user_metadata?.lang || 'he';
+            currentLang = lang;
             applyLang(lang);
 
             if (data && (data.syllabus?.length > 0 || data.exams?.length > 0 || data.onboarding_complete)) {
@@ -450,6 +451,21 @@
             obNote:        'בדרך כלל לוקח 10–30 שניות לכל קובץ',
             analyzing:     'מנתח...',
             addCourse:     '+ הוסף קורס',
+            dashTitle:     'לוח הבקרה האקדמי שלי',
+            hdrExams:      'בחינות ודד-ליינים',
+            hdrTasks:      'משימות שוטפות',
+            exPlaceholder: 'שם האירוע',
+            tkPlaceholder: 'משימה חדשה...',
+            exOptExam:     'מבחן',
+            exOptMoedB:    'מועד ב',
+            exOptTask:     'מטלה',
+            exOptPres:     'מצגת',
+            emptyExams:    'אין בחינות עדיין',
+            emptyTasks:    'אין משימות עדיין',
+            emptyWeek:     'אין כלום השבוע',
+            weekLabel:     (n, r) => `שבוע ${n} (${r})`,
+            passed:        'עבר',
+            logout:        'יציאה',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -461,21 +477,66 @@
             obNote:        'Usually takes 10–30 seconds per file',
             analyzing:     'Analyzing...',
             addCourse:     '+ Add course',
+            dashTitle:     'My Academic Dashboard',
+            hdrExams:      'Exams & Deadlines',
+            hdrTasks:      'Current Tasks',
+            exPlaceholder: 'Event name',
+            tkPlaceholder: 'New task...',
+            exOptExam:     'Exam',
+            exOptMoedB:    'Moed B',
+            exOptTask:     'Assignment',
+            exOptPres:     'Presentation',
+            emptyExams:    'No exams yet',
+            emptyTasks:    'No tasks yet',
+            emptyWeek:     'Nothing this week',
+            weekLabel:     (n, r) => `Week ${n} (${r})`,
+            passed:        'Passed',
+            logout:        'Logout',
         },
     };
 
+    let currentLang = 'he';
+
     function applyLang(lang) {
+        currentLang = lang;
         const s = STRINGS[lang] || STRINGS.he;
-        document.querySelector('.ob-step-label').textContent   = s.obStepLabel;
-        document.querySelector('.ob-title').textContent        = s.obTitle;
-        document.querySelector('.ob-sub').textContent          = s.obSub;
-        document.querySelector('.drop-title').textContent      = s.dropTitle;
-        document.querySelector('.drop-sub').innerHTML          = s.dropSub;
-        document.getElementById('ob-btn').textContent          = s.obBtn;
-        document.querySelector('.ob-note').textContent         = s.obNote;
+        // Onboarding
+        document.querySelector('.ob-step-label').textContent    = s.obStepLabel;
+        document.querySelector('.ob-title').textContent         = s.obTitle;
+        document.querySelector('.ob-sub').textContent           = s.obSub;
+        document.querySelector('.drop-title').textContent       = s.dropTitle;
+        document.querySelector('.drop-sub').innerHTML           = s.dropSub;
+        document.getElementById('ob-btn').textContent           = s.obBtn;
+        document.querySelector('.ob-note').textContent          = s.obNote;
         document.getElementById('ob-progress-text').textContent = s.analyzing;
+        // Dashboard top bar
         const addBtn = document.querySelector('.btn-add-course');
         if (addBtn) addBtn.textContent = s.addCourse;
+        const h1 = document.querySelector('#dashboard .top-bar h1');
+        if (h1) h1.textContent = s.dashTitle;
+        const logoutBtn = document.querySelector('.btn-logout');
+        if (logoutBtn) logoutBtn.textContent = s.logout;
+        // Box headers
+        const hdrExams = document.querySelector('.h-exams');
+        if (hdrExams) hdrExams.textContent = s.hdrExams;
+        const hdrTasks = document.querySelector('.h-tasks');
+        if (hdrTasks) hdrTasks.textContent = s.hdrTasks;
+        // Input placeholders
+        const exT = document.getElementById('exT');
+        if (exT) exT.placeholder = s.exPlaceholder;
+        const tkT = document.getElementById('tkT');
+        if (tkT) tkT.placeholder = s.tkPlaceholder;
+        // Exam tag select options
+        const exTag = document.getElementById('exTag');
+        if (exTag) {
+            const opts = exTag.options;
+            if (opts[0]) opts[0].text = s.exOptExam;
+            if (opts[1]) opts[1].text = s.exOptMoedB;
+            if (opts[2]) opts[2].text = s.exOptTask;
+            if (opts[3]) opts[3].text = s.exOptPres;
+        }
+        // Re-render to update dynamic strings
+        if (document.getElementById('dashboard').classList.contains('visible')) render();
     }
 
     async function saveToSupabase(onboardingComplete = false) {
@@ -864,32 +925,33 @@ function addCourseChip(course) {
     function changeWeek(dir) { currentWeekIdx = Math.max(0, Math.min(weekRanges.length-1, currentWeekIdx+dir)); render(); }
 
     function render() {
+        const s = STRINGS[currentLang] || STRINGS.he;
         const now = new Date();
         document.getElementById('date-display').innerText = now.toLocaleDateString('he-IL') + ' | ' + now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
 
         // Exams
         const eL = document.getElementById('exList'); eL.innerHTML = '';
         const sorted = [...userExams].sort((a,b) => new Date(a.d)-new Date(b.d));
-        if (!sorted.length) { eL.innerHTML = '<div class="empty-state"><div class="empty-icon">🎉</div>No exams yet</div>'; }
+        if (!sorted.length) { eL.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div>${s.emptyExams}</div>`; }
         else sorted.forEach(x => {
             const diff = new Date(x.d)-now, days = Math.floor(diff/86400000);
             const sc = diff<0?'bg-passed':days<=7?'bg-red':'bg-green';
             const oi = userExams.indexOf(x);
-            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge tag-${x.tag}">${x.tag}</span><strong>${x.t}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?'Passed':days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge tag-${x.tag}">${x.tag}</span><strong>${x.t}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
         });
 
         // Tasks
         const tL = document.getElementById('tkList'); tL.innerHTML = '';
-        if (!userTasks.length) { tL.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div>No tasks yet</div>'; }
+        if (!userTasks.length) { tL.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div>${s.emptyTasks}</div>`; }
         else userTasks.forEach((x,i) => {
             tL.innerHTML += `<div class="item-row ${x.f?'done':''}"><div class="row-right"><span onclick="userTasks[${i}].f=!userTasks[${i}].f;render();" style="cursor:pointer">${x.t}</span></div><button onclick="userTasks.splice(${i},1);render();" class="del-btn">×</button></div>`;
         });
 
         // Syllabus
-        document.getElementById('week-title').innerText = `Week ${currentWeekIdx+1} (${weekRanges[currentWeekIdx]||''})`;
+        document.getElementById('week-title').innerText = s.weekLabel(currentWeekIdx+1, weekRanges[currentWeekIdx]||'');
         const sC = document.getElementById('syllabus-content'); sC.innerHTML = '';
         const weekItems = userSyllabus.filter(it => (it.w||0) === currentWeekIdx);
-        if (!weekItems.length) { sC.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Nothing this week</div>'; }
+        if (!weekItems.length) { sC.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>${s.emptyWeek}</div>`; }
         else {
             const byCourse = {};
             weekItems.forEach(item => { if (!byCourse[item.c]) byCourse[item.c]=[]; byCourse[item.c].push(item); });
@@ -1033,7 +1095,7 @@ function addCourseChip(course) {
         if (!spColorPickerCourse) return;
         courseColors[spColorPickerCourse] = color;
         hideColorPicker();
-        save();
+        saveToSupabase();
         renderSpCourseList();
         render();
     }
