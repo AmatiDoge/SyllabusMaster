@@ -433,11 +433,13 @@
 
         // If returning from Stripe, confirm payment first then clean URL
         if (stripeSuccess) {
+            const sessionId = params.get('session_id');
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
                 await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/confirm-payment', {
                     method: 'POST',
                     headers: EDGE_HEADERS,
+                    body: JSON.stringify({ sessionId }),
                 });
             }
             window.history.replaceState({}, '', window.location.pathname);
@@ -1318,17 +1320,33 @@ function addCourseChip(course) {
         if (currentUser) currentUser.user_metadata = { ...currentUser.user_metadata, lang };
     }
 
-    function manageSubscription() {
-        alert('ניהול מנוי יהיה זמין בקרוב.');
+    async function manageSubscription() {
+        const btn = document.querySelector('.sp-account-btn');
+        try {
+            const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/billing-portal', {
+                method: 'POST',
+                headers: EDGE_HEADERS,
+            });
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert(data.error === 'No active subscription found'
+                    ? 'לא נמצא מנוי פעיל. אם שילמת לאחרונה, נסה שוב בעוד מספר שניות.'
+                    : 'אירעה שגיאה. נסה שוב.');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('אירעה שגיאה. נסה שוב.');
+        }
     }
 
     async function deleteAccount() {
-        if (!confirm('האם אתה בטוח שברצונך למחוק את חשבונך?\nפעולה זו אינה הפיכה.')) return;
-        if (!confirm('אישור נוסף: כל הנתונים שלך יימחקו לצמיתות. להמשיך?')) return;
+        if (!confirm('האם אתה בטוח?\nפעולה זו תמחק את כל הנתונים שלך לצמיתות.')) return;
         try {
             await sb.from('user_data').delete().eq('user_id', currentUser.id);
             await sb.auth.signOut();
-            window.location.href = 'auth.html';
+            window.location.href = 'index.html';
         } catch(e) {
             console.error(e);
             alert('אירעה שגיאה. נסה שוב.');
