@@ -585,7 +585,7 @@
 
     async function obAnalyzeFileCrop(fileIdx) {
         const state = cropState[fileIdx];
-        if (!state?.rect) return;
+        if (!state?.rect) { alert('Please draw a selection area first'); return; }
         closeCropTool(fileIdx);
         document.getElementById(`fa-${fileIdx}`).style.display = 'none';
         await _runAnalysis(fileIdx, async () => {
