@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SyllaBot – Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -110,6 +111,24 @@
         .del-btn { color: #ff4d4f; cursor: pointer; border: none; background: none; font-size: 1rem; padding: 0; }
         .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
+
+        /* PAGE SELECTOR */
+        .page-selector { margin-top: 8px; background: #f8f9fa; border-radius: 10px; padding: 12px; display: none; }
+        .page-selector.visible { display: block; }
+        .page-selector-header { font-size: 0.75rem; font-weight: 700; color: #636e72; margin-bottom: 10px; }
+        .page-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .page-thumb-wrap { position: relative; cursor: pointer; }
+        .page-thumb-wrap canvas { border-radius: 4px; border: 2px solid transparent; display: block; transition: border-color 0.15s; }
+        .page-thumb-wrap.selected canvas { border-color: #27ae60; }
+        .page-thumb-wrap input[type=checkbox] { position: absolute; top: 3px; right: 3px; accent-color: #27ae60; width: 14px; height: 14px; }
+        .page-num { text-align: center; font-size: 0.62rem; color: #999; margin-top: 2px; }
+        .page-selector-actions { display: flex; gap: 8px; }
+        .btn-pages { flex: 1; padding: 7px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-pages-all  { background: #0d0d0d; color: white; }
+        .btn-pages-all:hover  { background: #27ae60; }
+        .btn-pages-sel  { background: #e8f5e9; color: #27ae60; border: 1.5px solid #27ae60; }
+        .btn-pages-sel:hover  { background: #27ae60; color: white; }
+        .btn-pages-sel:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -211,7 +230,7 @@
 
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
-    let obFiles = [], obResults = [];
+    let obFiles = [], obResults = [], obSelectedPages = {}; // obSelectedPages[i] = Set of selected page numbers (1-based), or null = all
 
     const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
 
@@ -371,7 +390,7 @@
 
     // ── ONBOARDING ──
     function resetOnboarding() {
-        obFiles = []; obResults = [];
+        obFiles = []; obResults = []; obSelectedPages = {};
         document.getElementById('ob-file-list').innerHTML = '';
         document.getElementById('ob-courses-found').style.display = 'none';
         document.getElementById('ob-courses-found').innerHTML = '';
@@ -404,13 +423,78 @@
     }
 
     function renderObFileList() {
-        document.getElementById('ob-file-list').innerHTML = obFiles.map((f, i) => `
+        const list = document.getElementById('ob-file-list');
+        list.innerHTML = obFiles.map((f, i) => `
             <div class="file-item" id="fi-${i}">
                 <span>📄</span>
                 <span class="file-item-name">${f.name}</span>
                 <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
                 <button class="file-remove" onclick="removeObFile(${i})">×</button>
+            </div>
+            <div class="page-selector" id="ps-${i}">
+                <div class="page-selector-header">Select pages to analyze:</div>
+                <div class="page-thumbs" id="pt-${i}"></div>
+                <div class="page-selector-actions">
+                    <button class="btn-pages btn-pages-all" onclick="obAnalyzeFile(${i}, false)">Analyze all pages</button>
+                    <button class="btn-pages btn-pages-sel" id="btn-sel-${i}" onclick="obAnalyzeFile(${i}, true)" disabled>Analyze selected pages</button>
+                </div>
             </div>`).join('');
+        obFiles.forEach((f, i) => renderPageThumbs(f, i));
+    }
+
+    async function renderPageThumbs(file, i) {
+        if (!window.pdfjsLib) return;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const thumbContainer = document.getElementById(`pt-${i}`);
+            if (!thumbContainer) return;
+            document.getElementById(`ps-${i}`).classList.add('visible');
+            obSelectedPages[i] = new Set();
+
+            for (let p = 1; p <= pdf.numPages; p++) {
+                const page = await pdf.getPage(p);
+                const viewport = page.getViewport({ scale: 0.3 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+                const wrap = document.createElement('div');
+                wrap.className = 'page-thumb-wrap';
+                wrap.dataset.fileIdx = i;
+                wrap.dataset.page = p;
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.onchange = () => togglePageSelection(i, p, wrap, cb);
+
+                const num = document.createElement('div');
+                num.className = 'page-num';
+                num.textContent = p;
+
+                wrap.appendChild(canvas);
+                wrap.appendChild(cb);
+                wrap.appendChild(num);
+                wrap.onclick = (e) => { if (e.target !== cb) { cb.checked = !cb.checked; cb.onchange(); } };
+                thumbContainer.appendChild(wrap);
+            }
+        } catch(e) {
+            console.error('PDF.js render error:', e);
+        }
+    }
+
+    function togglePageSelection(fileIdx, page, wrap, cb) {
+        if (cb.checked) {
+            obSelectedPages[fileIdx].add(page);
+            wrap.classList.add('selected');
+        } else {
+            obSelectedPages[fileIdx].delete(page);
+            wrap.classList.remove('selected');
+        }
+        const selBtn = document.getElementById(`btn-sel-${fileIdx}`);
+        if (selBtn) selBtn.disabled = obSelectedPages[fileIdx].size === 0;
     }
 
     function setFileStatus(i, cls, label) {
@@ -418,6 +502,40 @@
         if (el) { el.className = `file-status ${cls}`; el.textContent = label; }
     }
 
+    // Called by "Analyze all pages" / "Analyze selected pages" buttons per file
+    async function obAnalyzeFile(fileIdx, selectedOnly) {
+        const { data: { session } } = await sb.auth.getSession();
+        const file = obFiles[fileIdx];
+        document.getElementById(`ps-${fileIdx}`).classList.remove('visible');
+        setFileStatus(fileIdx, 's-analyzing', 'Analyzing...');
+        try {
+            let body;
+            if (selectedOnly && obSelectedPages[fileIdx]?.size > 0) {
+                const pages = [...obSelectedPages[fileIdx]].sort((a,b) => a-b);
+                const images = await extractPagesAsImages(file, pages);
+                body = JSON.stringify({ imagesBase64: images });
+            } else {
+                body = JSON.stringify({ pdfBase64: await fileToBase64(file) });
+            }
+            const res = await fetch(EDGE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                body
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const result = await res.json();
+            obResults.push(result);
+            const courseName = result.course || file.name.replace('.pdf','');
+            setFileStatus(fileIdx, 's-done', `✓ ${courseName}`);
+            addCourseChip(courseName);
+        } catch(e) {
+            console.error(e);
+            setFileStatus(fileIdx, 's-error', 'Error');
+        }
+        checkAllAnalyzed();
+    }
+
+    // Called by main "Build my dashboard" button — analyzes all files that haven't been analyzed yet
     async function obAnalyzeAll() {
         if (!obFiles.length) return;
         const btn = document.getElementById('ob-btn');
@@ -427,6 +545,7 @@
         const { data: { session } } = await sb.auth.getSession();
         obResults = [];
         for (let i = 0; i < obFiles.length; i++) {
+            document.getElementById(`ps-${i}`)?.classList.remove('visible');
             setFileStatus(i, 's-analyzing', 'Analyzing...');
             document.getElementById('ob-progress-text').textContent = `Analyzing ${obFiles[i].name}...`;
             document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
@@ -460,6 +579,41 @@
             btn.textContent = 'Something went wrong. Try again.';
             btn.disabled = false;
         }
+    }
+
+    function checkAllAnalyzed() {
+        const allDone = obFiles.every((_, i) => {
+            const el = document.getElementById(`fs-${i}`);
+            return el && (el.classList.contains('s-done') || el.classList.contains('s-error'));
+        });
+        if (!allDone) return;
+        const btn = document.getElementById('ob-btn');
+        if (obResults.length > 0) {
+            btn.disabled = false;
+            btn.textContent = 'Open my dashboard →';
+            btn.onclick = finalizeOnboarding;
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Something went wrong. Try again.';
+        }
+    }
+
+    // Render selected pages as high-res PNGs, returns array of base64 strings
+    async function extractPagesAsImages(file, pages) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const images = [];
+        for (const p of pages) {
+            const page = await pdf.getPage(p);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            images.push(canvas.toDataURL('image/png').split(',')[1]);
+        }
+        return images;
     }
 
     function addCourseChip(course) {
