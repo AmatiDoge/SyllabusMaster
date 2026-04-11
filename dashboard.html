@@ -104,6 +104,7 @@
         .tag-מטלה { background:#fff3e0;color:#ef6c00; } .tag-בוחן { background:#fce4ec;color:#c2185b; }
         .tag-שיעור { background:#f3e5f5;color:#7b1fa2; } .tag-תרגול { background:#e0f2f1;color:#00796b; }
         .tag-מבחן { background:#ffebee;color:#c62828; } .tag-מועד-ב { background:#2d3436;color:white; }
+        .tag-default { background:#f0f0f0;color:#636e72; }
         .tag-פרזנטציה { background:#e0f2f1;color:#00897b; } .tag-צפייה { background:#fffde7;color:#f57f17; }
         .timer { font-weight: bold; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; white-space: nowrap; }
         .bg-red { background:#fff1f0;color:var(--red); } .bg-green { background:#f6ffed;color:var(--green); } .bg-passed { background:#f5f5f5;color:#bfbfbf; }
@@ -307,12 +308,14 @@
             <div class="inputs">
                 <input type="text" id="exT" placeholder="Event name">
                 <input type="datetime-local" id="exD">
-                <select id="exTag" style="flex:0.6">
+                <select id="exTag" style="flex:0.6" onchange="onExTagChange()">
                     <option value="מבחן">Exam</option>
                     <option value="מועד-ב">Moed B</option>
                     <option value="מטלה">Assignment</option>
                     <option value="פרזנטציה">Presentation</option>
+                    <option value="__other__">אחר (הזן בעצמך)</option>
                 </select>
+                <input type="text" id="exCustomTag" placeholder="תג מותאם..." style="display:none;flex:0.5;min-width:80px">
                 <button class="btn-add" onclick="addEx()">+</button>
             </div>
             <div id="exList"></div>
@@ -534,6 +537,7 @@
             if (opts[1]) opts[1].text = s.exOptMoedB;
             if (opts[2]) opts[2].text = s.exOptTask;
             if (opts[3]) opts[3].text = s.exOptPres;
+            // opts[4] is "אחר" — always Hebrew, no translation needed
         }
         // Re-render to update dynamic strings
         if (document.getElementById('dashboard').classList.contains('visible')) render();
@@ -914,9 +918,35 @@ function addCourseChip(course) {
     }
 
     // ── DASHBOARD ──
+    function onExTagChange() {
+        const sel = document.getElementById('exTag');
+        const customInput = document.getElementById('exCustomTag');
+        if (sel.value === '__other__') {
+            customInput.style.display = '';
+            customInput.focus();
+        } else {
+            customInput.style.display = 'none';
+        }
+    }
+
     function addEx() {
-        const t = document.getElementById('exT').value, d = document.getElementById('exD').value, tag = document.getElementById('exTag').value;
-        if (t && d) { userExams.push({ t, d, tag }); document.getElementById('exT').value = ''; document.getElementById('exD').value = ''; render(); }
+        const t = document.getElementById('exT').value;
+        const d = document.getElementById('exD').value;
+        const sel = document.getElementById('exTag');
+        let tag = sel.value;
+        if (tag === '__other__') {
+            tag = document.getElementById('exCustomTag').value.trim();
+            if (!tag) return;
+        }
+        if (t && d) {
+            userExams.push({ t, d, tag });
+            document.getElementById('exT').value = '';
+            document.getElementById('exD').value = '';
+            document.getElementById('exCustomTag').value = '';
+            document.getElementById('exCustomTag').style.display = 'none';
+            sel.value = 'מבחן';
+            render();
+        }
     }
     function addTask() {
         const t = document.getElementById('tkT').value;
@@ -937,7 +967,9 @@ function addCourseChip(course) {
             const diff = new Date(x.d)-now, days = Math.floor(diff/86400000);
             const sc = diff<0?'bg-passed':days<=7?'bg-red':'bg-green';
             const oi = userExams.indexOf(x);
-            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge tag-${x.tag}">${x.tag}</span><strong>${x.t}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+            const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה'];
+            const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
+            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${x.tag}</span><strong>${x.t}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
         });
 
         // Tasks
