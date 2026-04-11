@@ -112,23 +112,30 @@
         .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
 
-        /* PAGE SELECTOR */
-        .page-selector { margin-top: 8px; background: #f8f9fa; border-radius: 10px; padding: 12px; display: none; }
-        .page-selector.visible { display: block; }
-        .page-selector-header { font-size: 0.75rem; font-weight: 700; color: #636e72; margin-bottom: 10px; }
-        .page-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-        .page-thumb-wrap { position: relative; cursor: pointer; }
-        .page-thumb-wrap canvas { border-radius: 4px; border: 2px solid transparent; display: block; transition: border-color 0.15s; }
-        .page-thumb-wrap.selected canvas { border-color: #27ae60; }
-        .page-thumb-wrap input[type=checkbox] { position: absolute; top: 3px; right: 3px; accent-color: #27ae60; width: 14px; height: 14px; }
-        .page-num { text-align: center; font-size: 0.62rem; color: #999; margin-top: 2px; }
-        .page-selector-actions { display: flex; gap: 8px; }
-        .btn-pages { flex: 1; padding: 7px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-pages-all  { background: #0d0d0d; color: white; }
-        .btn-pages-all:hover  { background: #27ae60; }
-        .btn-pages-sel  { background: #e8f5e9; color: #27ae60; border: 1.5px solid #27ae60; }
-        .btn-pages-sel:hover  { background: #27ae60; color: white; }
-        .btn-pages-sel:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
+        /* CROP TOOL */
+        .file-actions { display: flex; gap: 7px; margin-top: 7px; }
+        .btn-file-action { flex: 1; padding: 6px 10px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-full-pdf  { background: #0d0d0d; color: white; }
+        .btn-full-pdf:hover  { background: #27ae60; }
+        .btn-select-area { background: #f0f0f0; color: #555; border: 1.5px solid #ddd; }
+        .btn-select-area:hover { background: #e8f5e9; color: #27ae60; border-color: #27ae60; }
+
+        .crop-tool { margin-top: 8px; background: #f8f9fa; border-radius: 12px; padding: 12px; display: none; }
+        .crop-tool.visible { display: block; }
+        .crop-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #636e72; }
+        .crop-nav-btn { background: #e0e0e0; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 0.9rem; font-weight: 700; }
+        .crop-nav-btn:hover { background: #27ae60; color: white; }
+        .crop-page-label { font-weight: 700; min-width: 70px; text-align: center; }
+        .crop-canvas-wrap { position: relative; display: inline-block; cursor: crosshair; border-radius: 8px; overflow: hidden; max-width: 100%; }
+        .crop-canvas-wrap canvas { display: block; max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .crop-rect { position: absolute; border: 2px dashed #1a73e8; background: rgba(26,115,232,0.08); pointer-events: none; box-sizing: border-box; }
+        .crop-hint { font-size: 0.72rem; color: #999; margin: 8px 0 10px; }
+        .crop-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-crop-analyze { flex: 1; padding: 8px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.8rem; font-weight: 700; background: #1a73e8; color: white; cursor: pointer; }
+        .btn-crop-analyze:hover { background: #1558b0; }
+        .btn-crop-analyze:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-crop-cancel { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #ddd; font-family: inherit; font-size: 0.8rem; font-weight: 700; background: white; color: #636e72; cursor: pointer; }
+        .btn-crop-cancel:hover { border-color: #d63031; color: #d63031; }
     </style>
 </head>
 <body>
@@ -230,7 +237,7 @@
 
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
-    let obFiles = [], obResults = [], obSelectedPages = {}; // obSelectedPages[i] = Set of selected page numbers (1-based), or null = all
+    let obFiles = [], obResults = [];
 
     const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
 
@@ -390,7 +397,7 @@
 
     // ── ONBOARDING ──
     function resetOnboarding() {
-        obFiles = []; obResults = []; obSelectedPages = {};
+        obFiles = []; obResults = [];
         document.getElementById('ob-file-list').innerHTML = '';
         document.getElementById('ob-courses-found').style.display = 'none';
         document.getElementById('ob-courses-found').innerHTML = '';
@@ -425,76 +432,144 @@
     function renderObFileList() {
         const list = document.getElementById('ob-file-list');
         list.innerHTML = obFiles.map((f, i) => `
-            <div class="file-item" id="fi-${i}">
-                <span>📄</span>
-                <span class="file-item-name">${f.name}</span>
-                <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
-                <button class="file-remove" onclick="removeObFile(${i})">×</button>
-            </div>
-            <div class="page-selector" id="ps-${i}">
-                <div class="page-selector-header">Select pages to analyze:</div>
-                <div class="page-thumbs" id="pt-${i}"></div>
-                <div class="page-selector-actions">
-                    <button class="btn-pages btn-pages-all" onclick="obAnalyzeFile(${i}, false)">Analyze all pages</button>
-                    <button class="btn-pages btn-pages-sel" id="btn-sel-${i}" onclick="obAnalyzeFile(${i}, true)" disabled>Analyze selected pages</button>
+            <div id="fi-wrap-${i}">
+                <div class="file-item" id="fi-${i}">
+                    <span>📄</span>
+                    <span class="file-item-name">${f.name}</span>
+                    <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
+                    <button class="file-remove" onclick="removeObFile(${i})">×</button>
+                </div>
+                <div class="file-actions" id="fa-${i}">
+                    <button class="btn-file-action btn-full-pdf" onclick="obAnalyzeFileFull(${i})">Analyze full PDF</button>
+                    <button class="btn-file-action btn-select-area" onclick="openCropTool(${i})">✂ Select area</button>
+                </div>
+                <div class="crop-tool" id="ct-${i}">
+                    <div class="crop-nav">
+                        <button class="crop-nav-btn" onclick="cropNavPage(${i}, -1)">‹</button>
+                        <span class="crop-page-label" id="cp-label-${i}">Page 1</span>
+                        <button class="crop-nav-btn" onclick="cropNavPage(${i}, 1)">›</button>
+                    </div>
+                    <div class="crop-canvas-wrap" id="cc-wrap-${i}">
+                        <canvas id="cc-${i}"></canvas>
+                        <div class="crop-rect" id="cr-${i}" style="display:none"></div>
+                    </div>
+                    <p class="crop-hint">Click and drag to select the area you want to analyze</p>
+                    <div class="crop-actions">
+                        <button class="btn-crop-analyze" id="btn-crop-${i}" onclick="obAnalyzeFileCrop(${i})" disabled>Analyze this area</button>
+                        <button class="btn-crop-cancel" onclick="closeCropTool(${i})">Cancel</button>
+                    </div>
                 </div>
             </div>`).join('');
-        obFiles.forEach((f, i) => renderPageThumbs(f, i));
     }
 
-    async function renderPageThumbs(file, i) {
-        if (!window.pdfjsLib) return;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        try {
-            const arrayBuffer = await file.arrayBuffer();
+    // ── CROP TOOL STATE ──
+    const cropState = {}; // { pdf, currentPage, numPages, rect: {x,y,w,h}, dragging, scale }
+
+    function initPdfJs() {
+        if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    async function openCropTool(i) {
+        initPdfJs();
+        document.getElementById(`ct-${i}`).classList.add('visible');
+        document.getElementById(`fa-${i}`).style.display = 'none';
+        if (!cropState[i]) {
+            const arrayBuffer = await obFiles[i].arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const thumbContainer = document.getElementById(`pt-${i}`);
-            if (!thumbContainer) return;
-            document.getElementById(`ps-${i}`).classList.add('visible');
-            obSelectedPages[i] = new Set();
-
-            for (let p = 1; p <= pdf.numPages; p++) {
-                const page = await pdf.getPage(p);
-                const viewport = page.getViewport({ scale: 0.3 });
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-
-                const wrap = document.createElement('div');
-                wrap.className = 'page-thumb-wrap';
-                wrap.dataset.fileIdx = i;
-                wrap.dataset.page = p;
-
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.onchange = () => togglePageSelection(i, p, wrap, cb);
-
-                const num = document.createElement('div');
-                num.className = 'page-num';
-                num.textContent = p;
-
-                wrap.appendChild(canvas);
-                wrap.appendChild(cb);
-                wrap.appendChild(num);
-                wrap.onclick = (e) => { if (e.target !== cb) { cb.checked = !cb.checked; cb.onchange(); } };
-                thumbContainer.appendChild(wrap);
-            }
-        } catch(e) {
-            console.error('PDF.js render error:', e);
+            cropState[i] = { pdf, currentPage: 1, numPages: pdf.numPages, rect: null, dragging: false, scale: 1 };
         }
+        await cropRenderPage(i);
+        setupCropEvents(i);
     }
 
-    function togglePageSelection(fileIdx, page, wrap, cb) {
-        if (cb.checked) {
-            obSelectedPages[fileIdx].add(page);
-            wrap.classList.add('selected');
-        } else {
-            obSelectedPages[fileIdx].delete(page);
-            wrap.classList.remove('selected');
-        }
-        const selBtn = document.getElementById(`btn-sel-${fileIdx}`);
-        if (selBtn) selBtn.disabled = obSelectedPages[fileIdx].size === 0;
+    function closeCropTool(i) {
+        document.getElementById(`ct-${i}`).classList.remove('visible');
+        document.getElementById(`fa-${i}`).style.display = 'flex';
+        if (cropState[i]) cropState[i].rect = null;
+        const rectEl = document.getElementById(`cr-${i}`);
+        if (rectEl) rectEl.style.display = 'none';
+        const btn = document.getElementById(`btn-crop-${i}`);
+        if (btn) btn.disabled = true;
+    }
+
+    async function cropRenderPage(i) {
+        const state = cropState[i];
+        const page = await state.pdf.getPage(state.currentPage);
+        const container = document.getElementById(`cc-wrap-${i}`);
+        const maxW = container.clientWidth || 480;
+        const baseViewport = page.getViewport({ scale: 1 });
+        const scale = Math.min(2.0, maxW / baseViewport.width);
+        state.scale = scale;
+        const viewport = page.getViewport({ scale });
+        const canvas = document.getElementById(`cc-${i}`);
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        document.getElementById(`cp-label-${i}`).textContent = `Page ${state.currentPage} / ${state.numPages}`;
+        // reset rect
+        state.rect = null;
+        const rectEl = document.getElementById(`cr-${i}`);
+        rectEl.style.display = 'none';
+        const btn = document.getElementById(`btn-crop-${i}`);
+        if (btn) btn.disabled = true;
+    }
+
+    async function cropNavPage(i, delta) {
+        const state = cropState[i];
+        if (!state) return;
+        const next = state.currentPage + delta;
+        if (next < 1 || next > state.numPages) return;
+        state.currentPage = next;
+        await cropRenderPage(i);
+    }
+
+    function setupCropEvents(i) {
+        const wrap = document.getElementById(`cc-wrap-${i}`);
+        if (wrap._cropBound) return; // already bound
+        wrap._cropBound = true;
+        let startX, startY;
+
+        wrap.addEventListener('mousedown', (e) => {
+            const r = wrap.getBoundingClientRect();
+            startX = e.clientX - r.left;
+            startY = e.clientY - r.top;
+            cropState[i].dragging = true;
+            const rectEl = document.getElementById(`cr-${i}`);
+            rectEl.style.display = 'block';
+            rectEl.style.left = startX + 'px';
+            rectEl.style.top = startY + 'px';
+            rectEl.style.width = '0';
+            rectEl.style.height = '0';
+            e.preventDefault();
+        });
+
+        wrap.addEventListener('mousemove', (e) => {
+            if (!cropState[i]?.dragging) return;
+            const r = wrap.getBoundingClientRect();
+            const curX = e.clientX - r.left;
+            const curY = e.clientY - r.top;
+            const x = Math.min(startX, curX), y = Math.min(startY, curY);
+            const w = Math.abs(curX - startX), h = Math.abs(curY - startY);
+            const rectEl = document.getElementById(`cr-${i}`);
+            rectEl.style.left = x + 'px'; rectEl.style.top = y + 'px';
+            rectEl.style.width = w + 'px'; rectEl.style.height = h + 'px';
+        });
+
+        const endDrag = (e) => {
+            if (!cropState[i]?.dragging) return;
+            cropState[i].dragging = false;
+            const r = wrap.getBoundingClientRect();
+            const curX = e.clientX - r.left;
+            const curY = e.clientY - r.top;
+            const x = Math.min(startX, curX), y = Math.min(startY, curY);
+            const w = Math.abs(curX - startX), h = Math.abs(curY - startY);
+            if (w > 10 && h > 10) {
+                cropState[i].rect = { x, y, w, h };
+                document.getElementById(`btn-crop-${i}`).disabled = false;
+            }
+        };
+        wrap.addEventListener('mouseup', endDrag);
+        wrap.addEventListener('mouseleave', endDrag);
     }
 
     function setFileStatus(i, cls, label) {
@@ -502,21 +577,33 @@
         if (el) { el.className = `file-status ${cls}`; el.textContent = label; }
     }
 
-    // Called by "Analyze all pages" / "Analyze selected pages" buttons per file
-    async function obAnalyzeFile(fileIdx, selectedOnly) {
+    async function obAnalyzeFileFull(fileIdx) {
+        document.getElementById(`fa-${fileIdx}`).style.display = 'none';
+        document.getElementById(`ct-${fileIdx}`).classList.remove('visible');
+        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }));
+    }
+
+    async function obAnalyzeFileCrop(fileIdx) {
+        const state = cropState[fileIdx];
+        if (!state?.rect) return;
+        closeCropTool(fileIdx);
+        document.getElementById(`fa-${fileIdx}`).style.display = 'none';
+        await _runAnalysis(fileIdx, async () => {
+            const { x, y, w, h } = state.rect;
+            const srcCanvas = document.getElementById(`cc-${fileIdx}`);
+            const out = document.createElement('canvas');
+            out.width = w; out.height = h;
+            out.getContext('2d').drawImage(srcCanvas, x, y, w, h, 0, 0, w, h);
+            const b64 = out.toDataURL('image/png').split(',')[1];
+            return JSON.stringify({ imagesBase64: [b64] });
+        });
+    }
+
+    async function _runAnalysis(fileIdx, bodyFn) {
         const { data: { session } } = await sb.auth.getSession();
-        const file = obFiles[fileIdx];
-        document.getElementById(`ps-${fileIdx}`).classList.remove('visible');
         setFileStatus(fileIdx, 's-analyzing', 'Analyzing...');
         try {
-            let body;
-            if (selectedOnly && obSelectedPages[fileIdx]?.size > 0) {
-                const pages = [...obSelectedPages[fileIdx]].sort((a,b) => a-b);
-                const images = await extractPagesAsImages(file, pages);
-                body = JSON.stringify({ imagesBase64: images });
-            } else {
-                body = JSON.stringify({ pdfBase64: await fileToBase64(file) });
-            }
+            const body = await bodyFn();
             const res = await fetch(EDGE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
@@ -525,7 +612,7 @@
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const result = await res.json();
             obResults.push(result);
-            const courseName = result.course || file.name.replace('.pdf','');
+            const courseName = result.course || obFiles[fileIdx].name.replace('.pdf','');
             setFileStatus(fileIdx, 's-done', `✓ ${courseName}`);
             addCourseChip(courseName);
         } catch(e) {
@@ -535,7 +622,7 @@
         checkAllAnalyzed();
     }
 
-    // Called by main "Build my dashboard" button — analyzes all files that haven't been analyzed yet
+    // "Build my dashboard" button — analyzes all remaining (unanalyzed) files as full PDFs
     async function obAnalyzeAll() {
         if (!obFiles.length) return;
         const btn = document.getElementById('ob-btn');
@@ -545,17 +632,19 @@
         const { data: { session } } = await sb.auth.getSession();
         obResults = [];
         for (let i = 0; i < obFiles.length; i++) {
-            document.getElementById(`ps-${i}`)?.classList.remove('visible');
+            const statusEl = document.getElementById(`fs-${i}`);
+            if (statusEl?.classList.contains('s-done')) continue; // already analyzed via crop/full
+            document.getElementById(`fa-${i}`)?.style && (document.getElementById(`fa-${i}`).style.display = 'none');
+            document.getElementById(`ct-${i}`)?.classList.remove('visible');
             setFileStatus(i, 's-analyzing', 'Analyzing...');
             document.getElementById('ob-progress-text').textContent = `Analyzing ${obFiles[i].name}...`;
             document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
             document.getElementById('ob-progress-fill').style.width = `${(i / obFiles.length) * 100}%`;
             try {
-                const base64 = await fileToBase64(obFiles[i]);
                 const res = await fetch(EDGE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                    body: JSON.stringify({ pdfBase64: base64 })
+                    body: JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) })
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const result = await res.json();
@@ -598,25 +687,7 @@
         }
     }
 
-    // Render selected pages as high-res PNGs, returns array of base64 strings
-    async function extractPagesAsImages(file, pages) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        const images = [];
-        for (const p of pages) {
-            const page = await pdf.getPage(p);
-            const viewport = page.getViewport({ scale: 2.0 });
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-            images.push(canvas.toDataURL('image/png').split(',')[1]);
-        }
-        return images;
-    }
-
-    function addCourseChip(course) {
+function addCourseChip(course) {
         const color = getCourseColor(course);
         const container = document.getElementById('ob-courses-found');
         container.style.display = 'flex';
