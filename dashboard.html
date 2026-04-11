@@ -143,6 +143,45 @@
         #crop-rect { position: absolute; border: 2px dashed #1a73e8; background: rgba(26,115,232,0.1); pointer-events: none; box-sizing: border-box; display: none; }
         .crop-saved-rect { position: absolute; border: 2px solid #27ae60; background: rgba(39,174,96,0.12); pointer-events: none; box-sizing: border-box; }
         #crop-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(26,26,46,0.7); border-radius: 6px; color: white; font-size: 0.9rem; }
+
+        /* SETTINGS PANEL */
+        #settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 900; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #settings-overlay.open { opacity: 1; pointer-events: auto; }
+        #settings-panel { position: fixed; top: 0; right: 0; height: 100vh; width: 360px; background: #fff; box-shadow: -4px 0 24px rgba(0,0,0,0.14); z-index: 901; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow: hidden; }
+        #settings-panel.open { transform: translateX(0); }
+        .sp-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+        .sp-title { font-size: 1rem; font-weight: 800; }
+        .sp-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #999; padding: 5px 7px; line-height: 1; border-radius: 6px; }
+        .sp-close:hover { color: #333; background: #f5f5f5; }
+        .sp-body { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .sp-section { padding: 18px 20px 10px; }
+        .sp-section-title { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: #bbb; margin-bottom: 12px; }
+        .sp-divider { height: 1px; background: #f0f0f0; margin: 4px 20px; }
+        .sp-course-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+        .sp-color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; flex-shrink: 0; border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s; }
+        .sp-color-dot:hover { border-color: #333; transform: scale(1.15); }
+        .sp-course-input { flex: 1; border: 1px solid #e8e8e8; border-radius: 8px; padding: 6px 10px; font-family: inherit; font-size: 0.82rem; background: #fafafa; direction: rtl; }
+        .sp-course-input:focus { outline: none; border-color: #27ae60; background: #fff; }
+        .sp-del-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 0.95rem; padding: 2px 4px; flex-shrink: 0; line-height: 1; }
+        .sp-del-btn:hover { color: #d63031; }
+        #sp-color-picker { position: fixed; background: #fff; border-radius: 12px; box-shadow: 0 4px 22px rgba(0,0,0,0.18); padding: 10px; display: none; z-index: 950; flex-wrap: wrap; width: 138px; gap: 7px; }
+        #sp-color-picker.visible { display: flex; }
+        .sp-swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; transition: transform 0.15s; flex-shrink: 0; }
+        .sp-swatch:hover { transform: scale(1.25); }
+        .sp-date-row { display: flex; gap: 8px; align-items: center; }
+        .sp-date-input { flex: 1; border: 1px solid #e8e8e8; border-radius: 8px; padding: 7px 10px; font-family: inherit; font-size: 0.82rem; background: #fafafa; }
+        .sp-date-input:focus { outline: none; border-color: #27ae60; }
+        .sp-save-btn { background: #0d0d0d; color: white; border: none; border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+        .sp-save-btn:hover { background: #27ae60; }
+        .sp-lang-toggle { display: flex; background: #f0f0f0; border-radius: 10px; padding: 3px; gap: 2px; }
+        .sp-lang-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-family: inherit; font-size: 0.84rem; font-weight: 700; cursor: pointer; background: none; color: #999; transition: all 0.2s; }
+        .sp-lang-btn.active { background: white; color: #333; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+        .sp-account-btn { width: 100%; padding: 11px 14px; border-radius: 10px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1.5px solid #e8e8e8; background: #fafafa; color: #333; text-align: right; margin-bottom: 8px; transition: all 0.2s; display: block; }
+        .sp-account-btn:hover { background: #f0f0f0; border-color: #ccc; }
+        .sp-account-btn.danger { background: #fff1f0; border-color: #ffccc7; color: #d63031; }
+        .sp-account-btn.danger:hover { background: #d63031; color: white; border-color: #d63031; }
+        .btn-settings { background: #f0f0f0; color: #555; }
+        .btn-settings:hover { background: #e0e0e0; color: #333; }
     </style>
 </head>
 <body>
@@ -176,6 +215,44 @@
         </div>
     </div>
 </div>
+
+<!-- SETTINGS OVERLAY + PANEL -->
+<div id="settings-overlay" onclick="closeSettings()"></div>
+<div id="settings-panel">
+    <div class="sp-header">
+        <span class="sp-title">⚙️ הגדרות</span>
+        <button class="sp-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="sp-body">
+        <div class="sp-section">
+            <div class="sp-section-title">הקורסים שלי</div>
+            <div id="sp-course-list"></div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-section">
+            <div class="sp-section-title">תחילת הסמסטר</div>
+            <div class="sp-date-row">
+                <input type="date" id="sp-semester-date" class="sp-date-input" value="2026-03-15">
+                <button class="sp-save-btn" id="sp-save-date-btn" onclick="saveSemesterStart(this)">שמור</button>
+            </div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-section">
+            <div class="sp-section-title">שפה</div>
+            <div class="sp-lang-toggle">
+                <button class="sp-lang-btn" id="sp-lang-he" onclick="setLang('he')">עברית</button>
+                <button class="sp-lang-btn" id="sp-lang-en" onclick="setLang('en')">English</button>
+            </div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-section">
+            <div class="sp-section-title">חשבון</div>
+            <button class="sp-account-btn" onclick="manageSubscription()">💳 ניהול מנוי</button>
+            <button class="sp-account-btn danger" onclick="deleteAccount()">🗑️ מחק חשבון</button>
+        </div>
+    </div>
+</div>
+<div id="sp-color-picker"></div>
 
 <!-- ONBOARDING -->
 <div id="onboarding">
@@ -220,6 +297,7 @@
             <span class="sync-dot" id="sync-dot"></span>
             <span class="user-name" id="user-name">...</span>
             <button class="btn-sm btn-add-course" onclick="showOnboarding()">+ Add course</button>
+            <button class="btn-sm btn-settings" onclick="openSettings()">⚙️</button>
             <button class="btn-sm btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -272,6 +350,7 @@
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
     let obFiles = [], obResults = [];
+    let semesterStart = '2026-03-15';
 
     const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
 
@@ -345,6 +424,11 @@
                 userSyllabus = data.syllabus     || [];
                 doneMap      = data.done_map     || {};
                 courseColors = data.course_colors || {};
+                if (data.semester_start) {
+                    semesterStart = data.semester_start;
+                    const newRanges = buildWeekRanges(semesterStart);
+                    weekRanges.splice(0, weekRanges.length, ...newRanges);
+                }
                 setSyncStatus('synced');
                 showDashboard();
             } else {
@@ -399,6 +483,7 @@
             const payload = {
                 user_id: currentUser.id, tasks: userTasks, exams: userExams,
                 syllabus: userSyllabus, done_map: doneMap, course_colors: courseColors,
+                semester_start: semesterStart,
                 updated_at: new Date().toISOString()
             };
             if (onboardingComplete) payload.onboarding_complete = true;
@@ -819,11 +904,165 @@ function addCourseChip(course) {
     }
 
     function startApp() {
-        const diffDays = Math.floor((new Date()-new Date("2026-03-15"))/86400000);
-        if (diffDays >= 0) currentWeekIdx = Math.min(weekRanges.length-1, Math.floor(diffDays/7));
+        const diffDays = Math.floor((new Date() - new Date(semesterStart)) / 86400000);
+        if (diffDays >= 0) currentWeekIdx = Math.min(weekRanges.length - 1, Math.floor(diffDays / 7));
         render();
         setInterval(render, 60000);
     }
+
+    // ── SETTINGS PANEL ──
+    let spColorPickerCourse = null;
+
+    function buildWeekRanges(startStr) {
+        const start = new Date(startStr);
+        const ranges = [];
+        for (let i = 0; i < 17; i++) {
+            const s = new Date(start); s.setDate(s.getDate() + i * 7);
+            const e = new Date(s); e.setDate(e.getDate() + 6);
+            const fmt = d => `${d.getDate().toString().padStart(2,'0')}.${(d.getMonth()+1).toString().padStart(2,'0')}`;
+            ranges.push(`${fmt(s)}-${fmt(e)}`);
+        }
+        return ranges;
+    }
+
+    function openSettings() {
+        renderSpCourseList();
+        document.getElementById('sp-semester-date').value = semesterStart;
+        const lang = currentUser?.user_metadata?.lang || 'he';
+        document.getElementById('sp-lang-he').classList.toggle('active', lang === 'he');
+        document.getElementById('sp-lang-en').classList.toggle('active', lang === 'en');
+        document.getElementById('settings-overlay').classList.add('open');
+        document.getElementById('settings-panel').classList.add('open');
+    }
+
+    function closeSettings() {
+        document.getElementById('settings-overlay').classList.remove('open');
+        document.getElementById('settings-panel').classList.remove('open');
+        hideColorPicker();
+    }
+
+    function renderSpCourseList() {
+        const courses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
+        const list = document.getElementById('sp-course-list');
+        if (!courses.length) {
+            list.innerHTML = '<div style="font-size:0.8rem;color:#aaa;padding:4px 0">אין קורסים עדיין</div>';
+            return;
+        }
+        list.innerHTML = courses.map(c => {
+            const ec = encodeURIComponent(c);
+            const color = getCourseColor(c);
+            return `<div class="sp-course-row">
+                <div class="sp-color-dot" style="background:${color}" onclick="showColorPicker(event,'${ec}')" title="שנה צבע"></div>
+                <input class="sp-course-input" value="${c.replace(/"/g,'&quot;')}"
+                       data-orig="${ec}"
+                       onblur="renameCourse(this.dataset.orig, this.value)"
+                       onkeydown="if(event.key==='Enter')this.blur()">
+                <button class="sp-del-btn" onclick="deleteCourse('${ec}')" title="מחק קורס">🗑️</button>
+            </div>`;
+        }).join('');
+    }
+
+    function renameCourse(encodedOld, newName) {
+        const oldName = decodeURIComponent(encodedOld);
+        newName = newName.trim();
+        if (!newName || newName === oldName) return;
+        userSyllabus.forEach(item => { if (item.c === oldName) item.c = newName; });
+        userExams.forEach(item => { if (item.c === oldName) item.c = newName; });
+        if (courseColors[oldName] !== undefined && courseColors[newName] === undefined) {
+            courseColors[newName] = courseColors[oldName];
+            delete courseColors[oldName];
+        }
+        save();
+        renderSpCourseList();
+        render();
+    }
+
+    function deleteCourse(encodedName) {
+        const name = decodeURIComponent(encodedName);
+        if (!confirm(`למחוק את הקורס "${name}" וכל הפריטים שלו?`)) return;
+        userSyllabus = userSyllabus.filter(i => i.c !== name);
+        delete courseColors[name];
+        save();
+        renderSpCourseList();
+        render();
+    }
+
+    function showColorPicker(e, encodedCourse) {
+        e.stopPropagation();
+        spColorPickerCourse = decodeURIComponent(encodedCourse);
+        const picker = document.getElementById('sp-color-picker');
+        picker.innerHTML = COLOR_PALETTE.map(c =>
+            `<div class="sp-swatch" style="background:${c}" onclick="pickColor('${c}')"></div>`
+        ).join('');
+        const rect = e.target.getBoundingClientRect();
+        const left = Math.min(rect.left - 8, window.innerWidth - 150);
+        picker.style.left = Math.max(8, left) + 'px';
+        picker.style.top = (rect.bottom + 6) + 'px';
+        picker.classList.add('visible');
+    }
+
+    function pickColor(color) {
+        if (!spColorPickerCourse) return;
+        courseColors[spColorPickerCourse] = color;
+        hideColorPicker();
+        save();
+        renderSpCourseList();
+        render();
+    }
+
+    function hideColorPicker() {
+        document.getElementById('sp-color-picker').classList.remove('visible');
+        spColorPickerCourse = null;
+    }
+
+    function saveSemesterStart(btn) {
+        const val = document.getElementById('sp-semester-date').value;
+        if (!val) return;
+        semesterStart = val;
+        const newRanges = buildWeekRanges(semesterStart);
+        weekRanges.splice(0, weekRanges.length, ...newRanges);
+        const diffDays = Math.floor((new Date() - new Date(semesterStart)) / 86400000);
+        currentWeekIdx = Math.max(0, Math.min(weekRanges.length - 1, diffDays >= 0 ? Math.floor(diffDays / 7) : 0));
+        save();
+        render();
+        const origText = btn.textContent;
+        btn.textContent = '✓';
+        btn.style.background = '#27ae60';
+        setTimeout(() => { btn.textContent = origText; btn.style.background = ''; }, 1500);
+    }
+
+    async function setLang(lang) {
+        document.getElementById('sp-lang-he').classList.toggle('active', lang === 'he');
+        document.getElementById('sp-lang-en').classList.toggle('active', lang === 'en');
+        applyLang(lang);
+        await sb.auth.updateUser({ data: { lang } });
+        if (currentUser) currentUser.user_metadata = { ...currentUser.user_metadata, lang };
+    }
+
+    function manageSubscription() {
+        alert('ניהול מנוי יהיה זמין בקרוב.');
+    }
+
+    async function deleteAccount() {
+        if (!confirm('האם אתה בטוח שברצונך למחוק את חשבונך?\nפעולה זו אינה הפיכה.')) return;
+        if (!confirm('אישור נוסף: כל הנתונים שלך יימחקו לצמיתות. להמשיך?')) return;
+        try {
+            await sb.from('user_data').delete().eq('user_id', currentUser.id);
+            await sb.auth.signOut();
+            window.location.href = 'auth.html';
+        } catch(e) {
+            console.error(e);
+            alert('אירעה שגיאה. נסה שוב.');
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        const picker = document.getElementById('sp-color-picker');
+        if (picker && !picker.contains(e.target)) hideColorPicker();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSettings();
+    });
 
     initAuth();
 </script>
