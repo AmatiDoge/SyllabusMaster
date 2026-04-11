@@ -112,30 +112,35 @@
         .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
 
-        /* CROP TOOL */
+        /* FILE ACTION BUTTONS */
         .file-actions { display: flex; gap: 7px; margin-top: 7px; }
         .btn-file-action { flex: 1; padding: 6px 10px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-full-pdf  { background: #0d0d0d; color: white; }
-        .btn-full-pdf:hover  { background: #27ae60; }
+        .btn-full-pdf { background: #0d0d0d; color: white; }
+        .btn-full-pdf:hover { background: #27ae60; }
         .btn-select-area { background: #f0f0f0; color: #555; border: 1.5px solid #ddd; }
         .btn-select-area:hover { background: #e8f5e9; color: #27ae60; border-color: #27ae60; }
 
-        .crop-tool { margin-top: 8px; background: #f8f9fa; border-radius: 12px; padding: 12px; display: none; }
-        .crop-tool.visible { display: block; }
-        .crop-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #636e72; }
-        .crop-nav-btn { background: #e0e0e0; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 0.9rem; font-weight: 700; }
-        .crop-nav-btn:hover { background: #27ae60; color: white; }
-        .crop-page-label { font-weight: 700; min-width: 70px; text-align: center; }
-        .crop-canvas-wrap { position: relative; display: inline-block; cursor: crosshair; border-radius: 8px; overflow: hidden; max-width: 100%; }
-        .crop-canvas-wrap canvas { display: block; max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        .crop-rect { position: absolute; border: 2px dashed #1a73e8; background: rgba(26,115,232,0.08); pointer-events: none; box-sizing: border-box; }
-        .crop-hint { font-size: 0.72rem; color: #999; margin: 8px 0 10px; }
-        .crop-actions { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-crop-analyze { flex: 1; padding: 8px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.8rem; font-weight: 700; background: #1a73e8; color: white; cursor: pointer; }
-        .btn-crop-analyze:hover { background: #1558b0; }
-        .btn-crop-analyze:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-crop-cancel { padding: 8px 14px; border-radius: 8px; border: 1.5px solid #ddd; font-family: inherit; font-size: 0.8rem; font-weight: 700; background: white; color: #636e72; cursor: pointer; }
-        .btn-crop-cancel:hover { border-color: #d63031; color: #d63031; }
+        /* CROP OVERLAY */
+        #crop-overlay { position: fixed; inset: 0; z-index: 1000; background: #1a1a2e; display: none; flex-direction: column; }
+        #crop-overlay.visible { display: flex; }
+        #crop-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #16213e; flex-shrink: 0; flex-wrap: wrap; }
+        #crop-filename { font-size: 0.8rem; color: #aaa; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 80px; }
+        .crop-nav-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .crop-nav-btn:hover:not(:disabled) { background: #27ae60; }
+        .crop-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        #crop-page-label { font-size: 0.82rem; font-weight: 700; color: white; min-width: 90px; text-align: center; flex-shrink: 0; }
+        .crop-page-badge { font-size: 0.7rem; background: #27ae60; color: white; border-radius: 20px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
+        #crop-hint-bar { font-size: 0.72rem; color: #aaa; padding: 4px 16px; background: #16213e; flex-shrink: 0; }
+        #crop-btn-done { background: #27ae60; color: white; border: none; border-radius: 8px; padding: 7px 16px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+        #crop-btn-done:hover { background: #219a52; }
+        #crop-btn-cancel { background: transparent; color: #aaa; border: 1.5px solid #444; border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+        #crop-btn-cancel:hover { border-color: #d63031; color: #d63031; }
+        #crop-canvas-area { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 16px; }
+        #crop-canvas-wrap { position: relative; display: inline-block; cursor: crosshair; flex-shrink: 0; }
+        #crop-canvas-wrap canvas { display: block; max-height: 82vh; max-width: 100%; border-radius: 6px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+        #crop-rect { position: absolute; border: 2px dashed #1a73e8; background: rgba(26,115,232,0.1); pointer-events: none; box-sizing: border-box; display: none; }
+        .crop-saved-rect { position: absolute; border: 2px solid #27ae60; background: rgba(39,174,96,0.12); pointer-events: none; box-sizing: border-box; }
+        #crop-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(26,26,46,0.7); border-radius: 6px; color: white; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -143,6 +148,27 @@
 <div id="auth-loading">
     <div class="spinner"></div>
     <p>Loading...</p>
+</div>
+
+<!-- CROP OVERLAY -->
+<div id="crop-overlay">
+    <div id="crop-topbar">
+        <span id="crop-filename">file.pdf</span>
+        <button class="crop-nav-btn" id="crop-prev" onclick="cropNav(-1)">‹</button>
+        <span id="crop-page-label">Page 1 / 1</span>
+        <button class="crop-nav-btn" id="crop-next" onclick="cropNav(1)">›</button>
+        <span id="crop-badges"></span>
+        <button id="crop-btn-done" onclick="cropDone()">Done & Analyze</button>
+        <button id="crop-btn-cancel" onclick="cropClose()">Cancel</button>
+    </div>
+    <div id="crop-hint-bar">Click and drag on the page to select an area. Navigate pages with the arrows. Each page can have one selection.</div>
+    <div id="crop-canvas-area">
+        <div id="crop-canvas-wrap">
+            <canvas id="crop-canvas"></canvas>
+            <div id="crop-rect"></div>
+            <div id="crop-loading" style="display:none">Rendering...</div>
+        </div>
+    </div>
 </div>
 
 <!-- ONBOARDING -->
@@ -441,135 +467,171 @@
                 </div>
                 <div class="file-actions" id="fa-${i}">
                     <button class="btn-file-action btn-full-pdf" onclick="obAnalyzeFileFull(${i})">Analyze full PDF</button>
-                    <button class="btn-file-action btn-select-area" onclick="openCropTool(${i})">✂ Select area</button>
-                </div>
-                <div class="crop-tool" id="ct-${i}">
-                    <div class="crop-nav">
-                        <button class="crop-nav-btn" onclick="cropNavPage(${i}, -1)">‹</button>
-                        <span class="crop-page-label" id="cp-label-${i}">Page 1</span>
-                        <button class="crop-nav-btn" onclick="cropNavPage(${i}, 1)">›</button>
-                    </div>
-                    <div class="crop-canvas-wrap" id="cc-wrap-${i}">
-                        <canvas id="cc-${i}"></canvas>
-                        <div class="crop-rect" id="cr-${i}" style="display:none"></div>
-                    </div>
-                    <p class="crop-hint">Click and drag to select the area you want to analyze</p>
-                    <div class="crop-actions">
-                        <button class="btn-crop-analyze" id="btn-crop-${i}" onclick="obAnalyzeFileCrop(${i})" disabled>Analyze this area</button>
-                        <button class="btn-crop-cancel" onclick="closeCropTool(${i})">Cancel</button>
-                    </div>
+                    <button class="btn-file-action btn-select-area" onclick="openCropOverlay(${i})">✂ Select area</button>
                 </div>
             </div>`).join('');
     }
 
-    // ── CROP TOOL STATE ──
-    const cropState = {}; // { pdf, currentPage, numPages, rect: {x,y,w,h}, dragging, scale }
+    // ── CROP OVERLAY ──
+    // ovState: { fileIdx, pdf, currentPage, numPages, crops: { [page]: {x,y,w,h} }, dragging, startX, startY, scale }
+    let ovState = null;
 
     function initPdfJs() {
         if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    async function openCropTool(i) {
+    async function openCropOverlay(fileIdx) {
         initPdfJs();
-        document.getElementById(`ct-${i}`).classList.add('visible');
-        document.getElementById(`fa-${i}`).style.display = 'none';
-        if (!cropState[i]) {
-            const arrayBuffer = await obFiles[i].arrayBuffer();
+        if (!ovState || ovState.fileIdx !== fileIdx) {
+            document.getElementById('crop-loading').style.display = 'flex';
+            const arrayBuffer = await obFiles[fileIdx].arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            cropState[i] = { pdf, currentPage: 1, numPages: pdf.numPages, rect: null, dragging: false, scale: 1 };
+            ovState = { fileIdx, pdf, currentPage: 1, numPages: pdf.numPages, crops: {}, dragging: false, startX: 0, startY: 0, scale: 1 };
         }
-        await cropRenderPage(i);
-        setupCropEvents(i);
+        document.getElementById('crop-filename').textContent = obFiles[fileIdx].name;
+        document.getElementById('crop-overlay').classList.add('visible');
+        await cropOverlayRenderPage();
+        cropOverlayBindEvents();
     }
 
-    function closeCropTool(i) {
-        document.getElementById(`ct-${i}`).classList.remove('visible');
-        document.getElementById(`fa-${i}`).style.display = 'flex';
-        if (cropState[i]) cropState[i].rect = null;
-        const rectEl = document.getElementById(`cr-${i}`);
-        if (rectEl) rectEl.style.display = 'none';
-        const btn = document.getElementById(`btn-crop-${i}`);
-        if (btn) btn.disabled = true;
+    function cropClose() {
+        document.getElementById('crop-overlay').classList.remove('visible');
+        document.getElementById('crop-rect').style.display = 'none';
     }
 
-    async function cropRenderPage(i) {
-        const state = cropState[i];
-        const page = await state.pdf.getPage(state.currentPage);
-        const container = document.getElementById(`cc-wrap-${i}`);
-        const maxW = container.clientWidth || 480;
-        const baseViewport = page.getViewport({ scale: 1 });
-        const scale = Math.min(2.0, maxW / baseViewport.width);
-        state.scale = scale;
-        const viewport = page.getViewport({ scale });
-        const canvas = document.getElementById(`cc-${i}`);
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-        document.getElementById(`cp-label-${i}`).textContent = `Page ${state.currentPage} / ${state.numPages}`;
-        // reset rect
-        state.rect = null;
-        const rectEl = document.getElementById(`cr-${i}`);
-        rectEl.style.display = 'none';
-        const btn = document.getElementById(`btn-crop-${i}`);
-        if (btn) btn.disabled = true;
+    async function cropOverlayRenderPage() {
+        const s = ovState;
+        document.getElementById('crop-loading').style.display = 'flex';
+        const page = await s.pdf.getPage(s.currentPage);
+        const canvas = document.getElementById('crop-canvas');
+        const maxH = Math.floor(window.innerHeight * 0.82);
+        const maxW = document.getElementById('crop-canvas-area').clientWidth - 32 || window.innerWidth - 32;
+        const baseVP = page.getViewport({ scale: 1 });
+        const scale = Math.min(maxW / baseVP.width, maxH / baseVP.height, 2.0);
+        s.scale = scale;
+        const vp = page.getViewport({ scale });
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        document.getElementById('crop-loading').style.display = 'none';
+
+        // Update nav
+        document.getElementById('crop-page-label').textContent = `Page ${s.currentPage} / ${s.numPages}`;
+        document.getElementById('crop-prev').disabled = s.currentPage <= 1;
+        document.getElementById('crop-next').disabled = s.currentPage >= s.numPages;
+
+        // Show saved crop for this page if any
+        const rectEl = document.getElementById('crop-rect');
+        const saved = s.crops[s.currentPage];
+        if (saved) {
+            rectEl.style.cssText = `display:block;left:${saved.x}px;top:${saved.y}px;width:${saved.w}px;height:${saved.h}px;border:2px solid #27ae60;background:rgba(39,174,96,0.12);`;
+        } else {
+            rectEl.style.display = 'none';
+        }
+        cropOverlayUpdateBadges();
     }
 
-    async function cropNavPage(i, delta) {
-        const state = cropState[i];
-        if (!state) return;
-        const next = state.currentPage + delta;
-        if (next < 1 || next > state.numPages) return;
-        state.currentPage = next;
-        await cropRenderPage(i);
+    function cropOverlayUpdateBadges() {
+        const pages = Object.keys(ovState.crops).sort((a,b) => a-b);
+        document.getElementById('crop-badges').innerHTML = pages.map(p =>
+            `<span class="crop-page-badge">✓ Page ${p}</span>`
+        ).join(' ');
     }
 
-    function setupCropEvents(i) {
-        const wrap = document.getElementById(`cc-wrap-${i}`);
-        if (wrap._cropBound) return; // already bound
-        wrap._cropBound = true;
-        let startX, startY;
+    async function cropNav(delta) {
+        if (!ovState) return;
+        const next = ovState.currentPage + delta;
+        if (next < 1 || next > ovState.numPages) return;
+        ovState.currentPage = next;
+        document.getElementById('crop-rect').style.display = 'none';
+        await cropOverlayRenderPage();
+    }
 
-        wrap.addEventListener('mousedown', (e) => {
+    async function cropDone() {
+        cropClose();
+        const fileIdx = ovState.fileIdx;
+        document.getElementById(`fa-${fileIdx}`).style.display = 'none';
+        const crops = ovState.crops;
+        const hasCrops = Object.keys(crops).length > 0;
+        await _runAnalysis(fileIdx, async () => {
+            if (!hasCrops) {
+                return JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) });
+            }
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const images = [];
+            for (const pageNum of Object.keys(crops).sort((a,b) => a-b)) {
+                const crop = crops[pageNum];
+                // Re-render page at crop scale to extract region
+                const page = await ovState.pdf.getPage(Number(pageNum));
+                const vp = page.getViewport({ scale: ovState.scale });
+                const tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = vp.width; tmpCanvas.height = vp.height;
+                await page.render({ canvasContext: tmpCanvas.getContext('2d'), viewport: vp }).promise;
+                canvas.width = crop.w; canvas.height = crop.h;
+                ctx.drawImage(tmpCanvas, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+                images.push(canvas.toDataURL('image/png').split(',')[1]);
+            }
+            return JSON.stringify({ imagesBase64: images });
+        });
+    }
+
+    function cropOverlayBindEvents() {
+        const wrap = document.getElementById('crop-canvas-wrap');
+        if (wrap._bound) return;
+        wrap._bound = true;
+
+        const getPos = (e) => {
             const r = wrap.getBoundingClientRect();
-            startX = e.clientX - r.left;
-            startY = e.clientY - r.top;
-            cropState[i].dragging = true;
-            const rectEl = document.getElementById(`cr-${i}`);
-            rectEl.style.display = 'block';
-            rectEl.style.left = startX + 'px';
-            rectEl.style.top = startY + 'px';
-            rectEl.style.width = '0';
-            rectEl.style.height = '0';
+            const src = e.touches ? e.touches[0] : e;
+            return { x: src.clientX - r.left, y: src.clientY - r.top };
+        };
+
+        const onStart = (e) => {
+            if (!ovState) return;
+            const { x, y } = getPos(e);
+            ovState.dragging = true;
+            ovState.startX = x; ovState.startY = y;
+            const rectEl = document.getElementById('crop-rect');
+            rectEl.style.cssText = `display:block;left:${x}px;top:${y}px;width:0;height:0;border:2px dashed #1a73e8;background:rgba(26,115,232,0.1);`;
             e.preventDefault();
-        });
+        };
 
-        wrap.addEventListener('mousemove', (e) => {
-            if (!cropState[i]?.dragging) return;
-            const r = wrap.getBoundingClientRect();
-            const curX = e.clientX - r.left;
-            const curY = e.clientY - r.top;
-            const x = Math.min(startX, curX), y = Math.min(startY, curY);
-            const w = Math.abs(curX - startX), h = Math.abs(curY - startY);
-            const rectEl = document.getElementById(`cr-${i}`);
-            rectEl.style.left = x + 'px'; rectEl.style.top = y + 'px';
-            rectEl.style.width = w + 'px'; rectEl.style.height = h + 'px';
-        });
+        const onMove = (e) => {
+            if (!ovState?.dragging) return;
+            const { x, y } = getPos(e);
+            const rx = Math.min(ovState.startX, x), ry = Math.min(ovState.startY, y);
+            const rw = Math.abs(x - ovState.startX), rh = Math.abs(y - ovState.startY);
+            const rectEl = document.getElementById('crop-rect');
+            rectEl.style.left = rx + 'px'; rectEl.style.top = ry + 'px';
+            rectEl.style.width = rw + 'px'; rectEl.style.height = rh + 'px';
+            e.preventDefault();
+        };
 
-        const endDrag = (e) => {
-            if (!cropState[i]?.dragging) return;
-            cropState[i].dragging = false;
+        const onEnd = (e) => {
+            if (!ovState?.dragging) return;
+            ovState.dragging = false;
+            const src = e.changedTouches ? e.changedTouches[0] : e;
             const r = wrap.getBoundingClientRect();
-            const curX = e.clientX - r.left;
-            const curY = e.clientY - r.top;
-            const x = Math.min(startX, curX), y = Math.min(startY, curY);
-            const w = Math.abs(curX - startX), h = Math.abs(curY - startY);
-            if (w > 10 && h > 10) {
-                cropState[i].rect = { x, y, w, h };
-                document.getElementById(`btn-crop-${i}`).disabled = false;
+            const x = src.clientX - r.left, y = src.clientY - r.top;
+            const rx = Math.min(ovState.startX, x), ry = Math.min(ovState.startY, y);
+            const rw = Math.abs(x - ovState.startX), rh = Math.abs(y - ovState.startY);
+            if (rw > 10 && rh > 10) {
+                ovState.crops[ovState.currentPage] = { x: rx, y: ry, w: rw, h: rh };
+                // Show as confirmed (green border)
+                const rectEl = document.getElementById('crop-rect');
+                rectEl.style.border = '2px solid #27ae60';
+                rectEl.style.background = 'rgba(39,174,96,0.12)';
+                cropOverlayUpdateBadges();
             }
         };
-        wrap.addEventListener('mouseup', endDrag);
-        wrap.addEventListener('mouseleave', endDrag);
+
+        wrap.addEventListener('mousedown', onStart);
+        wrap.addEventListener('mousemove', onMove);
+        wrap.addEventListener('mouseup', onEnd);
+        wrap.addEventListener('touchstart', onStart, { passive: false });
+        wrap.addEventListener('touchmove', onMove, { passive: false });
+        wrap.addEventListener('touchend', onEnd, { passive: false });
     }
 
     function setFileStatus(i, cls, label) {
@@ -579,24 +641,7 @@
 
     async function obAnalyzeFileFull(fileIdx) {
         document.getElementById(`fa-${fileIdx}`).style.display = 'none';
-        document.getElementById(`ct-${fileIdx}`).classList.remove('visible');
         await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }));
-    }
-
-    async function obAnalyzeFileCrop(fileIdx) {
-        const state = cropState[fileIdx];
-        if (!state?.rect) { alert('Please draw a selection area first'); return; }
-        closeCropTool(fileIdx);
-        document.getElementById(`fa-${fileIdx}`).style.display = 'none';
-        await _runAnalysis(fileIdx, async () => {
-            const { x, y, w, h } = state.rect;
-            const srcCanvas = document.getElementById(`cc-${fileIdx}`);
-            const out = document.createElement('canvas');
-            out.width = w; out.height = h;
-            out.getContext('2d').drawImage(srcCanvas, x, y, w, h, 0, 0, w, h);
-            const b64 = out.toDataURL('image/png').split(',')[1];
-            return JSON.stringify({ imagesBase64: [b64] });
-        });
     }
 
     async function _runAnalysis(fileIdx, bodyFn) {
@@ -635,7 +680,6 @@
             const statusEl = document.getElementById(`fs-${i}`);
             if (statusEl?.classList.contains('s-done')) continue; // already analyzed via crop/full
             document.getElementById(`fa-${i}`)?.style && (document.getElementById(`fa-${i}`).style.display = 'none');
-            document.getElementById(`ct-${i}`)?.classList.remove('visible');
             setFileStatus(i, 's-analyzing', 'Analyzing...');
             document.getElementById('ob-progress-text').textContent = `Analyzing ${obFiles[i].name}...`;
             document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
