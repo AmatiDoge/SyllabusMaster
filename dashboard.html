@@ -1050,12 +1050,12 @@ function addCourseChip(course) {
     function addSylItem() {
         const sel = document.getElementById('sylCourse');
         let course = sel.value === '__new__'
-            ? document.getElementById('sylNewCourse').value.trim()
+            ? sanitize(document.getElementById('sylNewCourse').value)
             : sel.value;
-        const txt = document.getElementById('sylTxt').value.trim();
+        const txt = sanitize(document.getElementById('sylTxt').value);
         const typeSel = document.getElementById('sylType');
         let type = typeSel.value === '__other__'
-            ? document.getElementById('sylCustomType').value.trim()
+            ? sanitize(document.getElementById('sylCustomType').value)
             : typeSel.value;
         const weekNum = parseInt(document.getElementById('sylWeek').value, 10);
         if (!course || !txt || !type || isNaN(weekNum)) return;
@@ -1087,13 +1087,15 @@ function addCourseChip(course) {
         }
     }
 
+    function sanitize(str) { return str.replace(/<[^>]*>/g, '').trim(); }
+
     function addEx() {
-        const t = document.getElementById('exT').value;
+        const t = sanitize(document.getElementById('exT').value);
         const d = document.getElementById('exD').value;
         const sel = document.getElementById('exTag');
         let tag = sel.value;
         if (tag === '__other__') {
-            tag = document.getElementById('exCustomTag').value.trim();
+            tag = sanitize(document.getElementById('exCustomTag').value);
             if (!tag) return;
         }
         if (t && d) {
@@ -1107,7 +1109,7 @@ function addCourseChip(course) {
         }
     }
     function addTask() {
-        const t = document.getElementById('tkT').value;
+        const t = sanitize(document.getElementById('tkT').value);
         if (t) { userTasks.push({ t, f: false }); document.getElementById('tkT').value = ''; render(); }
     }
     function changeWeek(dir) { currentWeekIdx = Math.max(0, Math.min(weekRanges.length-1, currentWeekIdx+dir)); render(); }
