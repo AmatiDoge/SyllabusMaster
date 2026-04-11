@@ -450,20 +450,21 @@
             if (error && error.code !== 'PGRST116') throw error;
             console.log('User data from DB:', JSON.stringify(data));
 
-            const isPaid = stripeSuccess || !!data?.paid;
+            // PAYMENT WALL DISABLED - FREE LAUNCH PERIOD
+            const isPaid = true; // was: stripeSuccess || !!data?.paid;
 
             // Payment gate: only redirect to Stripe if not paid and not returning from Stripe
-            if (!isPaid) {
-                const { data: { session } } = await sb.auth.getSession();
-                const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
-                    method: 'POST',
-                    headers: EDGE_HEADERS,
-                    body: JSON.stringify({ userId: currentUser.id, userEmail: currentUser.email }),
-                });
-                const checkoutData = await res.json();
-                console.log('create-checkout response:', checkoutData);
-                if (checkoutData.url) { window.location.href = checkoutData.url; return; }
-            }
+            // if (!isPaid) {
+            //     const { data: { session } } = await sb.auth.getSession();
+            //     const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
+            //         method: 'POST',
+            //         headers: EDGE_HEADERS,
+            //         body: JSON.stringify({ userId: currentUser.id, userEmail: currentUser.email }),
+            //     });
+            //     const checkoutData = await res.json();
+            //     console.log('create-checkout response:', checkoutData);
+            //     if (checkoutData.url) { window.location.href = checkoutData.url; return; }
+            // }
 
             // Set language from user metadata
             const lang = currentUser.user_metadata?.lang || 'he';

@@ -500,37 +500,40 @@
     const name = user.user_metadata?.full_name || user.email;
     document.getElementById('success-title').textContent = `שלום, ${name.split(' ')[0]}! 👋`;
 
-    try {
-      const { data } = await sb.auth.getSession();
-      const token = data.session?.access_token;
+    // PAYMENT WALL DISABLED - FREE LAUNCH PERIOD
+    window.location.href = 'dashboard.html';
 
-      // Check if already paid
-      console.log('Checking paid status for user:', user.id);
-      const { data: userData, error: paidError } = await sb.from('user_data').select('paid').eq('user_id', user.id).single();
-      console.log('user_data query response:', JSON.stringify(userData), 'error:', JSON.stringify(paidError));
-      console.log('paid value:', userData?.paid);
-      if (userData?.paid) {
-        window.location.href = 'dashboard.html';
-        return;
-      }
+    // try {
+    //   const { data } = await sb.auth.getSession();
+    //   const token = data.session?.access_token;
 
-      const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+    //   // Check if already paid
+    //   console.log('Checking paid status for user:', user.id);
+    //   const { data: userData, error: paidError } = await sb.from('user_data').select('paid').eq('user_id', user.id).single();
+    //   console.log('user_data query response:', JSON.stringify(userData), 'error:', JSON.stringify(paidError));
+    //   console.log('paid value:', userData?.paid);
+    //   if (userData?.paid) {
+    //     window.location.href = 'dashboard.html';
+    //     return;
+    //   }
 
-      const body = await res.json();
-      console.log('create-checkout response:', body);
-      if (body.error) throw new Error(body.error);
-      if (!body.url) throw new Error('No checkout URL returned');
-      window.location.href = body.url;
-    } catch (err) {
-      document.getElementById('success-msg').textContent = 'אירעה שגיאה. נסה שוב.';
-      console.error('Checkout error:', err.message);
-    }
+    //   const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': `Bearer ${token}`,
+    //     },
+    //   });
+
+    //   const body = await res.json();
+    //   console.log('create-checkout response:', body);
+    //   if (body.error) throw new Error(body.error);
+    //   if (!body.url) throw new Error('No checkout URL returned');
+    //   window.location.href = body.url;
+    // } catch (err) {
+    //   document.getElementById('success-msg').textContent = 'אירעה שגיאה. נסה שוב.';
+    //   console.error('Checkout error:', err.message);
+    // }
   }
 
   function translateError(msg) {
