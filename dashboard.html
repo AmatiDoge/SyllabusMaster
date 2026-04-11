@@ -91,6 +91,18 @@
         .h-exams { background: var(--exam); }
         .h-tasks { background: var(--task); }
         .h-syllabus { background: var(--syllabus); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
+        .syl-add-toggle { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; border-radius: 50%; width: 24px; height: 24px; font-size: 1.1rem; font-weight: bold; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.2s; flex-shrink: 0; }
+        .syl-add-toggle:hover { background: rgba(255,255,255,0.35); }
+        .syl-add-toggle.open { transform: rotate(45deg); }
+        .syl-inputs { padding: 10px; background: #fafafa; border-bottom: 1px solid #eee; display: none; flex-direction: column; gap: 6px; }
+        .syl-inputs.open { display: flex; }
+        .syl-inputs select, .syl-inputs input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; font-family: inherit; background: white; width: 100%; }
+        .syl-inputs select:focus, .syl-inputs input:focus { outline: none; border-color: var(--syllabus); }
+        .syl-row { display: flex; gap: 6px; }
+        .syl-row select, .syl-row input { flex: 1; width: auto; }
+        .syl-week-input { flex: 0 0 70px !important; width: 70px !important; }
+        .syl-add-btn { background: #2d3436; color: white; border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; font-family: inherit; align-self: flex-end; white-space: nowrap; transition: background 0.2s; }
+        .syl-add-btn:hover { background: var(--syllabus); }
         .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; font-size: 1rem; }
         .inputs { padding: 10px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; gap: 6px; flex-wrap: wrap; }
         .inputs input, .inputs select { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; flex: 1; font-family: inherit; }
@@ -332,7 +344,32 @@
             <div class="header h-syllabus">
                 <button class="nav-btn" onclick="changeWeek(-1)">›</button>
                 <span id="week-title">Week 1</span>
-                <button class="nav-btn" onclick="changeWeek(1)">‹</button>
+                <div style="display:flex;align-items:center;gap:6px">
+                    <button class="syl-add-toggle" id="syl-add-toggle" onclick="toggleSylInputs()" title="הוסף פריט">+</button>
+                    <button class="nav-btn" onclick="changeWeek(1)">‹</button>
+                </div>
+            </div>
+            <div class="syl-inputs" id="syl-inputs">
+                <div class="syl-row">
+                    <select id="sylCourse" style="flex:1.5"></select>
+                    <select id="sylType" style="flex:1">
+                        <option value="שיעור">שיעור</option>
+                        <option value="תרגול">תרגול</option>
+                        <option value="קריאה">קריאה</option>
+                        <option value="מטלה">מטלה</option>
+                        <option value="בוחן">בוחן</option>
+                        <option value="צפייה">צפייה</option>
+                        <option value="סרטון">סרטון</option>
+                    </select>
+                </div>
+                <div class="syl-row">
+                    <input type="text" id="sylTxt" placeholder="תיאור...">
+                    <input type="number" id="sylWeek" class="syl-week-input" min="1" placeholder="שבוע">
+                </div>
+                <div class="syl-row" id="sylNewCourseRow" style="display:none">
+                    <input type="text" id="sylNewCourse" placeholder="שם קורס חדש...">
+                </div>
+                <button class="syl-add-btn" onclick="addSylItem()">+ הוסף</button>
             </div>
             <div id="syllabus-content"></div>
         </div>
@@ -918,6 +955,61 @@ function addCourseChip(course) {
     }
 
     // ── DASHBOARD ──
+    function toggleSylInputs() {
+        const panel = document.getElementById('syl-inputs');
+        const btn = document.getElementById('syl-add-toggle');
+        const isOpen = panel.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        if (isOpen) {
+            populateSylCourseSelect();
+            document.getElementById('sylWeek').value = currentWeekIdx + 1;
+            document.getElementById('sylTxt').focus();
+        }
+    }
+
+    function populateSylCourseSelect() {
+        const courses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
+        const sel = document.getElementById('sylCourse');
+        sel.innerHTML = '';
+        courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            sel.appendChild(opt);
+        });
+        const newOpt = document.createElement('option');
+        newOpt.value = '__new__';
+        newOpt.textContent = '+ קורס חדש...';
+        sel.appendChild(newOpt);
+        sel.onchange = () => {
+            document.getElementById('sylNewCourseRow').style.display = sel.value === '__new__' ? '' : 'none';
+        };
+        document.getElementById('sylNewCourseRow').style.display = 'none';
+    }
+
+    function addSylItem() {
+        const sel = document.getElementById('sylCourse');
+        let course = sel.value === '__new__'
+            ? document.getElementById('sylNewCourse').value.trim()
+            : sel.value;
+        const txt = document.getElementById('sylTxt').value.trim();
+        const type = document.getElementById('sylType').value;
+        const weekNum = parseInt(document.getElementById('sylWeek').value, 10);
+        if (!course || !txt || isNaN(weekNum)) return;
+        const w = Math.max(0, weekNum - 1);
+        userSyllabus.push({ w, c: course, t: type, txt });
+        // Reset
+        document.getElementById('sylTxt').value = '';
+        document.getElementById('sylNewCourse').value = '';
+        document.getElementById('sylNewCourseRow').style.display = 'none';
+        sel.value = sel.options[0]?.value || '';
+        populateSylCourseSelect();
+        render();
+        save();
+        // Jump to the week the item was added to
+        if (w !== currentWeekIdx) { currentWeekIdx = w; render(); }
+    }
+
     function onExTagChange() {
         const sel = document.getElementById('exTag');
         const customInput = document.getElementById('exCustomTag');
