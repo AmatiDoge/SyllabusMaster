@@ -458,6 +458,7 @@
                 const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
                     method: 'POST',
                     headers: EDGE_HEADERS,
+                    body: JSON.stringify({ userId: currentUser.id, userEmail: currentUser.email }),
                 });
                 const checkoutData = await res.json();
                 console.log('create-checkout response:', checkoutData);
