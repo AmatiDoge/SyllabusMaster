@@ -272,6 +272,56 @@
     margin-left: 8px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Legal modals */
+  .legal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .legal-overlay.open { display: flex; }
+  .legal-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+    direction: rtl;
+  }
+  .legal-modal h2 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 16px;
+    color: var(--ink);
+  }
+  .legal-modal p {
+    font-size: 0.88rem;
+    color: #444;
+    line-height: 1.7;
+  }
+  .legal-close {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--muted);
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .legal-close:hover { background: var(--paper); color: var(--ink); }
 </style>
 </head>
 <body>
@@ -369,8 +419,26 @@
   </div>
 
   <p class="footer-note">
-    בהרשמה אתה מסכים ל<a href="#">תנאי השימוש</a> ול<a href="#">מדיניות הפרטיות</a>
+    בהרשמה אתה מסכים ל<a href="#" onclick="openLegal('tos');return false;">תנאי השימוש</a> ול<a href="#" onclick="openLegal('privacy');return false;">מדיניות הפרטיות</a>
   </p>
+</div>
+
+<!-- Terms of Service modal -->
+<div class="legal-overlay" id="tos-overlay" onclick="closeLegalOnBg(event,'tos-overlay')">
+  <div class="legal-modal">
+    <button class="legal-close" onclick="closeLegal('tos-overlay')">✕</button>
+    <h2 id="tos-title">תנאי שימוש</h2>
+    <p id="tos-body">SyllaBot הוא כלי לניהול לימודים. השימוש בשירות הוא על אחריות המשתמש. אנו שומרים את הנתונים שלך בצורה מוצפנת ב-Supabase. אין אנו משתפים מידע אישי עם צדדים שלישיים. גרסת פיילוט — השירות ניתן חינם לתקופת הפיילוט.</p>
+  </div>
+</div>
+
+<!-- Privacy Policy modal -->
+<div class="legal-overlay" id="privacy-overlay" onclick="closeLegalOnBg(event,'privacy-overlay')">
+  <div class="legal-modal">
+    <button class="legal-close" onclick="closeLegal('privacy-overlay')">✕</button>
+    <h2 id="privacy-title">מדיניות פרטיות</h2>
+    <p id="privacy-body">אנו אוספים: כתובת אימייל, שם (אופציונלי), קבצי סילבוס שאתה מעלה. המידע משמש אך ורק לצורך מתן השירות. קבצי PDF נשלחים ל-Anthropic API לצורך ניתוח ואינם נשמרים לאחר העיבוד. ניתן למחוק את החשבון בכל עת מהגדרות הדשבורד.</p>
+  </div>
 </div>
 
 <script>
@@ -534,6 +602,48 @@
     //   document.getElementById('success-msg').textContent = 'אירעה שגיאה. נסה שוב.';
     //   console.error('Checkout error:', err.message);
     // }
+  }
+
+  const legalContent = {
+    tos: {
+      he: {
+        title: 'תנאי שימוש',
+        body: 'SyllaBot הוא כלי לניהול לימודים. השימוש בשירות הוא על אחריות המשתמש. אנו שומרים את הנתונים שלך בצורה מוצפנת ב-Supabase. אין אנו משתפים מידע אישי עם צדדים שלישיים. גרסת פיילוט — השירות ניתן חינם לתקופת הפיילוט.',
+      },
+      en: {
+        title: 'Terms of Service',
+        body: 'SyllaBot is a study management tool. Use of the service is at the user\'s own risk. We store your data encrypted on Supabase. We do not share personal information with third parties. Pilot version — the service is free during the pilot period.',
+      },
+    },
+    privacy: {
+      he: {
+        title: 'מדיניות פרטיות',
+        body: 'אנו אוספים: כתובת אימייל, שם (אופציונלי), קבצי סילבוס שאתה מעלה. המידע משמש אך ורק לצורך מתן השירות. קבצי PDF נשלחים ל-Anthropic API לצורך ניתוח ואינם נשמרים לאחר העיבוד. ניתן למחוק את החשבון בכל עת מהגדרות הדשבורד.',
+      },
+      en: {
+        title: 'Privacy Policy',
+        body: 'We collect: email address, name (optional), syllabus files you upload. This information is used solely to provide the service. PDF files are sent to the Anthropic API for analysis and are not stored after processing. You can delete your account at any time from the dashboard settings.',
+      },
+    },
+  };
+
+  function openLegal(type) {
+    const lang = document.documentElement.lang === 'en' ? 'en' : 'he';
+    const overlayId = type + '-overlay';
+    const content = legalContent[type][lang];
+    document.getElementById(type + '-title').textContent = content.title;
+    document.getElementById(type + '-body').textContent = content.body;
+    document.getElementById(overlayId).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLegal(overlayId) {
+    document.getElementById(overlayId).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeLegalOnBg(e, overlayId) {
+    if (e.target.id === overlayId) closeLegal(overlayId);
   }
 
   function translateError(msg) {
