@@ -678,17 +678,17 @@
     }
 
     // ── PAGE RANGE SELECTOR ──
-    function toggleRangeInputs(i) {
+    window.toggleRangeInputs = function(i) {
         const el = document.getElementById(`ps-range-inputs-${i}`);
         el.style.display = el.style.display === 'none' ? 'flex' : 'none';
-    }
+    };
 
-    async function obAnalyzeFileFull(fileIdx) {
+    window.obAnalyzeFileFull = async function(fileIdx) {
         document.getElementById(`ps-${fileIdx}`).style.display = 'none';
         await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }));
-    }
+    };
 
-    async function obAnalyzeFileRange(fileIdx) {
+    window.obAnalyzeFileRange = async function(fileIdx) {
         const from = parseInt(document.getElementById(`ps-from-${fileIdx}`).value, 10);
         const to = parseInt(document.getElementById(`ps-to-${fileIdx}`).value, 10);
         if (!from || !to || from > to) return;
@@ -697,7 +697,7 @@
             const images = await extractPageRange(obFiles[fileIdx], from, to);
             return JSON.stringify({ imagesBase64: images });
         });
-    }
+    };
 
     async function extractPageRange(file, fromPage, toPage) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -721,11 +721,6 @@
     function setFileStatus(i, cls, label) {
         const el = document.getElementById(`fs-${i}`);
         if (el) { el.className = `file-status ${cls}`; el.textContent = label; }
-    }
-
-    async function obAnalyzeFileFull(fileIdx) {
-        document.getElementById(`fa-${fileIdx}`).style.display = 'none';
-        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }));
     }
 
     async function _runAnalysis(fileIdx, bodyFn) {
