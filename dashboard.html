@@ -138,10 +138,12 @@
         .ps-page-count { font-size: 0.72rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 1px 8px; margin-right: 6px; }
         .ps-picker { display: none; margin-top: 8px; }
         .ps-picker-counter { font-size: 0.74rem; color: #636e72; margin-bottom: 6px; }
-        .ps-pills { display: flex; flex-wrap: wrap; gap: 5px; }
-        .ps-pill { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: background 0.15s, color 0.15s; }
-        .ps-pill.selected { background: #27ae60; color: white; }
-        .ps-pill.deselected { background: #f0f0f0; color: #aaa; }
+        .ps-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ps-thumb { cursor: pointer; text-align: center; transition: opacity 0.15s; }
+        .ps-thumb canvas { display: block; border-radius: 4px; transition: border 0.15s; }
+        .ps-thumb.selected canvas { border: 3px solid #27ae60; opacity: 1; }
+        .ps-thumb.deselected canvas { border: 3px solid #ddd; opacity: 0.5; }
+        .ps-thumb-label { font-size: 0.68rem; color: #888; margin-top: 3px; }
         .ps-analyze-btn { margin-top: 9px; }
 
         /* SETTINGS PANEL */
@@ -676,7 +678,7 @@
                     </div>
                     <div class="ps-picker" id="ps-picker-${i}">
                         <div class="ps-picker-counter" id="ps-counter-${i}"></div>
-                        <div class="ps-pills" id="ps-pills-${i}"></div>
+                        <div class="ps-thumbs" id="ps-thumbs-${i}"></div>
                         <button class="btn-ps btn-ps-all ps-analyze-btn" onclick="obAnalyzeSelectedPages(${i})">נתח עמודים נבחרים ✨</button>
                     </div>
                 </div>
@@ -687,12 +689,14 @@
     // ── PAGE PICKER ──
     const obPageCounts = {};
     const obPageSelections = {}; // i → Set of selected page numbers
+    const obPdfCache = {};       // i → loaded pdfjsLib document
 
     async function loadPageCount(i) {
         try {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             const arrayBuffer = await obFiles[i].arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            obPdfCache[i] = pdf;
             const n = pdf.numPages;
             obPageCounts[i] = n;
             const badge = document.getElementById(`ps-count-${i}`);
@@ -700,29 +704,36 @@
         } catch(e) { /* non-critical */ }
     }
 
-    function renderPagePills(i) {
-        const n = obPageCounts[i];
-        if (!n) return;
-        // All pages selected by default
+    async function renderPageThumbnails(i) {
+        const pdf = obPdfCache[i];
+        if (!pdf) return;
+        const n = pdf.numPages;
         if (!obPageSelections[i]) obPageSelections[i] = new Set(Array.from({length: n}, (_, k) => k + 1));
         const sel = obPageSelections[i];
-        const pillsEl = document.getElementById(`ps-pills-${i}`);
-        if (!pillsEl) return;
-        pillsEl.innerHTML = '';
+        const grid = document.getElementById(`ps-thumbs-${i}`);
+        if (!grid) return;
+        grid.innerHTML = '';
         for (let p = 1; p <= n; p++) {
-            const btn = document.createElement('button');
-            btn.className = `ps-pill ${sel.has(p) ? 'selected' : 'deselected'}`;
-            btn.textContent = `עמוד ${p}`;
-            btn.addEventListener('click', () => togglePagePill(i, p, btn));
-            pillsEl.appendChild(btn);
+            const page = await pdf.getPage(p);
+            const vp = page.getViewport({ scale: 0.2 });
+            const canvas = document.createElement('canvas');
+            canvas.width = vp.width;
+            canvas.height = vp.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+            const wrap = document.createElement('div');
+            wrap.className = `ps-thumb ${sel.has(p) ? 'selected' : 'deselected'}`;
+            const label = document.createElement('div');
+            label.className = 'ps-thumb-label';
+            label.textContent = `עמוד ${p}`;
+            wrap.appendChild(canvas);
+            wrap.appendChild(label);
+            wrap.addEventListener('click', () => {
+                if (sel.has(p)) { sel.delete(p); wrap.className = 'ps-thumb deselected'; }
+                else            { sel.add(p);    wrap.className = 'ps-thumb selected'; }
+                updatePageCounter(i);
+            });
+            grid.appendChild(wrap);
         }
-        updatePageCounter(i);
-    }
-
-    function togglePagePill(i, p, btn) {
-        const sel = obPageSelections[i];
-        if (sel.has(p)) { sel.delete(p); btn.className = 'ps-pill deselected'; }
-        else { sel.add(p); btn.className = 'ps-pill selected'; }
         updatePageCounter(i);
     }
 
@@ -730,14 +741,14 @@
         const sel = obPageSelections[i];
         const total = obPageCounts[i];
         const el = document.getElementById(`ps-counter-${i}`);
-        if (el && sel && total) el.textContent = `${sel.size} עמודים נבחרו מתוך ${total}`;
+        if (el && sel && total) el.textContent = `${sel.size} עמודים נבחרים מתוך ${total}`;
     }
 
     window.togglePagePicker = function(i) {
         const picker = document.getElementById(`ps-picker-${i}`);
         const isHidden = picker.style.display === 'none' || picker.style.display === '';
         picker.style.display = isHidden ? 'block' : 'none';
-        if (isHidden) renderPagePills(i);
+        if (isHidden && !document.getElementById(`ps-thumbs-${i}`).children.length) renderPageThumbnails(i);
     };
 
     window.obAnalyzeFileFull = async function(fileIdx) {
@@ -758,8 +769,10 @@
 
     async function extractPages(file, pages) {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const fileIdx = obFiles.indexOf(file);
+        const pdf = (fileIdx >= 0 && obPdfCache[fileIdx])
+            ? obPdfCache[fileIdx]
+            : await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
         const images = [];
         for (const p of pages) {
             if (p < 1 || p > pdf.numPages) continue;
