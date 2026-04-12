@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SyllaBot – Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -982,7 +983,7 @@ function addCourseChip(course) {
         const color = getCourseColor(course);
         const container = document.getElementById('ob-courses-found');
         container.style.display = 'flex';
-        container.innerHTML += `<div class="course-chip"><span class="chip-dot" style="background:${color}"></span>${course}</div>`;
+        container.innerHTML += DOMPurify.sanitize(`<div class="course-chip"><span class="chip-dot" style="background:${color}"></span>${course}</div>`);
     }
 
     async function finalizeOnboarding() {
@@ -1140,14 +1141,17 @@ function addCourseChip(course) {
             const oi = userExams.indexOf(x);
             const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה'];
             const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
-            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${x.tag}</span><strong>${x.t}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+            const safeTag = DOMPurify.sanitize(x.tag, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+            const safeT   = DOMPurify.sanitize(x.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${safeTag}</span><strong>${safeT}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
         });
 
         // Tasks
         const tL = document.getElementById('tkList'); tL.innerHTML = '';
         if (!userTasks.length) { tL.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div>${s.emptyTasks}</div>`; }
         else userTasks.forEach((x,i) => {
-            tL.innerHTML += `<div class="item-row ${x.f?'done':''}"><div class="row-right"><span onclick="userTasks[${i}].f=!userTasks[${i}].f;render();" style="cursor:pointer">${x.t}</span></div><button onclick="userTasks.splice(${i},1);render();" class="del-btn">×</button></div>`;
+            const safeTaskT = DOMPurify.sanitize(x.t, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+            tL.innerHTML += `<div class="item-row ${x.f?'done':''}"><div class="row-right"><span onclick="userTasks[${i}].f=!userTasks[${i}].f;render();" style="cursor:pointer">${safeTaskT}</span></div><button onclick="userTasks.splice(${i},1);render();" class="del-btn">×</button></div>`;
         });
 
         // Syllabus
@@ -1159,12 +1163,14 @@ function addCourseChip(course) {
             const byCourse = {};
             weekItems.forEach(item => { if (!byCourse[item.c]) byCourse[item.c]=[]; byCourse[item.c].push(item); });
             Object.entries(byCourse).forEach(([course, items]) => {
-                sC.innerHTML += `<div class="course-label" style="background:${getCourseColor(course)}">${course}</div>`;
+                sC.innerHTML += DOMPurify.sanitize(`<div class="course-label" style="background:${getCourseColor(course)}">${course}</div>`);
                 items.forEach(item => {
                     const gi = userSyllabus.indexOf(item), key = `syl_${gi}`, isDone = doneMap[key];
                     const knownSylTypes = ['שיעור','תרגול','קריאה','מטלה','בוחן','צפייה','סרטון'];
                     const sylTagCls = knownSylTypes.includes(item.t) ? `tag-${item.t}` : 'tag-default';
-                    sC.innerHTML += `<div class="item-row ${isDone?'done':''}" onclick="doneMap['${key}']=!doneMap['${key}'];render();"><div class="row-right"><span class="badge ${sylTagCls}">${item.t}</span><span>${item.txt}</span></div><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${isDone?'checked':''} onclick="event.stopPropagation()"><button onclick="event.stopPropagation();userSyllabus.splice(${gi},1);render();" class="del-btn">×</button></div></div>`;
+                    const safeItemT   = DOMPurify.sanitize(item.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+                    const safeItemTxt = DOMPurify.sanitize(item.txt, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+                    sC.innerHTML += `<div class="item-row ${isDone?'done':''}" onclick="doneMap['${key}']=!doneMap['${key}'];render();"><div class="row-right"><span class="badge ${sylTagCls}">${safeItemT}</span><span>${safeItemTxt}</span></div><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${isDone?'checked':''} onclick="event.stopPropagation()"><button onclick="event.stopPropagation();userSyllabus.splice(${gi},1);render();" class="del-btn">×</button></div></div>`;
                 });
             });
         }
