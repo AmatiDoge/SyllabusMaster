@@ -126,37 +126,18 @@
         .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
 
-        /* FILE ACTION BUTTONS */
-        .file-actions { display: flex; gap: 7px; margin-top: 7px; }
-        .btn-file-action { flex: 1; padding: 6px 10px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-full-pdf { background: #0d0d0d; color: white; }
-        .btn-full-pdf:hover { background: #27ae60; }
-        .btn-select-area { background: #f0f0f0; color: #555; border: 1.5px solid #ddd; }
-        .btn-select-area:hover { background: #e8f5e9; color: #27ae60; border-color: #27ae60; }
-
-        /* CROP OVERLAY */
-        #crop-overlay { position: fixed; inset: 0; z-index: 1000; background: #1a1a2e; display: none; flex-direction: column; }
-        #crop-overlay.visible { display: flex; }
-        #crop-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #16213e; flex-shrink: 0; min-height: 52px; }
-        #crop-tb-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        #crop-tb-center { flex: 1; text-align: center; font-size: 0.7rem; color: #777; padding: 0 10px; }
-        #crop-tb-nav { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-        .crop-nav-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0; }
-        .crop-nav-btn:hover:not(:disabled) { background: #27ae60; }
-        .crop-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        #crop-page-label { font-size: 0.82rem; font-weight: 700; color: white; white-space: nowrap; }
-        .crop-page-badge { font-size: 0.7rem; background: #27ae60; color: white; border-radius: 20px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; }
-        #crop-hint-bar { font-size: 0.72rem; color: #aaa; padding: 4px 16px; background: #16213e; flex-shrink: 0; border-top: 1px solid #1f2f4e; }
-        #crop-btn-done { background: #27ae60; color: white; border: none; border-radius: 8px; padding: 7px 16px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
-        #crop-btn-done:hover { background: #219a52; }
-        #crop-btn-cancel { background: transparent; color: #aaa; border: 1.5px solid #444; border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
-        #crop-btn-cancel:hover { border-color: #d63031; color: #d63031; }
-        #crop-canvas-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: auto; padding: 12px 16px; }
-        #crop-canvas-wrap { position: relative; display: inline-block; cursor: crosshair; flex-shrink: 0; }
-        #crop-canvas-wrap canvas { display: block; max-height: 85vh; max-width: 100%; border-radius: 6px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
-        #crop-rect { position: absolute; border: 2px dashed #1a73e8; background: rgba(26,115,232,0.1); pointer-events: none; box-sizing: border-box; display: none; }
-        .crop-saved-rect { position: absolute; border: 2px solid #27ae60; background: rgba(39,174,96,0.12); pointer-events: none; box-sizing: border-box; }
-        #crop-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(26,26,46,0.7); border-radius: 6px; color: white; font-size: 0.9rem; }
+        /* PAGE SELECTOR */
+        .page-selector { padding: 8px 4px 4px; }
+        .ps-question { font-size: 0.78rem; color: #636e72; margin: 0 0 7px; }
+        .ps-btns { display: flex; gap: 7px; }
+        .btn-ps { padding: 6px 14px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .btn-ps-all { background: #0d0d0d; color: white; }
+        .btn-ps-all:hover { background: #27ae60; }
+        .btn-ps-range { background: #f0f0f0; color: #555; border: 1.5px solid #ddd; }
+        .btn-ps-range:hover { background: #e8f5e9; color: #27ae60; border-color: #27ae60; }
+        .ps-range-inputs { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; font-size: 0.78rem; color: #636e72; }
+        .ps-range-inputs input { width: 58px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; font-family: inherit; text-align: center; }
+        .ps-range-inputs input:focus { outline: none; border-color: #27ae60; }
 
         /* SETTINGS PANEL */
         #settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 900; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -203,31 +184,6 @@
 <div id="auth-loading">
     <div class="spinner"></div>
     <p>Loading...</p>
-</div>
-
-<!-- CROP OVERLAY -->
-<div id="crop-overlay">
-    <div id="crop-topbar">
-        <div id="crop-tb-actions">
-            <button id="crop-btn-done" onclick="cropDone()">סיים ונתח ✨</button>
-            <button id="crop-btn-cancel" onclick="cropClose()">ביטול</button>
-            <span id="crop-badges"></span>
-        </div>
-        <div id="crop-tb-center">התצוגה עשויה להיראות שונה מהמקור — ה-AI קורא את התוכן במדויק</div>
-        <div id="crop-tb-nav">
-            <button class="crop-nav-btn" id="crop-prev" onclick="cropNav(-1)">‹</button>
-            <span id="crop-page-label">עמוד 1 מתוך 1</span>
-            <button class="crop-nav-btn" id="crop-next" onclick="cropNav(1)">›</button>
-        </div>
-    </div>
-    <div id="crop-hint-bar">לחץ וגרור על העמוד כדי לבחור אזור. נווט בין עמודים עם החיצים. ניתן לבחור אזור אחד לכל עמוד.</div>
-    <div id="crop-canvas-area">
-        <div id="crop-canvas-wrap">
-            <canvas id="crop-canvas"></canvas>
-            <div id="crop-rect"></div>
-            <div id="crop-loading" style="display:none">טוען...</div>
-        </div>
-    </div>
 </div>
 
 <!-- SETTINGS OVERLAY + PANEL -->
@@ -706,179 +662,60 @@
                     <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
                     <button class="file-remove" onclick="removeObFile(${i})">×</button>
                 </div>
-                <div class="file-actions" id="fa-${i}">
-                    <button class="btn-file-action btn-full-pdf" onclick="obAnalyzeFileFull(${i})">נתח את כל ה-PDF</button>
-                    <button class="btn-file-action btn-select-area" onclick="openCropOverlay(${i})">בחר אזור ✂</button>
+                <div class="page-selector" id="ps-${i}">
+                    <p class="ps-question">האם ברצונך לנתח את כל הקובץ או עמודים ספציפיים?</p>
+                    <div class="ps-btns">
+                        <button class="btn-ps btn-ps-all" onclick="obAnalyzeFileFull(${i})">נתח הכל</button>
+                        <button class="btn-ps btn-ps-range" onclick="toggleRangeInputs(${i})">בחר עמודים</button>
+                    </div>
+                    <div class="ps-range-inputs" id="ps-range-inputs-${i}" style="display:none">
+                        <label>מעמוד <input type="number" id="ps-from-${i}" min="1" value="1"></label>
+                        <label>עד עמוד <input type="number" id="ps-to-${i}" min="1" value=""></label>
+                        <button class="btn-ps btn-ps-all" onclick="obAnalyzeFileRange(${i})">נתח ✨</button>
+                    </div>
                 </div>
             </div>`).join('');
     }
 
-    // ── CROP OVERLAY ──
-    // ovState: { fileIdx, pdf, currentPage, numPages, crops: { [page]: {x,y,w,h} }, dragging, startX, startY, scale }
-    let ovState = null;
-
-    function initPdfJs() {
-        if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    // ── PAGE RANGE SELECTOR ──
+    function toggleRangeInputs(i) {
+        const el = document.getElementById(`ps-range-inputs-${i}`);
+        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
     }
 
-    async function openCropOverlay(fileIdx) {
-        initPdfJs();
-        if (!ovState || ovState.fileIdx !== fileIdx) {
-            document.getElementById('crop-loading').style.display = 'flex';
-            const arrayBuffer = await obFiles[fileIdx].arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            ovState = { fileIdx, pdf, currentPage: 1, numPages: pdf.numPages, crops: {}, dragging: false, startX: 0, startY: 0, scale: 1 };
-        }
-        const fnEl = document.getElementById('crop-filename');
-        if (fnEl) fnEl.textContent = obFiles[fileIdx].name;
-        document.getElementById('crop-overlay').classList.add('visible');
-        await cropOverlayRenderPage();
-        cropOverlayBindEvents();
+    async function obAnalyzeFileFull(fileIdx) {
+        document.getElementById(`ps-${fileIdx}`).style.display = 'none';
+        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }));
     }
 
-    function cropClose() {
-        document.getElementById('crop-overlay').classList.remove('visible');
-        document.getElementById('crop-rect').style.display = 'none';
-    }
-
-    async function cropOverlayRenderPage() {
-        const s = ovState;
-        document.getElementById('crop-loading').style.display = 'flex';
-        const page = await s.pdf.getPage(s.currentPage);
-        const canvas = document.getElementById('crop-canvas');
-        const maxH = Math.floor(window.innerHeight * 0.85);
-        const maxW = document.getElementById('crop-canvas-area').clientWidth - 32 || window.innerWidth - 32;
-        const dpr = window.devicePixelRatio || 1;
-        const baseVP = page.getViewport({ scale: 1, rotation: 0 });
-        const scale = Math.min(maxW / baseVP.width, maxH / baseVP.height, 2.0);
-        s.scale = scale;
-        const vp = page.getViewport({ scale: scale * dpr * 2, rotation: 0 });
-        canvas.width = vp.width;
-        canvas.height = vp.height;
-        canvas.style.width = (vp.width / (dpr * 2)) + 'px';
-        canvas.style.height = (vp.height / (dpr * 2)) + 'px';
-        const ctx = canvas.getContext('2d');
-        ctx.direction = 'rtl';
-        await page.render({ canvasContext: ctx, viewport: vp, intent: 'print' }).promise;
-        document.getElementById('crop-loading').style.display = 'none';
-
-        // Update nav
-        document.getElementById('crop-page-label').textContent = `עמוד ${s.currentPage} מתוך ${s.numPages}`;
-        document.getElementById('crop-prev').disabled = s.currentPage <= 1;
-        document.getElementById('crop-next').disabled = s.currentPage >= s.numPages;
-
-        // Show saved crop for this page if any
-        const rectEl = document.getElementById('crop-rect');
-        const saved = s.crops[s.currentPage];
-        if (saved) {
-            rectEl.style.cssText = `display:block;left:${saved.x}px;top:${saved.y}px;width:${saved.w}px;height:${saved.h}px;border:2px solid #27ae60;background:rgba(39,174,96,0.12);`;
-        } else {
-            rectEl.style.display = 'none';
-        }
-        cropOverlayUpdateBadges();
-    }
-
-    function cropOverlayUpdateBadges() {
-        const pages = Object.keys(ovState.crops).sort((a,b) => a-b);
-        document.getElementById('crop-badges').innerHTML = pages.map(p =>
-            `<span class="crop-page-badge">✓ עמוד ${p}</span>`
-        ).join(' ');
-    }
-
-    async function cropNav(delta) {
-        if (!ovState) return;
-        const next = ovState.currentPage + delta;
-        if (next < 1 || next > ovState.numPages) return;
-        ovState.currentPage = next;
-        document.getElementById('crop-rect').style.display = 'none';
-        await cropOverlayRenderPage();
-    }
-
-    async function cropDone() {
-        cropClose();
-        const fileIdx = ovState.fileIdx;
-        document.getElementById(`fa-${fileIdx}`).style.display = 'none';
-        const crops = ovState.crops;
-        const hasCrops = Object.keys(crops).length > 0;
+    async function obAnalyzeFileRange(fileIdx) {
+        const from = parseInt(document.getElementById(`ps-from-${fileIdx}`).value, 10);
+        const to = parseInt(document.getElementById(`ps-to-${fileIdx}`).value, 10);
+        if (!from || !to || from > to) return;
+        document.getElementById(`ps-${fileIdx}`).style.display = 'none';
         await _runAnalysis(fileIdx, async () => {
-            if (!hasCrops) {
-                return JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) });
-            }
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const images = [];
-            for (const pageNum of Object.keys(crops).sort((a,b) => a-b)) {
-                const crop = crops[pageNum];
-                // Re-render page at crop scale to extract region
-                const page = await ovState.pdf.getPage(Number(pageNum));
-                const vp = page.getViewport({ scale: ovState.scale });
-                const tmpCanvas = document.createElement('canvas');
-                tmpCanvas.width = vp.width; tmpCanvas.height = vp.height;
-                await page.render({ canvasContext: tmpCanvas.getContext('2d'), viewport: vp }).promise;
-                canvas.width = crop.w; canvas.height = crop.h;
-                ctx.drawImage(tmpCanvas, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
-                images.push(canvas.toDataURL('image/png').split(',')[1]);
-            }
+            const images = await extractPageRange(obFiles[fileIdx], from, to);
             return JSON.stringify({ imagesBase64: images });
         });
     }
 
-    function cropOverlayBindEvents() {
-        const wrap = document.getElementById('crop-canvas-wrap');
-        if (wrap._bound) return;
-        wrap._bound = true;
-
-        const getPos = (e) => {
-            const r = wrap.getBoundingClientRect();
-            const src = e.touches ? e.touches[0] : e;
-            return { x: src.clientX - r.left, y: src.clientY - r.top };
-        };
-
-        const onStart = (e) => {
-            if (!ovState) return;
-            const { x, y } = getPos(e);
-            ovState.dragging = true;
-            ovState.startX = x; ovState.startY = y;
-            const rectEl = document.getElementById('crop-rect');
-            rectEl.style.cssText = `display:block;left:${x}px;top:${y}px;width:0;height:0;border:2px dashed #1a73e8;background:rgba(26,115,232,0.1);`;
-            e.preventDefault();
-        };
-
-        const onMove = (e) => {
-            if (!ovState?.dragging) return;
-            const { x, y } = getPos(e);
-            const rx = Math.min(ovState.startX, x), ry = Math.min(ovState.startY, y);
-            const rw = Math.abs(x - ovState.startX), rh = Math.abs(y - ovState.startY);
-            const rectEl = document.getElementById('crop-rect');
-            rectEl.style.left = rx + 'px'; rectEl.style.top = ry + 'px';
-            rectEl.style.width = rw + 'px'; rectEl.style.height = rh + 'px';
-            e.preventDefault();
-        };
-
-        const onEnd = (e) => {
-            if (!ovState?.dragging) return;
-            ovState.dragging = false;
-            const src = e.changedTouches ? e.changedTouches[0] : e;
-            const r = wrap.getBoundingClientRect();
-            const x = src.clientX - r.left, y = src.clientY - r.top;
-            const rx = Math.min(ovState.startX, x), ry = Math.min(ovState.startY, y);
-            const rw = Math.abs(x - ovState.startX), rh = Math.abs(y - ovState.startY);
-            if (rw > 10 && rh > 10) {
-                ovState.crops[ovState.currentPage] = { x: rx, y: ry, w: rw, h: rh };
-                // Show as confirmed (green border)
-                const rectEl = document.getElementById('crop-rect');
-                rectEl.style.border = '2px solid #27ae60';
-                rectEl.style.background = 'rgba(39,174,96,0.12)';
-                cropOverlayUpdateBadges();
-            }
-        };
-
-        wrap.addEventListener('mousedown', onStart);
-        wrap.addEventListener('mousemove', onMove);
-        wrap.addEventListener('mouseup', onEnd);
-        wrap.addEventListener('touchstart', onStart, { passive: false });
-        wrap.addEventListener('touchmove', onMove, { passive: false });
-        wrap.addEventListener('touchend', onEnd, { passive: false });
+    async function extractPageRange(file, fromPage, toPage) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const start = Math.max(1, fromPage);
+        const end = Math.min(pdf.numPages, toPage);
+        const images = [];
+        for (let p = start; p <= end; p++) {
+            const page = await pdf.getPage(p);
+            const vp = page.getViewport({ scale: 2 });
+            const canvas = document.createElement('canvas');
+            canvas.width = vp.width;
+            canvas.height = vp.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+            images.push(canvas.toDataURL('image/png').split(',')[1]);
+        }
+        return images;
     }
 
     function setFileStatus(i, cls, label) {
@@ -925,8 +762,8 @@
         obResults = [];
         for (let i = 0; i < obFiles.length; i++) {
             const statusEl = document.getElementById(`fs-${i}`);
-            if (statusEl?.classList.contains('s-done')) continue; // already analyzed via crop/full
-            document.getElementById(`fa-${i}`)?.style && (document.getElementById(`fa-${i}`).style.display = 'none');
+            if (statusEl?.classList.contains('s-done')) continue; // already analyzed individually
+            document.getElementById(`ps-${i}`)?.style && (document.getElementById(`ps-${i}`).style.display = 'none');
             setFileStatus(i, 's-analyzing', 'Analyzing...');
             document.getElementById('ob-progress-text').textContent = `Analyzing ${obFiles[i].name}...`;
             document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
