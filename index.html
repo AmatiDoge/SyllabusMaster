@@ -574,7 +574,7 @@
     overflow: hidden;
     transition: max-height 0.4s ease, margin-top 0.3s;
   }
-  .faq-item.open .faq-a { max-height: 200px; margin-top: 16px; }
+  .faq-item.open .faq-a { max-height: 300px; margin-top: 16px; }
 
   /* ── CTA FOOTER ── */
   .cta-section {
@@ -947,34 +947,50 @@
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span data-i18n="faq1Q">עם אילו אוניברסיטאות זה עובד?</span>
+      <span data-i18n="faq1Q">האם SyllaBot מתאים לאוניברסיטת רייכמן?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a" data-i18n="faq1A">עם כל מוסד אקדמי בישראל ובעולם. הכלי מנתח כל פורמט PDF של סילבוס – אוניברסיטת תל אביב, האוניברסיטה הפתוחה, IDC, BIU וכל מקום אחר.</div>
+    <div class="faq-a" data-i18n="faq1A">כן! SyllaBot פותח במיוחד עבור סטודנטים באוניברסיטת רייכמן. הכלי מזהה את פורמט הסילבוסים של רייכמן ומותאם לקורסים ולמבנה הסמסטר שלכם.</div>
   </div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span data-i18n="faq2Q">מה קורה אם ה-PDF בעברית?</span>
+      <span data-i18n="faq2Q">כמה זמן לוקח לנתח סילבוס?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a" data-i18n="faq2A">הכלי תומך בעברית ואנגלית באופן מלא. גם PDF מעורב שמכיל את שתי השפות יטופל כראוי.</div>
+    <div class="faq-a" data-i18n="faq2A">בדרך כלל 10-30 שניות לקובץ. תלוי בגודל ה-PDF.</div>
   </div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span data-i18n="faq3Q">האם הנתונים שלי מאובטחים?</span>
+      <span data-i18n="faq3Q">מה קורה אם ה-AI טעה?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a" data-i18n="faq3A">הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.</div>
+    <div class="faq-a" data-i18n="faq3A">אפשר לערוך, להוסיף ולמחוק כל פריט ידנית אחרי הניתוח. אתם שולטים על הנתונים.</div>
   </div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span data-i18n="faq4Q">אפשר לערוך את הנתונים ידנית?</span>
+      <span data-i18n="faq4Q">האם הנתונים שלי מאובטחים?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a" data-i18n="faq4A">בהחלט. אחרי שה-AI מנתח את הסילבוס, אפשר להוסיף, לערוך ולמחוק כל פריט ידנית.</div>
+    <div class="faq-a" data-i18n="faq4A">הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.</div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">
+      <span data-i18n="faq5Q">האם זה עובד עם קבצי Word?</span>
+      <div class="faq-icon">+</div>
+    </div>
+    <div class="faq-a" data-i18n="faq5A">כרגע תומכים ב-PDF בלבד. תמיכה בקבצי Word בקרוב.</div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q">
+      <span data-i18n="faq6Q">איך אני יכול לעזור לשפר את הכלי?</span>
+      <div class="faq-icon">+</div>
+    </div>
+    <div class="faq-a" data-i18n="faq6A">לחץ על כפתור הפידבק בדשבורד — כל הערה עוזרת לנו לשפר את SyllaBot עבורכם.</div>
   </div>
 </section>
 
@@ -1038,14 +1054,18 @@
       feat4Title: 'סימון הושלם',
       feat4P: 'מסמנים משימות שהושלמו, רואים את ההתקדמות בכל קורס ובכל שבוע.',
       faqLabel: 'שאלות', faqTitle: 'שאלות נפוצות',
-      faq1Q: 'עם אילו אוניברסיטאות זה עובד?',
-      faq1A: 'עם כל מוסד אקדמי בישראל ובעולם. הכלי מנתח כל פורמט PDF של סילבוס – אוניברסיטת תל אביב, האוניברסיטה הפתוחה, IDC, BIU וכל מקום אחר.',
-      faq2Q: 'מה קורה אם ה-PDF בעברית?',
-      faq2A: 'הכלי תומך בעברית ואנגלית באופן מלא. גם PDF מעורב שמכיל את שתי השפות יטופל כראוי.',
-      faq3Q: 'האם הנתונים שלי מאובטחים?',
-      faq3A: 'הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.',
-      faq4Q: 'אפשר לערוך את הנתונים ידנית?',
-      faq4A: 'בהחלט. אחרי שה-AI מנתח את הסילבוס, אפשר להוסיף, לערוך ולמחוק כל פריט ידנית.',
+      faq1Q: 'האם SyllaBot מתאים לאוניברסיטת רייכמן?',
+      faq1A: 'כן! SyllaBot פותח במיוחד עבור סטודנטים באוניברסיטת רייכמן. הכלי מזהה את פורמט הסילבוסים של רייכמן ומותאם לקורסים ולמבנה הסמסטר שלכם.',
+      faq2Q: 'כמה זמן לוקח לנתח סילבוס?',
+      faq2A: 'בדרך כלל 10-30 שניות לקובץ. תלוי בגודל ה-PDF.',
+      faq3Q: 'מה קורה אם ה-AI טעה?',
+      faq3A: 'אפשר לערוך, להוסיף ולמחוק כל פריט ידנית אחרי הניתוח. אתם שולטים על הנתונים.',
+      faq4Q: 'האם הנתונים שלי מאובטחים?',
+      faq4A: 'הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.',
+      faq5Q: 'האם זה עובד עם קבצי Word?',
+      faq5A: 'כרגע תומכים ב-PDF בלבד. תמיכה בקבצי Word בקרוב.',
+      faq6Q: 'איך אני יכול לעזור לשפר את הכלי?',
+      faq6A: 'לחץ על כפתור הפידבק בדשבורד — כל הערה עוזרת לנו לשפר את SyllaBot עבורכם.',
       ctaTitle: 'מוכן לסמסטר המסודר הראשון שלך?',
       ctaP: 'הירשם עכשיו וגש ללוח הבקרה שלך תוך דקות',
       ctaBtn: 'הצטרף בחינם',
@@ -1082,14 +1102,18 @@
       feat4Title: 'Completion tracking',
       feat4P: 'Mark tasks as done and track progress across every course and every week.',
       faqLabel: 'FAQ', faqTitle: 'Frequently Asked Questions',
-      faq1Q: 'Which universities does it work with?',
-      faq1A: 'Any academic institution in Israel or worldwide. The tool analyzes any PDF syllabus format — Tel Aviv University, Open University, IDC, BIU, and anywhere else.',
-      faq2Q: 'What if the PDF is in Hebrew?',
-      faq2A: 'The tool fully supports both Hebrew and English. Mixed PDFs containing both languages are handled correctly.',
-      faq3Q: 'Is my data secure?',
-      faq3A: 'Your syllabuses are stored encrypted and linked only to your account. We do not share information with third parties.',
-      faq4Q: 'Can I edit the data manually?',
-      faq4A: 'Absolutely. After the AI analyzes your syllabus, you can add, edit, or delete any item manually.',
+      faq1Q: 'Is SyllaBot built for Reichman University?',
+      faq1A: 'Yes! SyllaBot was built specifically for Reichman University students. It recognizes Reichman syllabus formats and is tailored to your courses and semester structure.',
+      faq2Q: 'How long does it take to analyze a syllabus?',
+      faq2A: 'Usually 10–30 seconds per file, depending on PDF size.',
+      faq3Q: 'What if the AI makes a mistake?',
+      faq3A: 'You can edit, add, or delete any item manually after analysis. You stay in control of your data.',
+      faq4Q: 'Is my data secure?',
+      faq4A: 'Your syllabuses are stored encrypted and linked only to your account. We do not share information with third parties.',
+      faq5Q: 'Does it work with Word files?',
+      faq5A: 'Currently PDF only. Word file support is coming soon.',
+      faq6Q: 'How can I help improve the tool?',
+      faq6A: 'Click the feedback button in the dashboard — every comment helps us improve SyllaBot for you.',
       ctaTitle: 'Ready for your first organized semester?',
       ctaP: 'Sign up now and access your dashboard in minutes',
       ctaBtn: 'Join for free',
