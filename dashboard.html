@@ -126,6 +126,40 @@
         .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
 
+        /* REVIEW SCREEN */
+        #ob-review { display: none; background: white; border-radius: 24px; padding: 40px 36px 0; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.1); animation: fadeUp 0.5s ease; }
+        #ob-review.visible { display: flex; flex-direction: column; }
+        .rv-title { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
+        .rv-sub { font-size: 0.85rem; color: #636e72; line-height: 1.6; margin-bottom: 22px; }
+        .rv-section { margin-bottom: 14px; }
+        .rv-section-header { display: flex; align-items: center; gap: 8px; padding: 7px 0; cursor: pointer; user-select: none; border-bottom: 2px solid #eee; margin-bottom: 6px; }
+        .rv-section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .rv-section-label { font-size: 0.79rem; font-weight: 700; }
+        .rv-section-count { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 1px 8px; }
+        .rv-section-toggle { margin-right: auto; font-size: 0.7rem; color: #aaa; }
+        .rv-items { display: flex; flex-direction: column; gap: 4px; }
+        .rv-items.collapsed { display: none; }
+        .rv-item { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 8px; background: #fafafa; border: 1px solid #f0f0f0; }
+        .rv-conf { font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; cursor: help; }
+        .rv-conf.red { background: #ffebee; color: #c62828; }
+        .rv-conf.yellow { background: #fff8e1; color: #f57f17; }
+        .rv-conf.green { background: #e8f5e9; color: #2e7d32; }
+        .rv-week { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 3px 6px; width: 52px; border: 1px solid transparent; font-family: inherit; text-align: center; flex-shrink: 0; }
+        .rv-week:focus { outline: none; border-color: #27ae60; background: white; }
+        .rv-date { font-size: 0.68rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 3px 6px; white-space: nowrap; flex-shrink: 0; }
+        .rv-desc-input { flex: 1; min-width: 0; border: none; background: transparent; font-family: inherit; font-size: 0.8rem; color: #2d3436; direction: rtl; padding: 2px 4px; border-radius: 4px; }
+        .rv-desc-input:focus { outline: 1px solid #27ae60; background: white; }
+        .rv-del { background: none; border: none; cursor: pointer; color: #ddd; font-size: 1rem; padding: 0 2px; line-height: 1; flex-shrink: 0; }
+        .rv-del:hover { color: #d63031; }
+        .rv-footer { position: sticky; bottom: 0; background: white; padding: 14px 0 28px; border-top: 1px solid #eee; margin-top: 14px; }
+        .rv-counter { font-size: 0.82rem; color: #636e72; margin-bottom: 10px; text-align: center; }
+        .rv-counter strong { color: #2d3436; font-size: 1rem; }
+        .rv-actions { display: flex; gap: 8px; }
+        .rv-btn-all { flex: 1; padding: 13px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.92rem; font-weight: 700; cursor: pointer; border: none; background: #0d0d0d; color: white; transition: background 0.2s; }
+        .rv-btn-all:hover { background: #27ae60; }
+        .rv-btn-green { padding: 13px 18px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.92rem; font-weight: 700; cursor: pointer; border: 1.5px solid #27ae60; background: white; color: #27ae60; transition: all 0.2s; white-space: nowrap; }
+        .rv-btn-green:hover { background: #27ae60; color: white; }
+
         /* PAGE SELECTOR */
         .page-selector { padding: 8px 4px 4px; }
         .ps-question { font-size: 0.78rem; color: #636e72; margin: 0 0 7px; }
@@ -289,6 +323,22 @@
         <button class="ob-btn" id="ob-btn" onclick="obAnalyzeAll()" disabled>Build my dashboard ✨</button>
         <p class="ob-note">Usually takes 10–30 seconds per file</p>
     </div>
+
+    <!-- REVIEW SCREEN (shown after analysis, before saving) -->
+    <div id="ob-review">
+        <span class="ob-logo">Sylla<span>Bot</span></span>
+        <div class="ob-step-label">Setup · Review before importing</div>
+        <h2 class="rv-title">בדוק לפני שמירה ✋</h2>
+        <p class="rv-sub">ה-AI ניתח את הסילבוס. עבור על הפריטים ואשר שהכל נכון לפני השמירה.</p>
+        <div id="rv-sections"></div>
+        <div class="rv-footer">
+            <div class="rv-counter" id="rv-counter"></div>
+            <div class="rv-actions">
+                <button class="rv-btn-all" onclick="confirmReview('all')">אשר הכל ושמור ✓</button>
+                <button class="rv-btn-green" onclick="confirmReview('green')">ירוקים בלבד 🟢</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- DASHBOARD -->
@@ -386,7 +436,7 @@
 
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
-    let obFiles = [], obResults = [];
+    let obFiles = [], obResults = [], reviewItems = [];
     let semesterStart = '2026-03-15';
 
     const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
@@ -653,7 +703,7 @@
 
     // ── ONBOARDING ──
     function resetOnboarding() {
-        obFiles = []; obResults = [];
+        obFiles = []; obResults = []; reviewItems = [];
         document.getElementById('ob-file-list').innerHTML = '';
         document.getElementById('ob-courses-found').style.display = 'none';
         document.getElementById('ob-courses-found').innerHTML = '';
@@ -662,6 +712,8 @@
         document.getElementById('ob-btn').disabled = true;
         document.getElementById('ob-btn').textContent = 'Build my dashboard ✨';
         document.getElementById('ob-btn').onclick = obAnalyzeAll;
+        document.getElementById('ob-review').classList.remove('visible');
+        document.querySelector('.ob-card').style.display = '';
     }
 
     function obDrop(e) {
@@ -879,9 +931,7 @@
         document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${obFiles.length}`;
         document.getElementById('ob-progress-text').textContent = obResults.length === obFiles.length ? 'All done!' : `${obResults.length} of ${obFiles.length} succeeded`;
         if (obResults.length > 0) {
-            btn.disabled = false;
-            btn.textContent = 'Open my dashboard →';
-            btn.onclick = finalizeOnboarding;
+            showReviewScreen();
         } else {
             btn.textContent = 'Something went wrong. Try again.';
             btn.disabled = false;
@@ -894,12 +944,10 @@
             return el && (el.classList.contains('s-done') || el.classList.contains('s-error'));
         });
         if (!allDone) return;
-        const btn = document.getElementById('ob-btn');
         if (obResults.length > 0) {
-            btn.disabled = false;
-            btn.textContent = 'Open my dashboard →';
-            btn.onclick = finalizeOnboarding;
+            showReviewScreen();
         } else {
+            const btn = document.getElementById('ob-btn');
             btn.disabled = false;
             btn.textContent = 'Something went wrong. Try again.';
         }
@@ -911,6 +959,138 @@ function addCourseChip(course) {
         const container = document.getElementById('ob-courses-found');
         container.style.display = 'flex';
         container.innerHTML += DOMPurify.sanitize(`<div class="course-chip"><span class="chip-dot" style="background:${color}"></span>${course}</div>`);
+    }
+
+    // ── REVIEW SCREEN ──
+    function showReviewScreen() {
+        let id = 0;
+        reviewItems = [];
+        obResults.forEach(result => {
+            (result.syllabus || []).forEach(item => {
+                reviewItems.push({
+                    id: id++,
+                    source: 'syllabus',
+                    confidence: typeof item.confidence === 'number' ? item.confidence : 80,
+                    reason: sanitize(item.reason || ''),
+                    w: item.w ?? 0,
+                    c: sanitize(item.c || ''),
+                    t: sanitize(item.t || ''),
+                    txt: sanitize(item.txt || ''),
+                    deleted: false,
+                });
+            });
+            (result.exams || []).forEach(item => {
+                reviewItems.push({
+                    id: id++,
+                    source: 'exam',
+                    confidence: typeof item.confidence === 'number' ? item.confidence : 80,
+                    reason: sanitize(item.reason || ''),
+                    t: sanitize(item.t || ''),
+                    d: item.d || '',
+                    tag: sanitize(item.tag || ''),
+                    deleted: false,
+                });
+            });
+        });
+        document.querySelector('.ob-card').style.display = 'none';
+        document.getElementById('ob-review').classList.add('visible');
+        renderReviewUI();
+    }
+
+    function renderReviewUI() {
+        const active = reviewItems.filter(i => !i.deleted);
+        const red    = active.filter(i => i.confidence < 50);
+        const yellow = active.filter(i => i.confidence >= 50 && i.confidence < 80);
+        const green  = active.filter(i => i.confidence >= 80);
+
+        document.getElementById('rv-sections').innerHTML =
+            rvSectionHtml(red,    '🔴 פריטים לא בטוחים — נא לבדוק', '#d63031', 'red',    false) +
+            rvSectionHtml(yellow, '🟡 פריטים לבדיקה',                 '#e67e22', 'yellow', false) +
+            rvSectionHtml(green,  '🟢 פריטים בטוחים',                 '#27ae60', 'green',  true);
+
+        const total = active.length;
+        document.getElementById('rv-counter').innerHTML =
+            `<strong>${total}</strong> פריטים מוכנים לשמירה`;
+    }
+
+    function rvSectionHtml(items, label, color, colorKey, collapsed) {
+        if (!items.length) return '';
+        const sid = colorKey;
+        const rows = items.map(rvItemHtml).join('');
+        return `<div class="rv-section">
+            <div class="rv-section-header" onclick="toggleRvSection('rvs-${sid}','rvst-${sid}')">
+                <span class="rv-section-dot" style="background:${color}"></span>
+                <span class="rv-section-label">${label}</span>
+                <span class="rv-section-count">${items.length}</span>
+                <span class="rv-section-toggle" id="rvst-${sid}">${collapsed ? '▸' : '▾'}</span>
+            </div>
+            <div class="rv-items${collapsed ? ' collapsed' : ''}" id="rvs-${sid}">${rows}</div>
+        </div>`;
+    }
+
+    function rvItemHtml(item) {
+        const confClass = item.confidence < 50 ? 'red' : item.confidence < 80 ? 'yellow' : 'green';
+        const typeLabel = item.source === 'syllabus' ? item.t : item.tag;
+        const typeClass = `tag-${typeLabel || 'default'}`;
+        const desc = item.source === 'syllabus' ? item.txt : item.t;
+        const weekOrDate = item.source === 'syllabus'
+            ? `<input class="rv-week" type="number" min="0" max="13" value="${item.w}" title="שבוע (0-13)" oninput="rvSetField(${item.id},'w',+this.value)">`
+            : `<span class="rv-date">${item.d ? item.d.substring(0, 10) : '?'}</span>`;
+        const descField = item.source === 'syllabus' ? 'txt' : 't';
+        const reasonAttr = item.reason ? ` title="${item.reason}"` : '';
+        return `<div class="rv-item" id="rvi-${item.id}">
+            <span class="rv-conf ${confClass}"${reasonAttr}>${item.confidence}%</span>
+            <span class="badge ${typeClass}">${typeLabel || '?'}</span>
+            ${weekOrDate}
+            <input class="rv-desc-input" type="text" value="${desc.replace(/"/g, '&quot;')}" oninput="rvSetField(${item.id},'${descField}',this.value)">
+            <button class="rv-del" onclick="rvDelete(${item.id})">×</button>
+        </div>`;
+    }
+
+    function toggleRvSection(listId, toggleId) {
+        const list = document.getElementById(listId);
+        const tog  = document.getElementById(toggleId);
+        if (!list) return;
+        list.classList.toggle('collapsed');
+        if (tog) tog.textContent = list.classList.contains('collapsed') ? '▸' : '▾';
+    }
+
+    function rvDelete(id) {
+        const item = reviewItems.find(i => i.id === id);
+        if (item) item.deleted = true;
+        renderReviewUI();
+    }
+
+    function rvSetField(id, field, value) {
+        const item = reviewItems.find(i => i.id === id);
+        if (item) item[field] = value;
+        // update counter only (no full re-render to preserve focus)
+        const total = reviewItems.filter(i => !i.deleted).length;
+        document.getElementById('rv-counter').innerHTML = `<strong>${total}</strong> פריטים מוכנים לשמירה`;
+    }
+
+    async function confirmReview(mode) {
+        const btn = document.querySelector('.rv-btn-all');
+        const btn2 = document.querySelector('.rv-btn-green');
+        btn.disabled = btn2.disabled = true;
+        btn.textContent = 'שומר...';
+
+        let toSave = reviewItems.filter(i => !i.deleted);
+        if (mode === 'green') toSave = toSave.filter(i => i.confidence >= 80);
+
+        const syllabus = toSave.filter(i => i.source === 'syllabus').map(i => ({
+            w: i.w, c: i.c, t: i.t, txt: i.txt
+        }));
+        const exams = toSave.filter(i => i.source === 'exam').map(i => ({
+            t: i.t, d: i.d, tag: i.tag
+        }));
+
+        userSyllabus = [...userSyllabus, ...syllabus];
+        userExams    = [...userExams,    ...exams];
+        userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
+        userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
+        await saveToSupabase(true);
+        showDashboard();
     }
 
     async function finalizeOnboarding() {
