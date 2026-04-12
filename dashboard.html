@@ -138,6 +138,8 @@
         .ps-range-inputs { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; font-size: 0.78rem; color: #636e72; }
         .ps-range-inputs input { width: 58px; padding: 4px 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.8rem; font-family: inherit; text-align: center; }
         .ps-range-inputs input:focus { outline: none; border-color: #27ae60; }
+        .ps-page-count { font-size: 0.72rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 1px 8px; margin-right: 6px; }
+        .ps-summary { margin-top: 7px; background: #f5f5f5; border-radius: 8px; padding: 5px 10px; font-size: 0.75rem; color: #555; display: none; }
 
         /* SETTINGS PANEL */
         #settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 900; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -659,6 +661,7 @@
                 <div class="file-item" id="fi-${i}">
                     <span>📄</span>
                     <span class="file-item-name">${sanitize(f.name)}</span>
+                    <span class="ps-page-count" id="ps-count-${i}"></span>
                     <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
                     <button class="file-remove" onclick="removeObFile(${i})">×</button>
                 </div>
@@ -669,18 +672,59 @@
                         <button class="btn-ps btn-ps-range" onclick="toggleRangeInputs(${i})">בחר עמודים</button>
                     </div>
                     <div class="ps-range-inputs" id="ps-range-inputs-${i}" style="display:none">
-                        <label>מעמוד <input type="number" id="ps-from-${i}" min="1" value="1"></label>
-                        <label>עד עמוד <input type="number" id="ps-to-${i}" min="1" value=""></label>
+                        <label>מעמוד <input type="number" id="ps-from-${i}" min="1" max="9999" value="1" oninput="updatePsSummary(${i})"></label>
+                        <label>עד עמוד <input type="number" id="ps-to-${i}" min="1" max="9999" value="" oninput="updatePsSummary(${i})"></label>
                         <button class="btn-ps btn-ps-all" onclick="obAnalyzeFileRange(${i})">נתח ✨</button>
                     </div>
+                    <div class="ps-summary" id="ps-summary-${i}"></div>
                 </div>
             </div>`).join('');
+        obFiles.forEach((_, i) => loadPageCount(i));
     }
 
     // ── PAGE RANGE SELECTOR ──
+    const obPageCounts = {};
+
+    async function loadPageCount(i) {
+        try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const arrayBuffer = await obFiles[i].arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const n = pdf.numPages;
+            obPageCounts[i] = n;
+            const badge = document.getElementById(`ps-count-${i}`);
+            if (badge) badge.textContent = `📄 ${n} עמודים`;
+            const fromEl = document.getElementById(`ps-from-${i}`);
+            const toEl = document.getElementById(`ps-to-${i}`);
+            if (fromEl) { fromEl.max = n; }
+            if (toEl) { toEl.max = n; toEl.value = n; }
+        } catch(e) { /* non-critical, ignore */ }
+    }
+
+    window.updatePsSummary = function(i) {
+        const total = obPageCounts[i];
+        const fromEl = document.getElementById(`ps-from-${i}`);
+        const toEl = document.getElementById(`ps-to-${i}`);
+        const summaryEl = document.getElementById(`ps-summary-${i}`);
+        if (!fromEl || !toEl || !summaryEl) return;
+        // Clamp values to valid range
+        if (total) {
+            if (parseInt(fromEl.value) > total) fromEl.value = total;
+            if (parseInt(toEl.value) > total) toEl.value = total;
+        }
+        const from = parseInt(fromEl.value) || 1;
+        const to = parseInt(toEl.value) || (total || '?');
+        const totalLabel = total ? ` מתוך ${total} עמודים` : '';
+        summaryEl.textContent = `בחרת עמודים ${from} עד ${to}${totalLabel}`;
+        summaryEl.style.display = 'block';
+    };
+
     window.toggleRangeInputs = function(i) {
         const el = document.getElementById(`ps-range-inputs-${i}`);
-        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) updatePsSummary(i);
+        else document.getElementById(`ps-summary-${i}`).style.display = 'none';
     };
 
     window.obAnalyzeFileFull = async function(fileIdx) {
