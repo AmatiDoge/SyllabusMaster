@@ -483,140 +483,21 @@
   .features-section .section-label::before { background: var(--accent); }
   .features-section .section-title { color: var(--paper); }
 
-  /* ── PRICING ── */
-  .pricing-section {
-    padding: 100px 48px;
-    text-align: center;
-  }
-
-  .pricing-cards {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    margin-top: 64px;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .pricing-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px 36px;
-    width: 300px;
-    text-align: right;
-    position: relative;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
-
-  .pricing-card.featured {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
-    transform: scale(1.04);
-  }
-  .pricing-card.featured:hover { transform: scale(1.04) translateY(-4px); }
-
-  .pricing-badge {
-    position: absolute;
-    top: -14px;
-    right: 24px;
-    background: var(--accent);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 5px 14px;
-    border-radius: 100px;
-    letter-spacing: 0.05em;
-  }
-
-  .plan-name {
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+  /* ── LANG TOGGLE ── */
+  .lang-toggle {
+    background: transparent;
     color: var(--muted);
-    margin-bottom: 16px;
-  }
-  .pricing-card.featured .plan-name { color: rgba(245,242,235,0.5); }
-
-  .price {
-    font-size: 2.8rem;
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-  .price sub {
-    font-size: 1rem;
-    font-weight: 400;
-    letter-spacing: 0;
-    vertical-align: baseline;
-  }
-  .price span { font-size: 1rem; font-weight: 400; color: var(--muted); }
-  .pricing-card.featured .price span { color: rgba(245,242,235,0.5); }
-
-  .price-period {
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-bottom: 28px;
-    margin-top: 4px;
-  }
-  .pricing-card.featured .price-period { color: rgba(245,242,235,0.5); }
-
-  .price-divider {
-    height: 1px;
-    background: var(--border);
-    margin-bottom: 24px;
-  }
-  .pricing-card.featured .price-divider { background: rgba(255,255,255,0.1); }
-
-  .price-features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-
-  .price-features li {
-    font-size: 0.88rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    color: var(--ink);
-    text-align: right;
-  }
-  .pricing-card.featured .price-features li { color: var(--paper); }
-
-  .price-features li::before {
-    content: '✓';
-    color: var(--accent);
-    font-weight: 700;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .price-btn {
-    width: 100%;
-    padding: 14px;
+    border: 1.5px solid var(--border);
+    padding: 8px 16px;
     border-radius: 100px;
     font-family: 'Heebo', sans-serif;
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
-    border: 2px solid var(--ink);
-    background: transparent;
-    color: var(--ink);
     transition: all 0.2s;
+    letter-spacing: 0.04em;
   }
-  .price-btn:hover { background: var(--ink); color: var(--paper); }
-  .pricing-card.featured .price-btn {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-  }
-  .pricing-card.featured .price-btn:hover { background: #c9421d; border-color: #c9421d; }
+  .lang-toggle:hover { border-color: var(--ink); color: var(--ink); }
 
   /* ── FAQ ── */
   .faq-section {
@@ -839,12 +720,10 @@
   @media (max-width: 768px) {
     nav { padding: 16px 20px; }
     .hero { padding: 100px 20px 60px; }
-    .demo-section, .section, .pricing-section, .faq-section { padding-left: 20px; padding-right: 20px; }
+    .demo-section, .section, .faq-section { padding-left: 20px; padding-right: 20px; }
     .features-section { padding: 60px 20px; }
     .steps { grid-template-columns: 1fr; }
     .features-grid { grid-template-columns: 1fr; }
-    .pricing-cards { flex-direction: column; align-items: center; }
-    .pricing-card.featured { transform: none; }
     .demo-content { grid-template-columns: 1fr; }
     .ai-badge { display: none; }
     footer { flex-direction: column; text-align: center; }
@@ -857,7 +736,10 @@
 <!-- NAV -->
 <nav>
   <a href="#" class="logo">Sylla<span>Bot</span></a>
-  <button class="nav-cta" onclick="window.location.href='auth.html'">התחל עכשיו →</button>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
+    <button class="nav-cta" data-i18n="navCta" onclick="window.location.href='auth.html'">התחל עכשיו →</button>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -865,36 +747,36 @@
   <div class="hero-bg-circle c1"></div>
   <div class="hero-bg-circle c2"></div>
 
-  <div class="hero-label">כלי AI לסטודנטים</div>
+  <div class="hero-label" data-i18n="heroLabel">כלי AI לסטודנטים</div>
 
-  <h1>הסמסטר שלך,<br>סוף סוף <span class="highlight">מסודר</span></h1>
+  <h1 data-i18n="heroTitle">הסמסטר שלך,<br>סוף סוף <span class="highlight">מסודר</span></h1>
 
-  <p class="hero-sub">
+  <p class="hero-sub" data-i18n="heroSub">
     מעלים סילבוס PDF, ה-AI מנתח ומסדר לך את כל המשימות, הבחינות והקריאות לפי שבועות – בלחיצה אחת.
   </p>
 
   <div class="hero-actions">
     <button class="btn-primary" onclick="window.location.href='auth.html'">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      התחל עכשיו בחינם →
+      <span data-i18n="heroBtnPrimary">התחל עכשיו בחינם →</span>
     </button>
-    <button class="btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">
+    <button class="btn-ghost" data-i18n="heroBtnGhost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">
       ← איך זה עובד?
     </button>
   </div>
 
   <div class="hero-stats">
     <div class="stat-item">
-      <div class="stat-num">5<span>+</span></div>
-      <div class="stat-label">קורסים במקביל</div>
+      <div class="stat-num" data-i18n="stat1Num">5<span>+</span></div>
+      <div class="stat-label" data-i18n="stat1Label">קורסים במקביל</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">14</div>
-      <div class="stat-label">שבועות מאורגנים</div>
+      <div class="stat-num" data-i18n="stat2Num">14</div>
+      <div class="stat-label" data-i18n="stat2Label">שבועות מאורגנים</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">0</div>
-      <div class="stat-label">שעות סידור ידני</div>
+      <div class="stat-num" data-i18n="stat3Num">0</div>
+      <div class="stat-label" data-i18n="stat3Label">שעות סידור ידני</div>
     </div>
   </div>
 </section>
@@ -961,184 +843,246 @@
         </div>
       </div>
     </div>
-    <div class="ai-badge">✨ יובא אוטומטית מהסילבוס</div>
+    <div class="ai-badge" data-i18n="aiBadge">✨ יובא אוטומטית מהסילבוס</div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
 <section class="section" id="how">
-  <div class="section-label">תהליך</div>
-  <h2 class="section-title">שלושה צעדים לסמסטר מסודר</h2>
+  <div class="section-label" data-i18n="howLabel">תהליך</div>
+  <h2 class="section-title" data-i18n="howTitle">שלושה צעדים לסמסטר מסודר</h2>
 
   <div class="steps">
     <div class="step reveal">
       <div class="step-num">01</div>
       <div class="step-icon orange">📄</div>
-      <h3>מעלים את הסילבוס</h3>
-      <p>מעלים קובץ PDF של כל קורס. לא משנה מה הפורמט – האוניברסיטאית, המכללה, כל מוסד.</p>
+      <h3 data-i18n="step1Title">מעלים את הסילבוס</h3>
+      <p data-i18n="step1P">מעלים קובץ PDF של כל קורס. לא משנה מה הפורמט – האוניברסיטאית, המכללה, כל מוסד.</p>
     </div>
     <div class="step reveal" style="transition-delay:0.1s">
       <div class="step-num">02</div>
       <div class="step-icon blue">🤖</div>
-      <h3>AI מנתח הכל</h3>
-      <p>הבינה מלאכותית מזהה שיעורים, קריאות, מטלות, בחינות ותאריכים – ומסדרת לפי שבועות.</p>
+      <h3 data-i18n="step2Title">AI מנתח הכל</h3>
+      <p data-i18n="step2P">הבינה מלאכותית מזהה שיעורים, קריאות, מטלות, בחינות ותאריכים – ומסדרת לפי שבועות.</p>
     </div>
     <div class="step reveal" style="transition-delay:0.2s">
       <div class="step-num">03</div>
       <div class="step-icon green">📊</div>
-      <h3>לוח בקרה אישי</h3>
-      <p>מקבלים לוח בקרה שמציג את כל הסמסטר, עם ספירה לאחור לכל דדליין ובדיקת סטטוס.</p>
+      <h3 data-i18n="step3Title">לוח בקרה אישי</h3>
+      <p data-i18n="step3P">מקבלים לוח בקרה שמציג את כל הסמסטר, עם ספירה לאחור לכל דדליין ובדיקת סטטוס.</p>
     </div>
   </div>
 </section>
 
 <!-- FEATURES -->
 <section class="features-section">
-  <div class="section-label">יכולות</div>
-  <h2 class="section-title" style="max-width:100%">כל מה שצריך<br>לשלוט בסמסטר</h2>
+  <div class="section-label" data-i18n="featLabel">יכולות</div>
+  <h2 class="section-title" style="max-width:100%" data-i18n="featTitle">כל מה שצריך<br>לשלוט בסמסטר</h2>
 
   <div class="features-grid">
     <div class="feature reveal">
       <div class="feature-icon" style="background:rgba(232,82,42,0.15)">📅</div>
-      <h3>ניתוח PDF אוטומטי</h3>
-      <p>AI שמבין עברית ואנגלית, מזהה תאריכים, נושאים וסוגי משימות מכל פורמט סילבוס.</p>
+      <h3 data-i18n="feat1Title">ניתוח PDF אוטומטי</h3>
+      <p data-i18n="feat1P">AI שמבין עברית ואנגלית, מזהה תאריכים, נושאים וסוגי משימות מכל פורמט סילבוס.</p>
     </div>
     <div class="feature reveal" style="transition-delay:0.1s">
       <div class="feature-icon" style="background:rgba(42,110,232,0.15)">🗂️</div>
-      <h3>ארגון לפי שבועות</h3>
-      <p>כל 14 שבועות הסמסטר מסודרים עם כל המשימות, הקריאות והשיעורים לכל שבוע.</p>
+      <h3 data-i18n="feat2Title">ארגון לפי שבועות</h3>
+      <p data-i18n="feat2P">כל 14 שבועות הסמסטר מסודרים עם כל המשימות, הקריאות והשיעורים לכל שבוע.</p>
     </div>
     <div class="feature reveal" style="transition-delay:0.15s">
       <div class="feature-icon" style="background:rgba(39,174,96,0.15)">⏱️</div>
-      <h3>ספירה לאחור חיה</h3>
-      <p>כל בחינה ודדליין עם ספירה לאחור בזמן אמת. לעולם לא תופתע שוב.</p>
+      <h3 data-i18n="feat3Title">ספירה לאחור חיה</h3>
+      <p data-i18n="feat3P">כל בחינה ודדליין עם ספירה לאחור בזמן אמת. לעולם לא תופתע שוב.</p>
     </div>
     <div class="feature reveal" style="transition-delay:0.2s">
       <div class="feature-icon" style="background:rgba(180,100,220,0.15)">✅</div>
-      <h3>סימון הושלם</h3>
-      <p>מסמנים משימות שהושלמו, רואים את ההתקדמות בכל קורס ובכל שבוע.</p>
-    </div>
-  </div>
-</section>
-
-<!-- PRICING -->
-<section class="pricing-section" id="pricing">
-  <div class="section-label" style="justify-content:center;margin-bottom:16px">מחיר</div>
-  <h2 class="section-title" style="max-width:100%">פשוט וברור</h2>
-
-  <div class="pricing-cards">
-    <div class="pricing-card reveal">
-      <div class="plan-name">בסיסי</div>
-      <div class="price">חינם</div>
-      <div class="price-period">לנסיון ראשון</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
-        <li>קורס אחד</li>
-        <li>ניתוח PDF אחד</li>
-        <li>לוח בקרה בסיסי</li>
-      </ul>
-      <button class="price-btn" onclick="window.location.href='auth.html'">התחל עכשיו →</button>
-    </div>
-
-    <div class="pricing-card featured reveal" style="transition-delay:0.1s">
-      <div class="pricing-badge">הכי פופולרי</div>
-      <div class="plan-name">סמסטר</div>
-      <div class="price"><sub>₪</sub>29 <span>/ חודש</span></div>
-      <div class="price-period">או ₪79 לסמסטר מלא</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
-        <li>קורסים ללא הגבלה</li>
-        <li>ניתוח PDF ללא הגבלה</li>
-        <li>לוח בקרה מלא</li>
-        <li>ייצוא ל-Google Calendar</li>
-        <li>תמיכה מהירה</li>
-      </ul>
-      <button class="price-btn" onclick="window.location.href='auth.html'">הצטרף עכשיו</button>
-    </div>
-
-    <div class="pricing-card reveal" style="transition-delay:0.2s">
-      <div class="plan-name">שנתי</div>
-      <div class="price"><sub>₪</sub>49 <span>/ סמסטר</span></div>
-      <div class="price-period">לשני סמסטרים</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
-        <li>כל יכולות הסמסטר</li>
-        <li>גישה לשנה שלמה</li>
-        <li>עדיפות בתמיכה</li>
-        <li>גישה מוקדמת לפיצ'רים</li>
-      </ul>
-      <button class="price-btn" onclick="window.location.href='auth.html'">חסוך 40%</button>
+      <h3 data-i18n="feat4Title">סימון הושלם</h3>
+      <p data-i18n="feat4P">מסמנים משימות שהושלמו, רואים את ההתקדמות בכל קורס ובכל שבוע.</p>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
 <section class="faq-section">
-  <div class="section-label">שאלות</div>
-  <h2 class="section-title" style="font-size:2rem;margin-bottom:40px">שאלות נפוצות</h2>
+  <div class="section-label" data-i18n="faqLabel">שאלות</div>
+  <h2 class="section-title" style="font-size:2rem;margin-bottom:40px" data-i18n="faqTitle">שאלות נפוצות</h2>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span>עם אילו אוניברסיטאות זה עובד?</span>
+      <span data-i18n="faq1Q">עם אילו אוניברסיטאות זה עובד?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a">עם כל מוסד אקדמי בישראל ובעולם. הכלי מנתח כל פורמט PDF של סילבוס – אוניברסיטת תל אביב, האוניברסיטה הפתוחה, IDC, BIU וכל מקום אחר.</div>
+    <div class="faq-a" data-i18n="faq1A">עם כל מוסד אקדמי בישראל ובעולם. הכלי מנתח כל פורמט PDF של סילבוס – אוניברסיטת תל אביב, האוניברסיטה הפתוחה, IDC, BIU וכל מקום אחר.</div>
   </div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span>מה קורה אם ה-PDF בעברית?</span>
+      <span data-i18n="faq2Q">מה קורה אם ה-PDF בעברית?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a">הכלי תומך בעברית ואנגלית באופן מלא. גם PDF מעורב שמכיל את שתי השפות יטופל כראוי.</div>
+    <div class="faq-a" data-i18n="faq2A">הכלי תומך בעברית ואנגלית באופן מלא. גם PDF מעורב שמכיל את שתי השפות יטופל כראוי.</div>
   </div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span>האם הנתונים שלי מאובטחים?</span>
+      <span data-i18n="faq3Q">האם הנתונים שלי מאובטחים?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a">הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.</div>
+    <div class="faq-a" data-i18n="faq3A">הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.</div>
   </div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q">
-      <span>אפשר לערוך את הנתונים ידנית?</span>
+      <span data-i18n="faq4Q">אפשר לערוך את הנתונים ידנית?</span>
       <div class="faq-icon">+</div>
     </div>
-    <div class="faq-a">בהחלט. אחרי שה-AI מנתח את הסילבוס, אפשר להוסיף, לערוך ולמחוק כל פריט ידנית.</div>
+    <div class="faq-a" data-i18n="faq4A">בהחלט. אחרי שה-AI מנתח את הסילבוס, אפשר להוסיף, לערוך ולמחוק כל פריט ידנית.</div>
   </div>
 </section>
 
 <!-- CTA SECTION -->
 <section class="cta-section">
-  <h2>מוכן לסמסטר המסודר הראשון שלך?</h2>
-  <p>הירשם עכשיו וגש ללוח הבקרה שלך תוך דקות</p>
-  <button class="btn-white" onclick="window.location.href='auth.html'">הצטרף בחינם</button>
-  <p class="cta-note">ללא כרטיס אשראי · ביטול בכל עת</p>
+  <h2 data-i18n="ctaTitle">מוכן לסמסטר המסודר הראשון שלך?</h2>
+  <p data-i18n="ctaP">הירשם עכשיו וגש ללוח הבקרה שלך תוך דקות</p>
+  <button class="btn-white" data-i18n="ctaBtn" onclick="window.location.href='auth.html'">הצטרף בחינם</button>
+  <p class="cta-note" data-i18n="ctaNote">ללא כרטיס אשראי · ביטול בכל עת</p>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <a href="#" class="logo">Sylla<span>Bot</span></a>
-  <p>© 2026 SyllaBot · כל הזכויות שמורות</p>
-  <p style="font-size:0.8rem;color:var(--muted)">נבנה עם ❤️ לסטודנטים</p>
+  <p data-i18n="footerCopy">© 2026 SyllaBot · כל הזכויות שמורות</p>
+  <p style="font-size:0.8rem;color:var(--muted)" data-i18n="footerTagline">נבנה עם ❤️ לסטודנטים</p>
 </footer>
 
 
 <script>
-  // FAQ
+  // ── FAQ ──
   function toggleFaq(el) {
     const isOpen = el.classList.contains('open');
     document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
     if (!isOpen) el.classList.add('open');
   }
 
-  // Scroll reveal
+  // ── SCROLL REVEAL ──
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // ── I18N ──
+  const T = {
+    he: {
+      navCta: 'התחל עכשיו →',
+      heroLabel: 'כלי AI לסטודנטים',
+      heroTitle: 'הסמסטר שלך,<br>סוף סוף <span class="highlight">מסודר</span>',
+      heroSub: 'מעלים סילבוס PDF, ה-AI מנתח ומסדר לך את כל המשימות, הבחינות והקריאות לפי שבועות – בלחיצה אחת.',
+      heroBtnPrimary: 'התחל עכשיו בחינם →',
+      heroBtnGhost: '← איך זה עובד?',
+      stat1Num: '5<span>+</span>', stat1Label: 'קורסים במקביל',
+      stat2Num: '14',             stat2Label: 'שבועות מאורגנים',
+      stat3Num: '0',              stat3Label: 'שעות סידור ידני',
+      aiBadge: '✨ יובא אוטומטית מהסילבוס',
+      howLabel: 'תהליך', howTitle: 'שלושה צעדים לסמסטר מסודר',
+      step1Title: 'מעלים את הסילבוס',
+      step1P: 'מעלים קובץ PDF של כל קורס. לא משנה מה הפורמט – האוניברסיטאית, המכללה, כל מוסד.',
+      step2Title: 'AI מנתח הכל',
+      step2P: 'הבינה מלאכותית מזהה שיעורים, קריאות, מטלות, בחינות ותאריכים – ומסדרת לפי שבועות.',
+      step3Title: 'לוח בקרה אישי',
+      step3P: 'מקבלים לוח בקרה שמציג את כל הסמסטר, עם ספירה לאחור לכל דדליין ובדיקת סטטוס.',
+      featLabel: 'יכולות', featTitle: 'כל מה שצריך<br>לשלוט בסמסטר',
+      feat1Title: 'ניתוח PDF אוטומטי',
+      feat1P: 'AI שמבין עברית ואנגלית, מזהה תאריכים, נושאים וסוגי משימות מכל פורמט סילבוס.',
+      feat2Title: 'ארגון לפי שבועות',
+      feat2P: 'כל 14 שבועות הסמסטר מסודרים עם כל המשימות, הקריאות והשיעורים לכל שבוע.',
+      feat3Title: 'ספירה לאחור חיה',
+      feat3P: 'כל בחינה ודדליין עם ספירה לאחור בזמן אמת. לעולם לא תופתע שוב.',
+      feat4Title: 'סימון הושלם',
+      feat4P: 'מסמנים משימות שהושלמו, רואים את ההתקדמות בכל קורס ובכל שבוע.',
+      faqLabel: 'שאלות', faqTitle: 'שאלות נפוצות',
+      faq1Q: 'עם אילו אוניברסיטאות זה עובד?',
+      faq1A: 'עם כל מוסד אקדמי בישראל ובעולם. הכלי מנתח כל פורמט PDF של סילבוס – אוניברסיטת תל אביב, האוניברסיטה הפתוחה, IDC, BIU וכל מקום אחר.',
+      faq2Q: 'מה קורה אם ה-PDF בעברית?',
+      faq2A: 'הכלי תומך בעברית ואנגלית באופן מלא. גם PDF מעורב שמכיל את שתי השפות יטופל כראוי.',
+      faq3Q: 'האם הנתונים שלי מאובטחים?',
+      faq3A: 'הסילבוסים שלך נשמרים באופן מוצפן ומשויכים רק לחשבון שלך. לא משתפים מידע עם צדדים שלישיים.',
+      faq4Q: 'אפשר לערוך את הנתונים ידנית?',
+      faq4A: 'בהחלט. אחרי שה-AI מנתח את הסילבוס, אפשר להוסיף, לערוך ולמחוק כל פריט ידנית.',
+      ctaTitle: 'מוכן לסמסטר המסודר הראשון שלך?',
+      ctaP: 'הירשם עכשיו וגש ללוח הבקרה שלך תוך דקות',
+      ctaBtn: 'הצטרף בחינם',
+      ctaNote: 'ללא כרטיס אשראי · ביטול בכל עת',
+      footerCopy: '© 2026 SyllaBot · כל הזכויות שמורות',
+      footerTagline: 'נבנה עם ❤️ לסטודנטים',
+    },
+    en: {
+      navCta: 'Get Started →',
+      heroLabel: 'AI Tool for Students',
+      heroTitle: 'Your semester,<br>finally <span class="highlight">organized</span>',
+      heroSub: 'Upload your syllabus PDF, and our AI automatically extracts all tasks, exams, and readings organized by week — in one click.',
+      heroBtnPrimary: 'Start for free →',
+      heroBtnGhost: 'How it works ↓',
+      stat1Num: '5<span>+</span>', stat1Label: 'Courses at once',
+      stat2Num: '14',             stat2Label: 'Organized weeks',
+      stat3Num: '0',              stat3Label: 'Hours of manual sorting',
+      aiBadge: '✨ Auto-imported from syllabus',
+      howLabel: 'Process', howTitle: 'Three steps to an organized semester',
+      step1Title: 'Upload your syllabus',
+      step1P: "Upload the PDF for each course. Format doesn't matter — any university, college, or institution.",
+      step2Title: 'AI analyzes everything',
+      step2P: 'The AI identifies lectures, readings, assignments, exams, and dates — and sorts them by week.',
+      step3Title: 'Your personal dashboard',
+      step3P: 'Get a dashboard showing your entire semester with live countdowns to every deadline.',
+      featLabel: 'Features', featTitle: 'Everything you need<br>to own your semester',
+      feat1Title: 'Automatic PDF analysis',
+      feat1P: 'AI that understands Hebrew and English, detecting dates, topics, and task types from any syllabus format.',
+      feat2Title: 'Week-by-week organization',
+      feat2P: 'All 14 semester weeks laid out with every task, reading, and lecture for each week.',
+      feat3Title: 'Live countdown',
+      feat3P: 'Every exam and deadline has a real-time countdown. Never be surprised again.',
+      feat4Title: 'Completion tracking',
+      feat4P: 'Mark tasks as done and track progress across every course and every week.',
+      faqLabel: 'FAQ', faqTitle: 'Frequently Asked Questions',
+      faq1Q: 'Which universities does it work with?',
+      faq1A: 'Any academic institution in Israel or worldwide. The tool analyzes any PDF syllabus format — Tel Aviv University, Open University, IDC, BIU, and anywhere else.',
+      faq2Q: 'What if the PDF is in Hebrew?',
+      faq2A: 'The tool fully supports both Hebrew and English. Mixed PDFs containing both languages are handled correctly.',
+      faq3Q: 'Is my data secure?',
+      faq3A: 'Your syllabuses are stored encrypted and linked only to your account. We do not share information with third parties.',
+      faq4Q: 'Can I edit the data manually?',
+      faq4A: 'Absolutely. After the AI analyzes your syllabus, you can add, edit, or delete any item manually.',
+      ctaTitle: 'Ready for your first organized semester?',
+      ctaP: 'Sign up now and access your dashboard in minutes',
+      ctaBtn: 'Join for free',
+      ctaNote: 'No credit card · Cancel anytime',
+      footerCopy: '© 2026 SyllaBot · All rights reserved',
+      footerTagline: 'Built with ❤️ for students',
+    },
+  };
+
+  let currentLang = localStorage.getItem('landing-lang') || 'he';
+
+  function applyLang(lang) {
+    currentLang = lang;
+    const t = T[lang];
+    const isHe = lang === 'he';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = isHe ? 'rtl' : 'ltr';
+    document.title = isHe ? 'SyllaBot – הסמסטר שלך, מאורגן' : 'SyllaBot – Your semester, organized';
+    document.getElementById('lang-toggle').textContent = isHe ? 'EN' : 'עב';
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+    localStorage.setItem('landing-lang', lang);
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === 'he' ? 'en' : 'he');
+  }
+
+  applyLang(currentLang);
 </script>
 </body>
 </html>
