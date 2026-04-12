@@ -483,6 +483,37 @@
   .features-section .section-label::before { background: var(--accent); }
   .features-section .section-title { color: var(--paper); }
 
+  /* ── PILOT BANNER ── */
+  #pilot-banner {
+    background: #0d0d0d;
+    color: white;
+    text-align: center;
+    padding: 10px 48px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  #pilot-banner.hidden { display: none; }
+  #pilot-banner-dismiss {
+    position: absolute;
+    left: 16px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    transition: color 0.2s;
+  }
+  #pilot-banner-dismiss:hover { color: white; }
+  @media (max-width: 768px) { #pilot-banner { padding: 10px 40px 10px 16px; font-size: 0.76rem; } }
+
   /* ── LANG TOGGLE ── */
   .lang-toggle {
     background: transparent;
@@ -732,6 +763,12 @@
 </style>
 </head>
 <body>
+
+<!-- PILOT BANNER -->
+<div id="pilot-banner">
+  <span id="pilot-banner-text">🚀 גרסת פיילוט — אוניברסיטת רייכמן. השירות חינמי לחלוטין. נשמח לשמוע מה אתם חושבים!</span>
+  <button id="pilot-banner-dismiss" onclick="dismissBanner()" aria-label="סגור">×</button>
+</div>
 
 <!-- NAV -->
 <nav>
@@ -1013,6 +1050,7 @@
       ctaP: 'הירשם עכשיו וגש ללוח הבקרה שלך תוך דקות',
       ctaBtn: 'הצטרף בחינם',
       ctaNote: 'ללא כרטיס אשראי · ביטול בכל עת',
+      pilotBanner: '🚀 גרסת פיילוט — אוניברסיטת רייכמן. השירות חינמי לחלוטין. נשמח לשמוע מה אתם חושבים!',
       footerCopy: '© 2026 SyllaBot · כל הזכויות שמורות',
       footerTagline: 'נבנה עם ❤️ לסטודנטים',
     },
@@ -1056,6 +1094,7 @@
       ctaP: 'Sign up now and access your dashboard in minutes',
       ctaBtn: 'Join for free',
       ctaNote: 'No credit card · Cancel anytime',
+      pilotBanner: "🚀 Pilot version — Reichman University. Completely free. We'd love your feedback!",
       footerCopy: '© 2026 SyllaBot · All rights reserved',
       footerTagline: 'Built with ❤️ for students',
     },
@@ -1075,11 +1114,22 @@
       const key = el.dataset.i18n;
       if (t[key] !== undefined) el.innerHTML = t[key];
     });
+    const bannerText = document.getElementById('pilot-banner-text');
+    if (bannerText) bannerText.textContent = t.pilotBanner;
     localStorage.setItem('landing-lang', lang);
   }
 
   function toggleLang() {
     applyLang(currentLang === 'he' ? 'en' : 'he');
+  }
+
+  function dismissBanner() {
+    document.getElementById('pilot-banner').classList.add('hidden');
+    localStorage.setItem('pilot-banner-dismissed', '1');
+  }
+
+  if (localStorage.getItem('pilot-banner-dismissed') === '1') {
+    document.getElementById('pilot-banner').classList.add('hidden');
   }
 
   applyLang(currentLang);

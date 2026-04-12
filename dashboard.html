@@ -184,6 +184,31 @@
         .sp-account-btn.danger:hover { background: #d63031; color: white; border-color: #d63031; }
         .btn-settings { background: #f0f0f0; color: #555; }
         .btn-settings:hover { background: #e0e0e0; color: #333; }
+
+        /* ── FEEDBACK ── */
+        #feedback-btn { position: fixed; bottom: 24px; left: 24px; z-index: 800; background: #27ae60; color: white; border: none; border-radius: 100px; padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(39,174,96,0.4); transition: background 0.2s, transform 0.15s; display: flex; align-items: center; gap: 7px; }
+        #feedback-btn:hover { background: #219a52; transform: translateY(-2px); }
+        #feedback-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 900; display: none; align-items: center; justify-content: center; padding: 20px; }
+        #feedback-overlay.open { display: flex; }
+        #feedback-modal { background: #fff; border-radius: 20px; padding: 32px 28px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: feedbackIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+        @keyframes feedbackIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:none; } }
+        #feedback-modal h3 { font-size: 1.15rem; font-weight: 900; margin-bottom: 6px; }
+        #feedback-modal .fb-sub { font-size: 0.82rem; color: #636e72; margin-bottom: 20px; }
+        .fb-stars { display: flex; gap: 6px; margin-bottom: 16px; direction: ltr; justify-content: flex-start; }
+        .fb-star { font-size: 1.6rem; cursor: pointer; color: #ddd; transition: color 0.15s, transform 0.1s; line-height: 1; }
+        .fb-star:hover, .fb-star.active { color: #f39c12; transform: scale(1.15); }
+        #feedback-text { width: 100%; padding: 11px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-family: inherit; font-size: 0.88rem; resize: vertical; min-height: 90px; direction: rtl; transition: border-color 0.2s; }
+        #feedback-text:focus { outline: none; border-color: #27ae60; }
+        .fb-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .fb-submit { flex: 1; background: #27ae60; color: white; border: none; padding: 11px; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .fb-submit:hover { background: #219a52; }
+        .fb-submit:disabled { background: #ccc; cursor: not-allowed; }
+        .fb-cancel { background: #f0f0f0; color: #555; border: none; padding: 11px 16px; border-radius: 10px; font-family: inherit; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+        .fb-cancel:hover { background: #e0e0e0; }
+        #feedback-success { display: none; text-align: center; padding: 12px 0 4px; }
+        #feedback-success .fb-ok { font-size: 2.4rem; margin-bottom: 10px; }
+        #feedback-success h4 { font-size: 1.05rem; font-weight: 900; margin-bottom: 6px; }
+        #feedback-success p { font-size: 0.82rem; color: #636e72; }
     </style>
 </head>
 <body>
@@ -1283,6 +1308,85 @@ function addCourseChip(course) {
     });
 
     initAuth();
+
+    // ── FEEDBACK ──
+    let fbRating = 0;
+
+    window.openFeedback = function() {
+        fbRating = 0;
+        document.getElementById('feedback-text').value = '';
+        document.querySelectorAll('.fb-star').forEach(s => s.classList.remove('active'));
+        document.getElementById('feedback-success').style.display = 'none';
+        document.getElementById('feedback-form-body').style.display = 'block';
+        document.getElementById('feedback-overlay').classList.add('open');
+    };
+
+    window.closeFeedback = function() {
+        document.getElementById('feedback-overlay').classList.remove('open');
+    };
+
+    window.setFbStar = function(n) {
+        fbRating = n;
+        document.querySelectorAll('.fb-star').forEach((s, i) => s.classList.toggle('active', i < n));
+    };
+
+    window.submitFeedback = async function() {
+        const message = document.getElementById('feedback-text').value.trim();
+        const btn = document.querySelector('.fb-submit');
+        if (!message && !fbRating) return;
+        btn.disabled = true;
+        btn.textContent = 'שולח...';
+        try {
+            const university = currentUser?.user_metadata?.university || 'Reichman University';
+            const { error } = await sb.from('feedback').insert({
+                user_id: currentUser.id,
+                rating: fbRating || null,
+                message: message || null,
+                university,
+            });
+            if (error) throw error;
+            document.getElementById('feedback-form-body').style.display = 'none';
+            document.getElementById('feedback-success').style.display = 'block';
+            setTimeout(closeFeedback, 2200);
+        } catch(e) {
+            console.error(e);
+            btn.disabled = false;
+            btn.textContent = 'שלח';
+        }
+    };
+
+    document.getElementById('feedback-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeFeedback();
+    });
 </script>
+
+<!-- FEEDBACK BUTTON + MODAL -->
+<button id="feedback-btn" onclick="openFeedback()">💬 פידבק</button>
+
+<div id="feedback-overlay">
+    <div id="feedback-modal">
+        <div id="feedback-form-body">
+            <h3>ספר לנו מה אתה חושב</h3>
+            <p class="fb-sub">הפידבק שלך עוזר לנו לשפר את המוצר</p>
+            <div class="fb-stars">
+                <span class="fb-star" onclick="setFbStar(1)">★</span>
+                <span class="fb-star" onclick="setFbStar(2)">★</span>
+                <span class="fb-star" onclick="setFbStar(3)">★</span>
+                <span class="fb-star" onclick="setFbStar(4)">★</span>
+                <span class="fb-star" onclick="setFbStar(5)">★</span>
+            </div>
+            <textarea id="feedback-text" placeholder="מה עבד טוב? מה אפשר לשפר?"></textarea>
+            <div class="fb-actions">
+                <button class="fb-submit" onclick="submitFeedback()">שלח</button>
+                <button class="fb-cancel" onclick="closeFeedback()">ביטול</button>
+            </div>
+        </div>
+        <div id="feedback-success">
+            <div class="fb-ok">🎉</div>
+            <h4>תודה רבה!</h4>
+            <p>הפידבק שלך נשמר ויעזור לנו להשתפר</p>
+        </div>
+    </div>
+</div>
 </body>
 </html>

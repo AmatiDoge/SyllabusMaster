@@ -459,7 +459,7 @@
 
     const { error } = await sb.auth.signUp({
       email, password,
-      options: { data: { full_name: name, lang } }
+      options: { data: { full_name: name, lang, university: 'Reichman University' } }
     });
 
     document.getElementById('btn-signup').disabled = false;
