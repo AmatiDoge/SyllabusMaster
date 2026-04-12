@@ -194,9 +194,10 @@
         @keyframes feedbackIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:none; } }
         #feedback-modal h3 { font-size: 1.15rem; font-weight: 900; margin-bottom: 6px; }
         #feedback-modal .fb-sub { font-size: 0.82rem; color: #636e72; margin-bottom: 20px; }
-        .fb-stars { display: flex; gap: 6px; margin-bottom: 16px; direction: ltr; justify-content: flex-start; }
-        .fb-star { font-size: 1.6rem; cursor: pointer; color: #ddd; transition: color 0.15s, transform 0.1s; line-height: 1; }
-        .fb-star:hover, .fb-star.active { color: #f39c12; transform: scale(1.15); }
+        .fb-stars { display: flex; gap: 4px; margin-bottom: 6px; direction: ltr; justify-content: flex-start; }
+        .fb-star { font-size: 1.8rem; cursor: pointer; color: #ddd; transition: color 0.1s; line-height: 1; user-select: none; }
+        .fb-star.filled { color: #f39c12; }
+        .fb-rating-label { font-size: 0.78rem; color: #888; margin-bottom: 14px; min-height: 1.2em; }
         #feedback-text { width: 100%; padding: 11px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-family: inherit; font-size: 0.88rem; resize: vertical; min-height: 90px; direction: rtl; transition: border-color 0.2s; }
         #feedback-text:focus { outline: none; border-color: #27ae60; }
         .fb-actions { display: flex; gap: 8px; margin-top: 14px; }
@@ -1325,10 +1326,24 @@ function addCourseChip(course) {
         document.getElementById('feedback-overlay').classList.remove('open');
     };
 
+    function renderStars(hovered) {
+        const display = hovered || fbRating;
+        document.querySelectorAll('.fb-star').forEach((s, i) => {
+            const filled = i < display;
+            s.textContent = filled ? '★' : '☆';
+            s.classList.toggle('filled', filled);
+        });
+        const label = document.getElementById('fb-rating-label');
+        if (label) label.textContent = fbRating ? `${fbRating}/5` : '';
+    }
+
     window.setFbStar = function(n) {
         fbRating = n;
-        document.querySelectorAll('.fb-star').forEach((s, i) => s.classList.toggle('active', i < n));
+        renderStars(0);
     };
+
+    window.hoverStar = function(n) { renderStars(n); };
+    window.unhoverStars = function() { renderStars(0); };
 
     window.submitFeedback = async function() {
         const message = document.getElementById('feedback-text').value.trim();
@@ -1368,13 +1383,14 @@ function addCourseChip(course) {
         <div id="feedback-form-body">
             <h3>ספר לנו מה אתה חושב</h3>
             <p class="fb-sub">הפידבק שלך עוזר לנו לשפר את המוצר</p>
-            <div class="fb-stars">
-                <span class="fb-star" onclick="setFbStar(1)">★</span>
-                <span class="fb-star" onclick="setFbStar(2)">★</span>
-                <span class="fb-star" onclick="setFbStar(3)">★</span>
-                <span class="fb-star" onclick="setFbStar(4)">★</span>
-                <span class="fb-star" onclick="setFbStar(5)">★</span>
+            <div class="fb-stars" onmouseleave="unhoverStars()">
+                <span class="fb-star" onmouseenter="hoverStar(1)" onclick="setFbStar(1)">☆</span>
+                <span class="fb-star" onmouseenter="hoverStar(2)" onclick="setFbStar(2)">☆</span>
+                <span class="fb-star" onmouseenter="hoverStar(3)" onclick="setFbStar(3)">☆</span>
+                <span class="fb-star" onmouseenter="hoverStar(4)" onclick="setFbStar(4)">☆</span>
+                <span class="fb-star" onmouseenter="hoverStar(5)" onclick="setFbStar(5)">☆</span>
             </div>
+            <div class="fb-rating-label" id="fb-rating-label"></div>
             <textarea id="feedback-text" placeholder="מה עבד טוב? מה אפשר לשפר?"></textarea>
             <div class="fb-actions">
                 <button class="fb-submit" onclick="submitFeedback()">שלח</button>
