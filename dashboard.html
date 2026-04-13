@@ -1184,6 +1184,10 @@ function addCourseChip(course) {
                 const c = item.c || '';
                 if (c) courseCount[c] = (courseCount[c] || 0) + 1;
             });
+            (r.exams || []).forEach(item => {
+                const c = item.c || '';
+                if (c) courseCount[c] = (courseCount[c] || 0) + 1;
+            });
         });
         const courses = Object.keys(courseCount);
 
@@ -1228,6 +1232,9 @@ function addCourseChip(course) {
         if (Object.keys(renames).length) {
             obResults.forEach(r => {
                 (r.syllabus || []).forEach(item => {
+                    if (renames[item.c]) item.c = renames[item.c];
+                });
+                (r.exams || []).forEach(item => {
                     if (renames[item.c]) item.c = renames[item.c];
                 });
             });
@@ -1602,7 +1609,8 @@ function addCourseChip(course) {
             const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
             const safeTag = DOMPurify.sanitize(x.tag, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
             const safeT   = DOMPurify.sanitize(x.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
-            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${safeTag}</span><strong>${safeT}</strong></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+            const courseInfo = x.c ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;color:#aaa;margin-top:2px"><span style="width:7px;height:7px;border-radius:50%;background:${getCourseColor(x.c)};flex-shrink:0"></span>${DOMPurify.sanitize(x.c,{ALLOWED_TAGS:[],ALLOWED_ATTR:[]})}</span>` : '';
+            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${safeTag}</span><div style="display:flex;flex-direction:column;gap:1px"><strong>${safeT}</strong>${courseInfo}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
         });
 
         // Tasks
