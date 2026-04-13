@@ -1123,10 +1123,13 @@
             completed++; updateProgress();
         });
 
-        // Concurrency pool: run at most 2 tasks at a time
+        // Sequential processing (concurrency 1) with 3s delay between files to avoid rate limits
         const queue = [...tasks];
-        await Promise.all(Array.from({ length: Math.min(2, queue.length) }, async () => {
-            while (queue.length) await queue.shift()();
+        await Promise.all(Array.from({ length: Math.min(1, queue.length) }, async () => {
+            while (queue.length) {
+                await queue.shift()();
+                if (queue.length) await new Promise(resolve => setTimeout(resolve, 3000));
+            }
         }));
 
         document.getElementById('ob-progress-fill').style.width = '100%';
