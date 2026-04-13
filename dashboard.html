@@ -1043,43 +1043,53 @@
 
         if (!res.ok) {
             const msg = result?.error || '';
-            const isOverload = res.status === 529 || msg.toLowerCase().includes('overloaded');
-            const isTimeout  = msg.includes('timeout');
+            const isOverload   = res.status === 529 || msg.toLowerCase().includes('overloaded') || msg.includes('overload');
+            const isRateLimit  = res.status === 429 || msg.toLowerCase().includes('rate_limit') || msg.toLowerCase().includes('rate limit');
+            const isTimeout    = msg.includes('timeout');
 
-            if (isOverload) {
-                // Auto-retry after 10s countdown
-                console.warn('Overload detected, retrying in 10s...');
-                let secs = 10;
-                setFileStatus(fileIdx, 's-error', `עמוס (${secs}...)`, '');
+            const autoRetry = async (delaySecs, labelFn) => {
+                let secs = delaySecs;
                 const badge = document.getElementById(`fs-${fileIdx}`);
+                setFileStatus(fileIdx, 's-error', labelFn(secs), '');
                 await new Promise(resolve => {
                     const iv = setInterval(() => {
                         secs--;
-                        if (badge) badge.textContent = secs > 0 ? `עמוס (${secs}...)` : 'מנסה שוב...';
+                        if (badge) badge.textContent = secs > 0 ? labelFn(secs) : 'מנסה שוב...';
                         if (secs <= 0) { clearInterval(iv); resolve(); }
                     }, 1000);
                 });
-                // Second attempt
                 let res2, result2;
                 try {
                     const body2 = await bodyFn();
                     setFileStatus(fileIdx, 's-analyzing', 'מנתח...');
                     res2 = await fetch(EDGE_URL, { method: 'POST', headers: await getEdgeHeaders(), body: body2 });
                 } catch(e2) {
-                    console.error(e2);
                     setFileStatus(fileIdx, 's-error', 'שגיאת רשת', 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
                     if (!skipCheck) checkAllAnalyzed();
-                    return;
+                    return null;
                 }
                 try { result2 = await res2.json(); } catch(e) { result2 = {}; }
-                if (res2.ok && (result2.syllabus?.length || result2.exams?.length)) {
-                    // Second attempt succeeded — fall through by reassigning
-                    res = res2; result = result2;
-                } else {
+                return { res: res2, result: result2 };
+            };
+
+            if (isOverload) {
+                console.warn('Overload detected, retrying in 10s...');
+                const retry = await autoRetry(10, s => `עמוס (${s}...)`);
+                if (!retry || !retry.res.ok || (!retry.result.syllabus?.length && !retry.result.exams?.length)) {
                     setFileStatus(fileIdx, 's-error', 'שגיאה', 'השרת עמוס כרגע. המתן מספר שניות ונסה שוב.');
                     if (!skipCheck) checkAllAnalyzed();
                     return;
                 }
+                res = retry.res; result = retry.result;
+            } else if (isRateLimit) {
+                console.warn('Rate limit detected, retrying in 15s...');
+                const retry = await autoRetry(15, s => `מגבלת קצב (${s}...)`);
+                if (!retry || !retry.res.ok || (!retry.result.syllabus?.length && !retry.result.exams?.length)) {
+                    setFileStatus(fileIdx, 's-error', 'שגיאה', 'יותר מדי בקשות בו זמנית. מנסה שוב בעוד 15 שניות...');
+                    if (!skipCheck) checkAllAnalyzed();
+                    return;
+                }
+                res = retry.res; result = retry.result;
             } else {
                 const errMsg = isTimeout
                     ? 'הניתוח לוקח יותר מדי זמן. נסה קובץ קטן יותר או בחר עמודים ספציפיים.'
@@ -1104,7 +1114,7 @@
         if (!skipCheck) checkAllAnalyzed();
     }
 
-    // "Build my dashboard" button — analyzes all uploaded files in PARALLEL
+    // "Build my dashboard" button — analyzes files with concurrency limit of 2
     async function obAnalyzeAll() {
         if (!obFiles.length) return;
         const btn = document.getElementById('ob-btn');
@@ -1120,16 +1130,23 @@
             document.getElementById('ob-progress-count').textContent = `${completed} / ${total}`;
             document.getElementById('ob-progress-fill').style.width = `${(completed / total) * 100}%`;
             document.getElementById('ob-progress-text').textContent =
-                completed === total ? 'הכל הושלם! ✓' : `מנתח ${total} קבצים במקביל...`;
+                completed === total ? 'הכל הושלם! ✓' : `מנתח קבצים (${completed}/${total})...`;
         };
         updateProgress();
 
-        await Promise.all(obFiles.map((_, i) => {
+        // Build task list
+        const tasks = obFiles.map((_, i) => async () => {
             const statusEl = document.getElementById(`fs-${i}`);
-            if (statusEl?.classList.contains('s-done')) { completed++; updateProgress(); return Promise.resolve(); }
+            if (statusEl?.classList.contains('s-done')) { completed++; updateProgress(); return; }
             document.getElementById(`ps-${i}`)?.style && (document.getElementById(`ps-${i}`).style.display = 'none');
-            return _runAnalysis(i, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) }), true)
-                .then(() => { completed++; updateProgress(); });
+            await _runAnalysis(i, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) }), true);
+            completed++; updateProgress();
+        });
+
+        // Concurrency pool: run at most 2 tasks at a time
+        const queue = [...tasks];
+        await Promise.all(Array.from({ length: Math.min(2, queue.length) }, async () => {
+            while (queue.length) await queue.shift()();
         }));
 
         document.getElementById('ob-progress-fill').style.width = '100%';
