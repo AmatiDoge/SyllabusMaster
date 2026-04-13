@@ -274,6 +274,22 @@
         #feedback-success h4 { font-size: 1.05rem; font-weight: 900; margin-bottom: 6px; }
         #feedback-success p { font-size: 0.82rem; color: #636e72; }
 
+        /* ── COURSE CONFIRM ── */
+        #ob-course-confirm { display: none; }
+        #ob-course-confirm.visible { display: block; }
+        .cc-card { background: white; border-radius: 24px; padding: 40px 40px 32px; max-width: 540px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.1); animation: fadeUp 0.5s ease; }
+        .cc-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 28px; }
+        .cc-row { display: flex; align-items: flex-start; gap: 10px; }
+        .cc-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 12px; }
+        .cc-field { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .cc-input { padding: 9px 12px; border: 1.5px solid #e8e8e8; border-radius: 10px; font-family: 'Heebo', sans-serif; font-size: 0.9rem; color: #2d3436; background: #fafafa; transition: border-color 0.2s, background 0.2s; direction: rtl; width: 100%; }
+        .cc-input:focus { outline: none; border-color: #27ae60; background: white; }
+        .cc-input.cc-suspicious { border-color: #e67e22; background: #fffbf5; }
+        .cc-hint { font-size: 0.71rem; color: #aaa; padding: 0 4px; }
+        .cc-warn { font-size: 0.71rem; color: #e67e22; padding: 0 4px; }
+        .cc-skip { font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+        .cc-skip:hover { color: #636e72; }
+
         /* ── VIEW SWITCHER ── */
         .view-switcher { display: flex; gap: 2px; background: #f0f0f0; border-radius: 10px; padding: 3px; }
         .view-btn { background: none; border: none; padding: 5px 12px; border-radius: 8px; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; color: #888; transition: all 0.18s; white-space: nowrap; }
@@ -389,6 +405,19 @@
 
         <button class="ob-btn" id="ob-btn" onclick="obAnalyzeAll()" disabled>Build my dashboard ✨</button>
         <p class="ob-note">Usually takes 10–30 seconds per file</p>
+    </div>
+
+    <!-- COURSE CONFIRM (shown after analysis, before review) -->
+    <div id="ob-course-confirm">
+        <div class="cc-card">
+            <span class="ob-logo">Sylla<span>Bot</span></span>
+            <div class="ob-step-label">הגדרה · שלב 2 מתוך 3</div>
+            <h2 class="ob-title">בדוק את שמות הקורסים ✏️</h2>
+            <p class="ob-sub" style="margin-bottom:0">ה-AI זיהה את הקורסים הבאים. תקן אם צריך לפני שנמשיך.</p>
+            <div class="cc-list" id="cc-course-list"></div>
+            <button class="ob-btn" onclick="confirmCourseNames()">המשך לבדיקה ✓</button>
+            <p class="cc-skip" onclick="skipCourseConfirm()">דלג ←</p>
+        </div>
     </div>
 
     <!-- REVIEW SCREEN (shown after analysis, before saving) -->
@@ -812,6 +841,7 @@
         document.getElementById('ob-btn').textContent = 'Build my dashboard ✨';
         document.getElementById('ob-btn').onclick = obAnalyzeAll;
         document.getElementById('ob-review').classList.remove('visible');
+        document.getElementById('ob-course-confirm').classList.remove('visible');
         document.querySelector('.ob-card').style.display = '';
     }
 
@@ -1098,7 +1128,7 @@
             ? 'הכל הושלם! ✓'
             : `${obResults.length} מתוך ${obFiles.length} הצליחו`;
         if (obResults.length > 0) {
-            showReviewScreen();
+            showCourseConfirm();
         } else {
             btn.textContent = 'נסה שוב';
             btn.disabled = false;
@@ -1112,7 +1142,7 @@
         });
         if (!allDone) return;
         if (obResults.length > 0) {
-            showReviewScreen();
+            showCourseConfirm();
         } else {
             const btn = document.getElementById('ob-btn');
             btn.disabled = false;
@@ -1126,7 +1156,7 @@
             const el = document.getElementById(`fs-${i}`);
             return el && (el.classList.contains('s-done') || el.classList.contains('s-error'));
         });
-        if (allSettled && obResults.length > 0) showReviewScreen();
+        if (allSettled && obResults.length > 0) showCourseConfirm();
     }
 
 function addCourseChip(course) {
@@ -1135,6 +1165,87 @@ function addCourseChip(course) {
         const container = document.getElementById('ob-courses-found');
         container.style.display = 'flex';
         container.innerHTML += DOMPurify.sanitize(`<div class="course-chip"><span class="chip-dot" style="background:${color}"></span>${course}</div>`);
+    }
+
+    // ── COURSE CONFIRM ──
+    function isSuspiciousCourseName(name) {
+        if (name.length > 60) return true;
+        if (/[|\\{}]/.test(name)) return true;
+        const generic = ['סילבוס', 'syllabus', 'course', 'קורס', 'untitled', 'document', 'pdf'];
+        if (generic.includes(name.toLowerCase().trim())) return true;
+        return false;
+    }
+
+    function showCourseConfirm() {
+        // Collect unique course names and their item counts across all results
+        const courseCount = {};
+        obResults.forEach(r => {
+            (r.syllabus || []).forEach(item => {
+                const c = item.c || '';
+                if (c) courseCount[c] = (courseCount[c] || 0) + 1;
+            });
+        });
+        const courses = Object.keys(courseCount);
+
+        // If no courses detected, skip straight to review
+        if (!courses.length) { showReviewScreen(); return; }
+
+        const list = document.getElementById('cc-course-list');
+        list.innerHTML = courses.map((name, idx) => {
+            const color = getCourseColor(name);
+            const count = courseCount[name];
+            const suspicious = isSuspiciousCourseName(name);
+            return `<div class="cc-row">
+                <div class="cc-dot" style="background:${color}"></div>
+                <div class="cc-field">
+                    <input class="cc-input${suspicious ? ' cc-suspicious' : ''}" id="cc-inp-${idx}"
+                           data-original="${name.replace(/"/g,'&quot;')}" value="${sanitize(name).replace(/"/g,'&quot;')}">
+                    <span class="cc-hint">${count} פריטים בקורס זה</span>
+                    ${suspicious ? '<span class="cc-warn">⚠️ בדוק שם זה</span>' : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+        // Store the ordered course list for confirmCourseNames to reference
+        list.dataset.count = courses.length;
+
+        document.querySelector('.ob-card').style.display = 'none';
+        document.getElementById('ob-course-confirm').classList.add('visible');
+    }
+
+    function confirmCourseNames() {
+        const list = document.getElementById('cc-course-list');
+        const n = parseInt(list.dataset.count, 10);
+        const renames = {};
+        for (let i = 0; i < n; i++) {
+            const input = document.getElementById(`cc-inp-${i}`);
+            if (!input) continue;
+            const original = input.dataset.original;
+            const newName  = sanitize(input.value.trim()) || original;
+            if (newName !== original) renames[original] = newName;
+        }
+        // Apply renames to obResults in place
+        if (Object.keys(renames).length) {
+            obResults.forEach(r => {
+                (r.syllabus || []).forEach(item => {
+                    if (renames[item.c]) item.c = renames[item.c];
+                });
+            });
+            // Migrate courseColors
+            Object.entries(renames).forEach(([oldName, newName]) => {
+                if (courseColors[oldName] !== undefined && !courseColors[newName]) {
+                    courseColors[newName] = courseColors[oldName];
+                    delete courseColors[oldName];
+                }
+            });
+        }
+        document.getElementById('ob-course-confirm').classList.remove('visible');
+        showReviewScreen();
+    }
+
+    function skipCourseConfirm() {
+        document.getElementById('ob-course-confirm').classList.remove('visible');
+        showReviewScreen();
     }
 
     // ── REVIEW SCREEN ──
