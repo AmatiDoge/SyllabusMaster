@@ -287,6 +287,8 @@
         .cc-input.cc-suspicious { border-color: #e67e22; background: #fffbf5; }
         .cc-hint { font-size: 0.71rem; color: #aaa; padding: 0 4px; }
         .cc-warn { font-size: 0.71rem; color: #e67e22; padding: 0 4px; }
+        .cc-samples { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px 4px 0; }
+        .cc-pill { font-size: 0.67rem; background: #f0f0f0; color: #636e72; border-radius: 6px; padding: 2px 8px; white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
         .cc-skip { font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
         .cc-skip:hover { color: #636e72; }
 
@@ -1177,16 +1179,23 @@ function addCourseChip(course) {
     }
 
     function showCourseConfirm() {
-        // Collect unique course names and their item counts across all results
+        // Collect unique course names, item counts, and sample items
         const courseCount = {};
+        const courseSamples = {}; // name → array of {label, desc}
         obResults.forEach(r => {
             (r.syllabus || []).forEach(item => {
                 const c = item.c || '';
-                if (c) courseCount[c] = (courseCount[c] || 0) + 1;
+                if (!c) return;
+                courseCount[c] = (courseCount[c] || 0) + 1;
+                if (!courseSamples[c]) courseSamples[c] = [];
+                if (courseSamples[c].length < 3) courseSamples[c].push(`${item.t}: ${(item.txt || '').slice(0, 28)}`);
             });
             (r.exams || []).forEach(item => {
                 const c = item.c || '';
-                if (c) courseCount[c] = (courseCount[c] || 0) + 1;
+                if (!c) return;
+                courseCount[c] = (courseCount[c] || 0) + 1;
+                if (!courseSamples[c]) courseSamples[c] = [];
+                if (courseSamples[c].length < 3) courseSamples[c].push(`${item.tag || 'מבחן'}: ${(item.t || '').slice(0, 28)}`);
             });
         });
         const courses = Object.keys(courseCount);
@@ -1199,13 +1208,17 @@ function addCourseChip(course) {
             const color = getCourseColor(name);
             const count = courseCount[name];
             const suspicious = isSuspiciousCourseName(name);
+            const samples = (courseSamples[name] || [])
+                .map(s => `<span class="cc-pill">${DOMPurify.sanitize(s, {ALLOWED_TAGS:[],ALLOWED_ATTR:[]})}</span>`)
+                .join('');
             return `<div class="cc-row">
                 <div class="cc-dot" style="background:${color}"></div>
                 <div class="cc-field">
                     <input class="cc-input${suspicious ? ' cc-suspicious' : ''}" id="cc-inp-${idx}"
                            data-original="${name.replace(/"/g,'&quot;')}" value="${sanitize(name).replace(/"/g,'&quot;')}">
-                    <span class="cc-hint">${count} פריטים בקורס זה</span>
+                    <span class="cc-hint">${count} פריטים זוהו</span>
                     ${suspicious ? '<span class="cc-warn">⚠️ בדוק שם זה</span>' : ''}
+                    ${samples ? `<div class="cc-samples">${samples}</div>` : ''}
                 </div>
             </div>`;
         }).join('');
