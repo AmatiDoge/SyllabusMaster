@@ -428,7 +428,14 @@
     const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
     const EDGE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/analyze-syllabus';
     const ANON_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
-    const EDGE_HEADERS = { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` };
+    async function getEdgeHeaders() {
+      const { data: { session } } = await sb.auth.getSession();
+      return {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${session?.access_token || ANON_KEY}`
+      };
+    }
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -478,7 +485,7 @@
             if (session) {
                 await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/confirm-payment', {
                     method: 'POST',
-                    headers: EDGE_HEADERS,
+                    headers: await getEdgeHeaders(),
                     body: JSON.stringify({ sessionId }),
                 });
             }
@@ -498,7 +505,7 @@
             //     const { data: { session } } = await sb.auth.getSession();
             //     const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
             //         method: 'POST',
-            //         headers: EDGE_HEADERS,
+            //         headers: await getEdgeHeaders(),
             //         body: JSON.stringify({ userId: currentUser.id, userEmail: currentUser.email }),
             //     });
             //     const checkoutData = await res.json();
@@ -871,13 +878,12 @@
     }
 
     async function _runAnalysis(fileIdx, bodyFn) {
-        const { data: { session } } = await sb.auth.getSession();
         setFileStatus(fileIdx, 's-analyzing', 'Analyzing...');
         try {
             const body = await bodyFn();
             const res = await fetch(EDGE_URL, {
                 method: 'POST',
-                headers: EDGE_HEADERS,
+                headers: await getEdgeHeaders(),
                 body
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -913,7 +919,7 @@
             try {
                 const res = await fetch(EDGE_URL, {
                     method: 'POST',
-                    headers: EDGE_HEADERS,
+                    headers: await getEdgeHeaders(),
                     body: JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) })
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1452,7 +1458,7 @@ function addCourseChip(course) {
         try {
             const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/billing-portal', {
                 method: 'POST',
-                headers: EDGE_HEADERS,
+                headers: await getEdgeHeaders(),
             });
             const data = await res.json();
             if (data.url) {
