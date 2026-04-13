@@ -127,38 +127,59 @@
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
 
         /* REVIEW SCREEN */
-        #ob-review { display: none; background: white; border-radius: 24px; padding: 40px 36px 0; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.1); animation: fadeUp 0.5s ease; }
+        #ob-review { display: none; background: #f4f5f7; border-radius: 24px; padding: 0; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.12); animation: fadeUp 0.5s ease; }
         #ob-review.visible { display: flex; flex-direction: column; }
-        .rv-title { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
-        .rv-sub { font-size: 0.85rem; color: #636e72; line-height: 1.6; margin-bottom: 22px; }
-        .rv-section { margin-bottom: 14px; }
-        .rv-section-header { display: flex; align-items: center; gap: 8px; padding: 7px 0; cursor: pointer; user-select: none; border-bottom: 2px solid #eee; margin-bottom: 6px; }
-        .rv-section-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-        .rv-section-label { font-size: 0.79rem; font-weight: 700; }
-        .rv-section-count { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 1px 8px; }
-        .rv-section-toggle { margin-right: auto; font-size: 0.7rem; color: #aaa; }
-        .rv-items { display: flex; flex-direction: column; gap: 4px; }
-        .rv-items.collapsed { display: none; }
-        .rv-item { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 8px; background: #fafafa; border: 1px solid #f0f0f0; }
-        .rv-conf { font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; cursor: help; }
-        .rv-conf.red { background: #ffebee; color: #c62828; }
-        .rv-conf.yellow { background: #fff8e1; color: #f57f17; }
-        .rv-conf.green { background: #e8f5e9; color: #2e7d32; }
-        .rv-week { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 3px 6px; width: 52px; border: 1px solid transparent; font-family: inherit; text-align: center; flex-shrink: 0; }
-        .rv-week:focus { outline: none; border-color: #27ae60; background: white; }
-        .rv-date { font-size: 0.68rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 3px 6px; white-space: nowrap; flex-shrink: 0; }
-        .rv-desc-input { flex: 1; min-width: 0; border: none; background: transparent; font-family: inherit; font-size: 0.8rem; color: #2d3436; direction: rtl; padding: 2px 4px; border-radius: 4px; }
-        .rv-desc-input:focus { outline: 1px solid #27ae60; background: white; }
-        .rv-del { background: none; border: none; cursor: pointer; color: #ddd; font-size: 1rem; padding: 0 2px; line-height: 1; flex-shrink: 0; }
-        .rv-del:hover { color: #d63031; }
-        .rv-footer { position: sticky; bottom: 0; background: white; padding: 14px 0 28px; border-top: 1px solid #eee; margin-top: 14px; }
-        .rv-counter { font-size: 0.82rem; color: #636e72; margin-bottom: 10px; text-align: center; }
-        .rv-counter strong { color: #2d3436; font-size: 1rem; }
+        .rv-header { padding: 28px 32px 18px; background: white; border-radius: 24px 24px 0 0; border-bottom: 1px solid #eee; }
+        .rv-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
+        .rv-sub { font-size: 0.85rem; color: #636e72; line-height: 1.6; margin-bottom: 12px; direction: rtl; }
+        .rv-pills { display: flex; gap: 8px; flex-direction: row-reverse; }
+        .rv-pill { font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+        .rv-pill.ok { background: #e8f5e9; color: #2e7d32; }
+        .rv-pill.warn { background: #fff3e0; color: #e65100; }
+        .rv-body { padding: 18px 32px 8px; flex: 1; }
+        .rv-section { margin-bottom: 16px; }
+        .rv-section-header { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer; user-select: none; }
+        .rv-section-label { font-size: 0.82rem; font-weight: 800; direction: rtl; }
+        .rv-section-count { font-size: 0.72rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 2px 8px; }
+        .rv-section-toggle { margin-right: auto; font-size: 0.8rem; color: #bbb; }
+        .rv-cards { display: flex; flex-direction: column; gap: 10px; }
+        .rv-cards.collapsed { display: none; }
+        .rv-card { border-radius: 12px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.07); border-right: 4px solid #ff9800; transition: opacity 0.3s, transform 0.3s, border-color 0.3s; overflow: hidden; }
+        .rv-card.is-confirmed { border-right-color: #27ae60; }
+        .rv-card.deleting { opacity: 0; transform: translateX(30px); }
+        .rv-card-top { display: flex; align-items: center; gap: 8px; padding: 11px 14px 5px; flex-direction: row-reverse; }
+        .rv-card-course { font-size: 0.72rem; font-weight: 700; color: #555; display: flex; align-items: center; gap: 5px; flex-direction: row-reverse; direction: rtl; }
+        .rv-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .rv-card-meta { display: flex; align-items: center; gap: 6px; margin-right: auto; }
+        .rv-week-input { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 2px 6px; width: 44px; border: 1px solid transparent; font-family: inherit; text-align: center; flex-shrink: 0; }
+        .rv-week-input:focus { outline: none; border-color: #27ae60; background: white; }
+        .rv-date-badge { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+        .rv-card-desc { padding: 3px 14px 7px; direction: rtl; }
+        .rv-desc-input { width: 100%; border: none; background: transparent; font-family: 'Heebo', sans-serif; font-size: 0.92rem; color: #2d3436; direction: rtl; font-weight: 500; padding: 2px 4px; border-radius: 4px; box-sizing: border-box; }
+        .rv-desc-input:focus { outline: 1px solid #27ae60; background: #f8fff8; }
+        .rv-card-warning { padding: 0 14px 7px; font-size: 0.73rem; color: #e65100; direction: rtl; }
+        .rv-card-actions { display: flex; gap: 6px; padding: 8px 14px 11px; border-top: 1px solid #f5f5f5; flex-direction: row-reverse; }
+        .rv-card-btn { font-family: 'Heebo', sans-serif; font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.15s; }
+        .rv-card-btn.rv-confirm { background: #e8f5e9; color: #2e7d32; }
+        .rv-card-btn.rv-confirm:hover { background: #27ae60; color: white; }
+        .rv-card-btn.rv-edit { background: #f5f5f5; color: #555; }
+        .rv-card-btn.rv-edit:hover { background: #e0e0e0; }
+        .rv-card-btn.rv-del { background: #ffebee; color: #c62828; }
+        .rv-card-btn.rv-del:hover { background: #d63031; color: white; }
+        .rv-compact-list { display: flex; flex-direction: column; gap: 6px; }
+        .rv-compact-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; background: white; border-right: 3px solid #27ae60; font-size: 0.8rem; color: #555; direction: rtl; flex-direction: row-reverse; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .rv-footer { position: sticky; bottom: 0; background: white; padding: 12px 32px 24px; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .rv-save-count { font-size: 0.82rem; color: #636e72; direction: rtl; white-space: nowrap; }
+        .rv-save-count strong { color: #2d3436; }
         .rv-actions { display: flex; gap: 8px; }
-        .rv-btn-all { flex: 1; padding: 13px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.92rem; font-weight: 700; cursor: pointer; border: none; background: #0d0d0d; color: white; transition: background 0.2s; }
+        .rv-btn-all { padding: 12px 18px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; border: none; background: #0d0d0d; color: white; transition: background 0.2s; white-space: nowrap; }
         .rv-btn-all:hover { background: #27ae60; }
-        .rv-btn-green { padding: 13px 18px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.92rem; font-weight: 700; cursor: pointer; border: 1.5px solid #27ae60; background: white; color: #27ae60; transition: all 0.2s; white-space: nowrap; }
-        .rv-btn-green:hover { background: #27ae60; color: white; }
+        .rv-btn-confirmed { padding: 12px 16px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; border: 1.5px solid #27ae60; background: white; color: #27ae60; transition: all 0.2s; white-space: nowrap; }
+        .rv-btn-confirmed:hover { background: #27ae60; color: white; }
+        @media (max-width: 520px) {
+          #ob-review { border-radius: 0; max-height: 100vh; }
+          .rv-header, .rv-body, .rv-footer { padding-left: 18px; padding-right: 18px; }
+        }
 
         /* PAGE SELECTOR */
         .page-selector { padding: 8px 4px 4px; }
@@ -326,16 +347,21 @@
 
     <!-- REVIEW SCREEN (shown after analysis, before saving) -->
     <div id="ob-review">
-        <span class="ob-logo">Sylla<span>Bot</span></span>
-        <div class="ob-step-label">Setup · Review before importing</div>
-        <h2 class="rv-title">בדוק לפני שמירה ✋</h2>
-        <p class="rv-sub">ה-AI ניתח את הסילבוס. עבור על הפריטים ואשר שהכל נכון לפני השמירה.</p>
-        <div id="rv-sections"></div>
+        <div class="rv-header">
+            <span class="ob-logo">Sylla<span>Bot</span></span>
+            <div class="ob-step-label">Setup · Review before importing</div>
+            <h2 class="rv-title">בדוק לפני שמירה ✋</h2>
+            <p class="rv-sub" id="rv-subtitle"></p>
+            <div class="rv-pills" id="rv-pills"></div>
+        </div>
+        <div class="rv-body">
+            <div id="rv-sections"></div>
+        </div>
         <div class="rv-footer">
-            <div class="rv-counter" id="rv-counter"></div>
+            <div class="rv-save-count" id="rv-counter"></div>
             <div class="rv-actions">
-                <button class="rv-btn-all" onclick="confirmReview('all')">אשר הכל ושמור ✓</button>
-                <button class="rv-btn-green" onclick="confirmReview('green')">ירוקים בלבד 🟢</button>
+                <button class="rv-btn-confirmed" onclick="confirmReview('confirmed')">שמור תקינים בלבד</button>
+                <button class="rv-btn-all" onclick="confirmReview('all')">שמור הכל ✓</button>
             </div>
         </div>
     </div>
@@ -983,6 +1009,7 @@ function addCourseChip(course) {
                     t: sanitize(item.t || ''),
                     txt: sanitize(item.txt || ''),
                     deleted: false,
+                    userConfirmed: false,
                 });
             });
             (result.exams || []).forEach(item => {
@@ -995,6 +1022,7 @@ function addCourseChip(course) {
                     d: item.d || '',
                     tag: sanitize(item.tag || ''),
                     deleted: false,
+                    userConfirmed: false,
                 });
             });
         });
@@ -1004,52 +1032,93 @@ function addCourseChip(course) {
     }
 
     function renderReviewUI() {
-        const active = reviewItems.filter(i => !i.deleted);
-        const red    = active.filter(i => i.confidence < 50);
-        const yellow = active.filter(i => i.confidence >= 50 && i.confidence < 80);
-        const green  = active.filter(i => i.confidence >= 80);
+        const active    = reviewItems.filter(i => !i.deleted);
+        const uncertain = active.filter(i => i.confidence < 80 && !i.userConfirmed);
+        const confirmed = active.filter(i => i.confidence >= 80 || i.userConfirmed);
+
+        document.getElementById('rv-subtitle').textContent =
+            `מצאנו ${active.length} פריטים. ${confirmed.length} מהם נראים בסדר, ${uncertain.length} דורשים בדיקה.`;
+        document.getElementById('rv-pills').innerHTML =
+            `<span class="rv-pill ok">✓ ${confirmed.length} תקינים</span>` +
+            (uncertain.length ? `<span class="rv-pill warn">⚠️ ${uncertain.length} לבדיקה</span>` : '');
 
         document.getElementById('rv-sections').innerHTML =
-            rvSectionHtml(red,    '🔴 פריטים לא בטוחים — נא לבדוק', '#d63031', 'red',    false) +
-            rvSectionHtml(yellow, '🟡 פריטים לבדיקה',                 '#e67e22', 'yellow', false) +
-            rvSectionHtml(green,  '🟢 פריטים בטוחים',                 '#27ae60', 'green',  true);
+            rvUncertainSection(uncertain) +
+            rvConfirmedSection(confirmed);
 
-        const total = active.length;
         document.getElementById('rv-counter').innerHTML =
-            `<strong>${total}</strong> פריטים מוכנים לשמירה`;
+            `<strong>${active.length}</strong> פריטים יישמרו`;
     }
 
-    function rvSectionHtml(items, label, color, colorKey, collapsed) {
+    function rvUncertainSection(items) {
         if (!items.length) return '';
-        const sid = colorKey;
-        const rows = items.map(rvItemHtml).join('');
         return `<div class="rv-section">
-            <div class="rv-section-header" onclick="toggleRvSection('rvs-${sid}','rvst-${sid}')">
-                <span class="rv-section-dot" style="background:${color}"></span>
-                <span class="rv-section-label">${label}</span>
+            <div class="rv-section-header" onclick="toggleRvSection('rvs-uncertain','rvst-uncertain')">
+                <span class="rv-section-label" style="color:#e65100">⚠️ פריטים לבדיקה</span>
                 <span class="rv-section-count">${items.length}</span>
-                <span class="rv-section-toggle" id="rvst-${sid}">${collapsed ? '▸' : '▾'}</span>
+                <span class="rv-section-toggle" id="rvst-uncertain">▾</span>
             </div>
-            <div class="rv-items${collapsed ? ' collapsed' : ''}" id="rvs-${sid}">${rows}</div>
+            <div class="rv-cards" id="rvs-uncertain">${items.map(rvCardHtml).join('')}</div>
         </div>`;
     }
 
-    function rvItemHtml(item) {
-        const confClass = item.confidence < 50 ? 'red' : item.confidence < 80 ? 'yellow' : 'green';
+    function rvConfirmedSection(items) {
+        if (!items.length) return '';
+        return `<div class="rv-section">
+            <div class="rv-section-header" onclick="toggleRvSection('rvs-confirmed','rvst-confirmed')">
+                <span class="rv-section-label" style="color:#27ae60">✓ פריטים תקינים (${items.length})</span>
+                <span class="rv-section-toggle" id="rvst-confirmed">▸</span>
+            </div>
+            <div class="rv-compact-list rv-cards collapsed" id="rvs-confirmed">${items.map(rvCompactHtml).join('')}</div>
+        </div>`;
+    }
+
+    function rvCardHtml(item) {
         const typeLabel = item.source === 'syllabus' ? item.t : item.tag;
         const typeClass = `tag-${typeLabel || 'default'}`;
         const desc = item.source === 'syllabus' ? item.txt : item.t;
-        const weekOrDate = item.source === 'syllabus'
-            ? `<input class="rv-week" type="number" min="0" max="13" value="${item.w}" title="שבוע (0-13)" oninput="rvSetField(${item.id},'w',+this.value)">`
-            : `<span class="rv-date">${item.d ? item.d.substring(0, 10) : '?'}</span>`;
         const descField = item.source === 'syllabus' ? 'txt' : 't';
-        const reasonAttr = item.reason ? ` title="${item.reason}"` : '';
-        return `<div class="rv-item" id="rvi-${item.id}">
-            <span class="rv-conf ${confClass}"${reasonAttr}>${item.confidence}%</span>
+        const courseColor = courseColors[item.c] || '#888';
+        const weekOrDate = item.source === 'syllabus'
+            ? `<input class="rv-week-input" type="number" min="0" max="13" value="${item.w}" title="שבוע (0-13)" oninput="rvSetField(${item.id},'w',+this.value)">`
+            : `<span class="rv-date-badge">${item.d ? item.d.substring(0, 10) : '?'}</span>`;
+        const confirmedClass = item.userConfirmed ? ' is-confirmed' : '';
+        return `<div class="rv-card${confirmedClass}" id="rvi-${item.id}">
+            <div class="rv-card-top">
+                <div class="rv-card-course">
+                    <span class="rv-card-dot" style="background:${courseColor}"></span>
+                    ${item.c || ''}
+                </div>
+                <div class="rv-card-meta">
+                    <span class="badge ${typeClass}">${typeLabel || '?'}</span>
+                    ${weekOrDate}
+                </div>
+            </div>
+            <div class="rv-card-desc">
+                <input class="rv-desc-input" type="text" value="${desc.replace(/"/g, '&quot;')}" oninput="rvSetField(${item.id},'${descField}',this.value)">
+            </div>
+            ${item.reason ? `<div class="rv-card-warning">⚠️ ${item.reason}</div>` : ''}
+            <div class="rv-card-actions">
+                <button class="rv-card-btn rv-confirm" onclick="rvConfirm(${item.id})">✓ נכון</button>
+                <button class="rv-card-btn rv-edit" onclick="rvFocusEdit(${item.id})">✏️ ערוך</button>
+                <button class="rv-card-btn rv-del" onclick="rvDelete(${item.id})">🗑️ מחק</button>
+            </div>
+        </div>`;
+    }
+
+    function rvCompactHtml(item) {
+        const typeLabel = item.source === 'syllabus' ? item.t : item.tag;
+        const typeClass = `tag-${typeLabel || 'default'}`;
+        const desc = item.source === 'syllabus' ? item.txt : item.t;
+        const courseColor = courseColors[item.c] || '#888';
+        const weekOrDate = item.source === 'syllabus'
+            ? `שבוע ${item.w}`
+            : (item.d ? item.d.substring(0, 10) : '?');
+        return `<div class="rv-compact-item">
+            <span class="rv-card-dot" style="background:${courseColor}"></span>
             <span class="badge ${typeClass}">${typeLabel || '?'}</span>
-            ${weekOrDate}
-            <input class="rv-desc-input" type="text" value="${desc.replace(/"/g, '&quot;')}" oninput="rvSetField(${item.id},'${descField}',this.value)">
-            <button class="rv-del" onclick="rvDelete(${item.id})">×</button>
+            <span style="font-size:0.72rem;color:#aaa;flex-shrink:0">${weekOrDate}</span>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${desc}</span>
         </div>`;
     }
 
@@ -1061,28 +1130,50 @@ function addCourseChip(course) {
         if (tog) tog.textContent = list.classList.contains('collapsed') ? '▸' : '▾';
     }
 
-    function rvDelete(id) {
+    function rvConfirm(id) {
         const item = reviewItems.find(i => i.id === id);
-        if (item) item.deleted = true;
-        renderReviewUI();
+        if (!item) return;
+        item.userConfirmed = true;
+        const card = document.getElementById(`rvi-${id}`);
+        if (card) { card.classList.add('is-confirmed'); setTimeout(() => renderReviewUI(), 350); }
+        else renderReviewUI();
+    }
+
+    function rvDelete(id) {
+        const card = document.getElementById(`rvi-${id}`);
+        if (card) {
+            card.classList.add('deleting');
+            setTimeout(() => {
+                const item = reviewItems.find(i => i.id === id);
+                if (item) item.deleted = true;
+                renderReviewUI();
+            }, 300);
+        } else {
+            const item = reviewItems.find(i => i.id === id);
+            if (item) item.deleted = true;
+            renderReviewUI();
+        }
+    }
+
+    function rvFocusEdit(id) {
+        document.getElementById(`rvi-${id}`)?.querySelector('.rv-desc-input')?.focus();
     }
 
     function rvSetField(id, field, value) {
         const item = reviewItems.find(i => i.id === id);
         if (item) item[field] = value;
-        // update counter only (no full re-render to preserve focus)
-        const total = reviewItems.filter(i => !i.deleted).length;
-        document.getElementById('rv-counter').innerHTML = `<strong>${total}</strong> פריטים מוכנים לשמירה`;
+        const active = reviewItems.filter(i => !i.deleted).length;
+        document.getElementById('rv-counter').innerHTML = `<strong>${active}</strong> פריטים יישמרו`;
     }
 
     async function confirmReview(mode) {
         const btn = document.querySelector('.rv-btn-all');
-        const btn2 = document.querySelector('.rv-btn-green');
+        const btn2 = document.querySelector('.rv-btn-confirmed');
         btn.disabled = btn2.disabled = true;
         btn.textContent = 'שומר...';
 
         let toSave = reviewItems.filter(i => !i.deleted);
-        if (mode === 'green') toSave = toSave.filter(i => i.confidence >= 80);
+        if (mode === 'confirmed') toSave = toSave.filter(i => i.confidence >= 80 || i.userConfirmed);
 
         const syllabus = toSave.filter(i => i.source === 'syllabus').map(i => ({
             w: i.w, c: i.c, t: i.t, txt: i.txt
