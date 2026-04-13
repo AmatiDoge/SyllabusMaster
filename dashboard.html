@@ -950,13 +950,52 @@
 
         if (!res.ok) {
             const msg = result?.error || '';
-            const errMsg = msg.includes('timeout')
-                ? 'הניתוח לוקח יותר מדי זמן. נסה קובץ קטן יותר או בחר עמודים ספציפיים.'
-                : 'שגיאה בניתוח הקובץ. נסה שוב או נסה קובץ אחר.';
-            console.error('Edge function error:', msg);
-            setFileStatus(fileIdx, 's-error', 'שגיאה', errMsg);
-            if (!skipCheck) checkAllAnalyzed();
-            return;
+            const isOverload = res.status === 529 || msg.toLowerCase().includes('overloaded');
+            const isTimeout  = msg.includes('timeout');
+
+            if (isOverload) {
+                // Auto-retry after 10s countdown
+                console.warn('Overload detected, retrying in 10s...');
+                let secs = 10;
+                setFileStatus(fileIdx, 's-error', `עמוס (${secs}...)`, '');
+                const badge = document.getElementById(`fs-${fileIdx}`);
+                await new Promise(resolve => {
+                    const iv = setInterval(() => {
+                        secs--;
+                        if (badge) badge.textContent = secs > 0 ? `עמוס (${secs}...)` : 'מנסה שוב...';
+                        if (secs <= 0) { clearInterval(iv); resolve(); }
+                    }, 1000);
+                });
+                // Second attempt
+                let res2, result2;
+                try {
+                    const body2 = await bodyFn();
+                    setFileStatus(fileIdx, 's-analyzing', 'מנתח...');
+                    res2 = await fetch(EDGE_URL, { method: 'POST', headers: await getEdgeHeaders(), body: body2 });
+                } catch(e2) {
+                    console.error(e2);
+                    setFileStatus(fileIdx, 's-error', 'שגיאת רשת', 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
+                    if (!skipCheck) checkAllAnalyzed();
+                    return;
+                }
+                try { result2 = await res2.json(); } catch(e) { result2 = {}; }
+                if (res2.ok && (result2.syllabus?.length || result2.exams?.length)) {
+                    // Second attempt succeeded — fall through by reassigning
+                    res = res2; result = result2;
+                } else {
+                    setFileStatus(fileIdx, 's-error', 'שגיאה', 'השרת עמוס כרגע. המתן מספר שניות ונסה שוב.');
+                    if (!skipCheck) checkAllAnalyzed();
+                    return;
+                }
+            } else {
+                const errMsg = isTimeout
+                    ? 'הניתוח לוקח יותר מדי זמן. נסה קובץ קטן יותר או בחר עמודים ספציפיים.'
+                    : 'שגיאה בניתוח הקובץ. נסה שוב או נסה קובץ אחר.';
+                console.error('Edge function error:', msg);
+                setFileStatus(fileIdx, 's-error', 'שגיאה', errMsg);
+                if (!skipCheck) checkAllAnalyzed();
+                return;
+            }
         }
 
         if (!result.syllabus?.length && !result.exams?.length) {
