@@ -1104,7 +1104,7 @@
         if (!skipCheck) checkAllAnalyzed();
     }
 
-    // "Build my dashboard" button — analyzes all remaining (unanalyzed) files as full PDFs
+    // "Build my dashboard" button — analyzes all uploaded files in PARALLEL
     async function obAnalyzeAll() {
         if (!obFiles.length) return;
         const btn = document.getElementById('ob-btn');
@@ -1112,23 +1112,32 @@
         btn.textContent = 'מנתח...';
         document.getElementById('ob-progress-wrap').style.display = 'block';
         obResults = [];
-        for (let i = 0; i < obFiles.length; i++) {
+
+        let completed = 0;
+        const total = obFiles.length;
+
+        const updateProgress = () => {
+            document.getElementById('ob-progress-count').textContent = `${completed} / ${total}`;
+            document.getElementById('ob-progress-fill').style.width = `${(completed / total) * 100}%`;
+            document.getElementById('ob-progress-text').textContent =
+                completed === total ? 'הכל הושלם! ✓' : `מנתח ${total} קבצים במקביל...`;
+        };
+        updateProgress();
+
+        await Promise.all(obFiles.map((_, i) => {
             const statusEl = document.getElementById(`fs-${i}`);
-            if (statusEl?.classList.contains('s-done')) continue;
+            if (statusEl?.classList.contains('s-done')) { completed++; updateProgress(); return Promise.resolve(); }
             document.getElementById(`ps-${i}`)?.style && (document.getElementById(`ps-${i}`).style.display = 'none');
-            const pageCount = obPageCounts[i];
-            document.getElementById('ob-progress-text').textContent = pageCount
-                ? `מנתח עמוד 1 מתוך ${pageCount} — ${obFiles[i].name}`
-                : `מנתח את ${obFiles[i].name}...`;
-            document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
-            document.getElementById('ob-progress-fill').style.width = `${(i / obFiles.length) * 100}%`;
-            await _runAnalysis(i, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) }), true);
-        }
+            return _runAnalysis(i, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) }), true)
+                .then(() => { completed++; updateProgress(); });
+        }));
+
         document.getElementById('ob-progress-fill').style.width = '100%';
-        document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${obFiles.length}`;
-        document.getElementById('ob-progress-text').textContent = obResults.length === obFiles.length
+        document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${total}`;
+        document.getElementById('ob-progress-text').textContent = obResults.length === total
             ? 'הכל הושלם! ✓'
-            : `${obResults.length} מתוך ${obFiles.length} הצליחו`;
+            : `${obResults.length} מתוך ${total} הצליחו`;
+
         if (obResults.length > 0) {
             showCourseConfirm();
         } else {
