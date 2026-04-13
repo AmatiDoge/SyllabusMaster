@@ -52,6 +52,11 @@
         .s-error { background: #fff1f0; color: #d63031; }
         .file-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.1rem; padding: 0; line-height: 1; }
         .file-remove:hover { color: #d63031; }
+        .file-spinner { display: none; width: 14px; height: 14px; border: 2px solid #e67e22; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+        .file-retry { background: #fff3e0; color: #e67e22; border: 1px solid #e67e22; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; display: none; }
+        .file-retry:hover { background: #e67e22; color: white; }
+        .file-error-msg { font-size: 0.73rem; color: #d63031; direction: rtl; padding: 4px 13px 5px; display: none; line-height: 1.4; }
+        .file-status { transition: background 0.3s, color 0.3s; }
 
         .progress-wrap { margin-top: 18px; display: none; }
         .progress-meta { font-size: 0.78rem; color: #636e72; margin-bottom: 6px; display: flex; justify-content: space-between; }
@@ -775,12 +780,15 @@
         list.innerHTML = obFiles.map((f, i) => `
             <div id="fi-wrap-${i}">
                 <div class="file-item" id="fi-${i}">
+                    <span class="file-spinner" id="fsp-${i}"></span>
                     <span>📄</span>
                     <span class="file-item-name">${sanitize(f.name)}</span>
                     <span class="ps-page-count" id="ps-count-${i}"></span>
-                    <span class="file-status s-waiting" id="fs-${i}">Waiting</span>
-                    <button class="file-remove" onclick="removeObFile(${i})">×</button>
+                    <span class="file-status s-waiting" id="fs-${i}">ממתין</span>
+                    <button class="file-retry" id="fr-${i}" onclick="retryFile(${i})">נסה שוב</button>
+                    <button class="file-remove" id="frm-${i}" onclick="removeObFile(${i})">×</button>
                 </div>
+                <div class="file-error-msg" id="fem-${i}"></div>
                 <div class="page-selector" id="ps-${i}">
                     <p class="ps-question">האם ברצונך לנתח את כל הקובץ או עמודים ספציפיים?</p>
                     <div class="ps-btns">
@@ -898,31 +906,70 @@
         return images;
     }
 
-    function setFileStatus(i, cls, label) {
+    function setFileStatus(i, cls, label, errorMsg = '') {
         const el = document.getElementById(`fs-${i}`);
         if (el) { el.className = `file-status ${cls}`; el.textContent = label; }
+        const spinner = document.getElementById(`fsp-${i}`);
+        if (spinner) spinner.style.display = cls === 's-analyzing' ? 'block' : 'none';
+        const retry = document.getElementById(`fr-${i}`);
+        if (retry) retry.style.display = cls === 's-error' ? '' : 'none';
+        const remove = document.getElementById(`frm-${i}`);
+        if (remove) remove.style.display = cls === 's-analyzing' ? 'none' : '';
+        const errEl = document.getElementById(`fem-${i}`);
+        if (errEl) { errEl.textContent = errorMsg; errEl.style.display = errorMsg ? 'block' : 'none'; }
     }
 
-    async function _runAnalysis(fileIdx, bodyFn) {
-        setFileStatus(fileIdx, 's-analyzing', 'Analyzing...');
+    async function _runAnalysis(fileIdx, bodyFn, skipCheck = false) {
+        const file = obFiles[fileIdx];
+
+        // Pre-flight validation
+        if (file.size > 10 * 1024 * 1024) {
+            setFileStatus(fileIdx, 's-error', 'גדול מדי', 'הקובץ גדול מדי. נסה להעלות קובץ קטן יותר.');
+            if (!skipCheck) checkAllAnalyzed();
+            return;
+        }
+        if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+            setFileStatus(fileIdx, 's-error', 'סוג שגוי', 'רק קבצי PDF נתמכים כרגע.');
+            if (!skipCheck) checkAllAnalyzed();
+            return;
+        }
+
+        setFileStatus(fileIdx, 's-analyzing', 'מנתח...');
+        let res, result;
         try {
             const body = await bodyFn();
-            const res = await fetch(EDGE_URL, {
-                method: 'POST',
-                headers: await getEdgeHeaders(),
-                body
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const result = await res.json();
-            obResults.push(result);
-            const courseName = result.course || obFiles[fileIdx].name.replace('.pdf','');
-            setFileStatus(fileIdx, 's-done', `✓ ${courseName}`);
-            addCourseChip(courseName);
+            res = await fetch(EDGE_URL, { method: 'POST', headers: await getEdgeHeaders(), body });
         } catch(e) {
             console.error(e);
-            setFileStatus(fileIdx, 's-error', 'Error');
+            setFileStatus(fileIdx, 's-error', 'שגיאת רשת', 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
+            if (!skipCheck) checkAllAnalyzed();
+            return;
         }
-        checkAllAnalyzed();
+
+        try { result = await res.json(); } catch(e) { result = {}; }
+
+        if (!res.ok) {
+            const msg = result?.error || '';
+            const errMsg = msg.includes('timeout')
+                ? 'הניתוח לוקח יותר מדי זמן. נסה קובץ קטן יותר או בחר עמודים ספציפיים.'
+                : 'שגיאה בניתוח הקובץ. נסה שוב או נסה קובץ אחר.';
+            console.error('Edge function error:', msg);
+            setFileStatus(fileIdx, 's-error', 'שגיאה', errMsg);
+            if (!skipCheck) checkAllAnalyzed();
+            return;
+        }
+
+        if (!result.syllabus?.length && !result.exams?.length) {
+            setFileStatus(fileIdx, 's-error', 'לא נמצא', 'לא הצלחנו למצוא מידע בקובץ זה. ודא שזהו סילבוס תקין.');
+            if (!skipCheck) checkAllAnalyzed();
+            return;
+        }
+
+        obResults.push(result);
+        const courseName = result.course || file.name.replace(/\.pdf$/i, '');
+        setFileStatus(fileIdx, 's-done', `✓ ${courseName}`);
+        addCourseChip(courseName);
+        if (!skipCheck) checkAllAnalyzed();
     }
 
     // "Build my dashboard" button — analyzes all remaining (unanalyzed) files as full PDFs
@@ -930,42 +977,30 @@
         if (!obFiles.length) return;
         const btn = document.getElementById('ob-btn');
         btn.disabled = true;
-        btn.textContent = 'Analyzing...';
+        btn.textContent = 'מנתח...';
         document.getElementById('ob-progress-wrap').style.display = 'block';
-        const { data: { session } } = await sb.auth.getSession();
         obResults = [];
         for (let i = 0; i < obFiles.length; i++) {
             const statusEl = document.getElementById(`fs-${i}`);
-            if (statusEl?.classList.contains('s-done')) continue; // already analyzed individually
+            if (statusEl?.classList.contains('s-done')) continue;
             document.getElementById(`ps-${i}`)?.style && (document.getElementById(`ps-${i}`).style.display = 'none');
-            setFileStatus(i, 's-analyzing', 'Analyzing...');
-            document.getElementById('ob-progress-text').textContent = `Analyzing ${obFiles[i].name}...`;
+            const pageCount = obPageCounts[i];
+            document.getElementById('ob-progress-text').textContent = pageCount
+                ? `מנתח עמוד 1 מתוך ${pageCount} — ${obFiles[i].name}`
+                : `מנתח את ${obFiles[i].name}...`;
             document.getElementById('ob-progress-count').textContent = `${i} / ${obFiles.length}`;
             document.getElementById('ob-progress-fill').style.width = `${(i / obFiles.length) * 100}%`;
-            try {
-                const res = await fetch(EDGE_URL, {
-                    method: 'POST',
-                    headers: await getEdgeHeaders(),
-                    body: JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) })
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const result = await res.json();
-                obResults.push(result);
-                const courseName = result.course || obFiles[i].name.replace('.pdf','');
-                setFileStatus(i, 's-done', `✓ ${courseName}`);
-                addCourseChip(courseName);
-            } catch(e) {
-                console.error(e);
-                setFileStatus(i, 's-error', 'Error');
-            }
+            await _runAnalysis(i, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) }), true);
         }
         document.getElementById('ob-progress-fill').style.width = '100%';
         document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${obFiles.length}`;
-        document.getElementById('ob-progress-text').textContent = obResults.length === obFiles.length ? 'All done!' : `${obResults.length} of ${obFiles.length} succeeded`;
+        document.getElementById('ob-progress-text').textContent = obResults.length === obFiles.length
+            ? 'הכל הושלם! ✓'
+            : `${obResults.length} מתוך ${obFiles.length} הצליחו`;
         if (obResults.length > 0) {
             showReviewScreen();
         } else {
-            btn.textContent = 'Something went wrong. Try again.';
+            btn.textContent = 'נסה שוב';
             btn.disabled = false;
         }
     }
@@ -981,8 +1016,17 @@
         } else {
             const btn = document.getElementById('ob-btn');
             btn.disabled = false;
-            btn.textContent = 'Something went wrong. Try again.';
+            btn.textContent = 'נסה שוב';
         }
+    }
+
+    async function retryFile(fileIdx) {
+        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }), true);
+        const allSettled = obFiles.every((_, i) => {
+            const el = document.getElementById(`fs-${i}`);
+            return el && (el.classList.contains('s-done') || el.classList.contains('s-error'));
+        });
+        if (allSettled && obResults.length > 0) showReviewScreen();
     }
 
 function addCourseChip(course) {
