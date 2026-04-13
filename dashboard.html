@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SyllaBot – Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -272,6 +273,44 @@
         #feedback-success .fb-ok { font-size: 2.4rem; margin-bottom: 10px; }
         #feedback-success h4 { font-size: 1.05rem; font-weight: 900; margin-bottom: 6px; }
         #feedback-success p { font-size: 0.82rem; color: #636e72; }
+
+        /* ── VIEW SWITCHER ── */
+        .view-switcher { display: flex; gap: 2px; background: #f0f0f0; border-radius: 10px; padding: 3px; }
+        .view-btn { background: none; border: none; padding: 5px 12px; border-radius: 8px; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; color: #888; transition: all 0.18s; white-space: nowrap; }
+        .view-btn.active { background: white; color: #e8522a; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+        .view-btn:hover:not(.active) { color: #555; }
+
+        /* ── TIMELINE VIEW ── */
+        #view-list { width: 100%; max-width: 1400px; }
+        #view-list.view-hidden { display: none; }
+        #view-timeline { display: none; width: 100%; max-width: 900px; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 24px 32px; }
+        #view-timeline.view-visible { display: block; }
+        .tl-month-header { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; padding: 20px 0 8px; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
+        .tl-month-header:first-child { padding-top: 0; }
+        .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 11px 10px; border-radius: 8px; margin-bottom: 2px; transition: background 0.15s; }
+        .tl-item:hover { background: #fafafa; }
+        .tl-date-col { min-width: 72px; text-align: right; font-size: 0.75rem; color: #888; line-height: 1.5; flex-shrink: 0; }
+        .tl-date-col strong { display: block; font-size: 0.82rem; color: #444; font-weight: 700; }
+        .tl-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .tl-body { flex: 1; }
+        .tl-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 3px; }
+        .tl-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+        .tl-course-name { font-size: 0.7rem; color: #888; }
+        .tl-item.tl-past { opacity: 0.4; }
+        .tl-item.tl-urgent { background: #fff5f5; }
+        .tl-item.tl-soon { background: #fffbf0; }
+        .tl-days-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; white-space: nowrap; }
+        .tl-days-past  { background: #f0f0f0; color: #bbb; }
+        .tl-days-urgent { background: #ffebee; color: #c62828; }
+        .tl-days-soon  { background: #fff3e0; color: #e65100; }
+        .tl-days-ok    { background: #e8f5e9; color: #2e7d32; }
+
+        /* ── WORKLOAD VIEW ── */
+        #view-workload { display: none; width: 100%; max-width: 1000px; }
+        #view-workload.view-visible { display: block; }
+        .wl-card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 24px; }
+        .wl-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 20px; color: #333; }
+        #workload-canvas { max-height: 360px; }
     </style>
 </head>
 <body>
@@ -378,6 +417,11 @@
 <div id="dashboard">
     <div class="top-bar">
         <h1>My Academic Dashboard</h1>
+        <div class="view-switcher">
+            <button class="view-btn active" id="vb-list"     onclick="switchView('list')">📋 רשימה</button>
+            <button class="view-btn"        id="vb-timeline" onclick="switchView('timeline')">⏱️ ציר זמן</button>
+            <button class="view-btn"        id="vb-workload" onclick="switchView('workload')">📊 עומס</button>
+        </div>
         <div id="date-display"></div>
         <div class="user-bar">
             <span class="sync-dot" id="sync-dot"></span>
@@ -387,7 +431,7 @@
             <button class="btn-sm btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
-    <div class="container">
+    <div class="container" id="view-list">
         <div class="box">
             <div class="header h-exams">Exams & Deadlines</div>
             <div class="inputs">
@@ -454,6 +498,17 @@
             <div id="syllabus-content"></div>
         </div>
     </div>
+
+    <!-- TIMELINE VIEW -->
+    <div id="view-timeline"></div>
+
+    <!-- WORKLOAD VIEW -->
+    <div id="view-workload">
+        <div class="wl-card">
+            <div class="wl-title">📊 עומס לפי שבוע</div>
+            <canvas id="workload-canvas"></canvas>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -478,6 +533,9 @@
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
     let obFiles = [], obResults = [], reviewItems = [];
     let semesterStart = '2026-03-15';
+    let currentView = 'list';
+    let workloadChart = null;
+    let preferredView = 'list';
 
     const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
 
@@ -557,6 +615,7 @@
                 userSyllabus = data.syllabus     || [];
                 doneMap      = data.done_map     || {};
                 courseColors = data.course_colors || {};
+                preferredView = data.preferred_view || 'list';
                 if (data.semester_start) {
                     semesterStart = data.semester_start;
                     const newRanges = buildWeekRanges(semesterStart);
@@ -1471,6 +1530,7 @@ function addCourseChip(course) {
         if (diffDays >= 0) currentWeekIdx = Math.min(weekRanges.length - 1, Math.floor(diffDays / 7));
         render();
         setInterval(render, 60000);
+        switchView(preferredView, true);
     }
 
     // ── SETTINGS PANEL ──
@@ -1660,6 +1720,188 @@ function addCourseChip(course) {
             console.error(e);
             alert('אירעה שגיאה. נסה שוב.');
         }
+    }
+
+    // ── VIEW SWITCHER ──
+    function switchView(v, skipSave) {
+        currentView = v;
+        const views = ['list', 'timeline', 'workload'];
+        views.forEach(name => {
+            const btn = document.getElementById(`vb-${name}`);
+            if (btn) btn.classList.toggle('active', name === v);
+        });
+        const listEl = document.getElementById('view-list');
+        if (listEl) listEl.classList.toggle('view-hidden', v !== 'list');
+        const tlEl = document.getElementById('view-timeline');
+        if (tlEl) tlEl.classList.toggle('view-visible', v === 'timeline');
+        const wlEl = document.getElementById('view-workload');
+        if (wlEl) wlEl.classList.toggle('view-visible', v === 'workload');
+
+        if (v === 'timeline') renderTimeline();
+        if (v === 'workload') renderWorkload();
+        if (!skipSave) savePreferredView(v);
+    }
+
+    async function savePreferredView(v) {
+        if (!currentUser) return;
+        try {
+            await sb.from('user_data').update({ preferred_view: v }).eq('user_id', currentUser.id);
+        } catch(e) { console.error(e); }
+    }
+
+    function renderTimeline() {
+        const container = document.getElementById('view-timeline');
+        const now = new Date();
+        const semStart = new Date(semesterStart);
+        const items = [];
+
+        userExams.forEach(ex => {
+            if (!ex.d) return;
+            items.push({
+                date: new Date(ex.d),
+                title: ex.t || '',
+                type: ex.tag || 'מבחן',
+                course: ex.c || '',
+            });
+        });
+
+        userSyllabus.filter(s => s.t === 'מטלה').forEach(s => {
+            const d = new Date(semStart);
+            d.setDate(d.getDate() + (s.w || 0) * 7);
+            items.push({
+                date: d,
+                title: s.txt || '',
+                type: 'מטלה',
+                course: s.c || '',
+            });
+        });
+
+        items.sort((a, b) => a.date - b.date);
+
+        if (!items.length) {
+            container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center"><div class="empty-icon">📅</div>אין בחינות או מטלות עדיין</div>';
+            return;
+        }
+
+        // Group by month
+        const byMonth = new Map();
+        items.forEach(item => {
+            const key = item.date.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+            if (!byMonth.has(key)) byMonth.set(key, []);
+            byMonth.get(key).push(item);
+        });
+
+        let html = '';
+        byMonth.forEach((monthItems, month) => {
+            html += `<div class="tl-month-header">${month}</div>`;
+            monthItems.forEach(item => {
+                const diff = item.date - now;
+                const days = Math.floor(diff / 86400000);
+                let itemCls = '', daysCls = 'tl-days-ok', daysLabel = `${days} ימים`;
+                if (diff < 0)        { itemCls = 'tl-past';   daysCls = 'tl-days-past';   daysLabel = 'עבר'; }
+                else if (days <= 7)  { itemCls = 'tl-urgent'; daysCls = 'tl-days-urgent'; }
+                else if (days <= 14) { itemCls = 'tl-soon';   daysCls = 'tl-days-soon'; }
+
+                const color = item.course ? (courseColors[item.course] || '#888') : '#888';
+                const knownTypes = ['מבחן','מועד-ב','מטלה','פרזנטציה','קריאה','שיעור','תרגול','בוחן','צפייה','סרטון'];
+                const tagCls = knownTypes.includes(item.type) ? `tag-${item.type}` : 'tag-default';
+                const dateStr = item.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'short' });
+                const safeTitle  = DOMPurify.sanitize(item.title,  {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
+                const safeCourse = DOMPurify.sanitize(item.course, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
+
+                html += `<div class="tl-item ${itemCls}">
+                    <div class="tl-date-col"><strong>${dateStr}</strong><span class="tl-days-badge ${daysCls}">${daysLabel}</span></div>
+                    <div class="tl-dot" style="background:${color}"></div>
+                    <div class="tl-body">
+                        <div class="tl-title">${safeTitle}</div>
+                        <div class="tl-meta">
+                            <span class="badge ${tagCls}">${item.type}</span>
+                            ${safeCourse ? `<span class="tl-course-name">${safeCourse}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            });
+        });
+
+        container.innerHTML = html;
+    }
+
+    function renderWorkload() {
+        const numWeeks = weekRanges.length;
+        const sylCounts  = new Array(numWeeks).fill(0);
+        const examCounts = new Array(numWeeks).fill(0);
+
+        userSyllabus.forEach(item => {
+            const w = item.w || 0;
+            if (w >= 0 && w < numWeeks) sylCounts[w]++;
+        });
+
+        const semStart = new Date(semesterStart);
+        userExams.forEach(ex => {
+            if (!ex.d) return;
+            const w = Math.floor((new Date(ex.d) - semStart) / (7 * 86400000));
+            if (w >= 0 && w < numWeeks) examCounts[w]++;
+        });
+
+        const labels = weekRanges.map((_, i) => `שבוע ${i + 1}`);
+        const barColors = sylCounts.map(n =>
+            n === 0 ? '#e8e8e8' : n <= 3 ? '#2ecc71' : n <= 6 ? '#e67e22' : '#d63031'
+        );
+
+        if (workloadChart) { workloadChart.destroy(); workloadChart = null; }
+
+        const ctx = document.getElementById('workload-canvas').getContext('2d');
+        workloadChart = new Chart(ctx, {
+            data: {
+                labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'משימות',
+                        data: sylCounts,
+                        backgroundColor: barColors,
+                        borderRadius: 5,
+                        yAxisID: 'y',
+                    },
+                    {
+                        type: 'line',
+                        label: 'בחינות / דד-ליינים',
+                        data: examCounts,
+                        borderColor: '#d63031',
+                        backgroundColor: 'rgba(214,48,49,0.1)',
+                        pointBackgroundColor: '#d63031',
+                        pointRadius: examCounts.map(n => n > 0 ? 6 : 3),
+                        tension: 0.3,
+                        yAxisID: 'y',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top', labels: { font: { family: 'Heebo' } } },
+                    tooltip: {
+                        callbacks: {
+                            title: items => items[0].label,
+                            label: item => item.datasetIndex === 0
+                                ? `${item.raw} משימות`
+                                : `${item.raw} בחינות/דד-ליינים`,
+                        }
+                    }
+                },
+                onClick: (e, elements) => {
+                    if (!elements.length) return;
+                    const w = elements[0].index;
+                    currentWeekIdx = w;
+                    switchView('list');
+                    render();
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Heebo' } } },
+                    x: { ticks: { font: { family: 'Heebo' } } }
+                }
+            }
+        });
     }
 
     document.addEventListener('click', (e) => {
