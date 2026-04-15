@@ -64,6 +64,8 @@
         .file-status { transition: background 0.3s, color 0.3s; }
 
         .progress-wrap { margin-top: 18px; display: none; }
+        .ob-sequential-note { font-size: 0.75rem; color: #aaa; direction: rtl; text-align: right; margin: 0 0 6px; }
+        .ob-current-course { font-size: 0.82rem; font-weight: 700; color: #e8522a; direction: rtl; text-align: right; margin-bottom: 8px; min-height: 1.2em; }
         .progress-meta { font-size: 0.78rem; color: #636e72; margin-bottom: 6px; display: flex; justify-content: space-between; }
         .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; background: #27ae60; border-radius: 3px; transition: width 0.4s; width: 0%; }
@@ -422,6 +424,8 @@
         <div id="ob-analysis">
             <div class="file-list" id="ob-file-list"></div>
             <div class="progress-wrap" id="ob-progress-wrap">
+                <p class="ob-sequential-note" id="ob-sequential-note">מנתח קורס אחד בכל פעם כדי להבטיח איכות מיטבית</p>
+                <div class="ob-current-course" id="ob-current-course"></div>
                 <div class="progress-meta">
                     <span id="ob-progress-text">מנתח...</span>
                     <span id="ob-progress-count">0 / 0</span>
@@ -956,17 +960,23 @@
     };
 
     function renderAnalysisList() {
-        document.getElementById('ob-file-list').innerHTML = obFiles.map((f, i) => `
+        document.getElementById('ob-file-list').innerHTML = obFiles.map((f, i) => {
+            const courseName = sanitize(obCourseNames[i] || f.name.replace(/\.pdf$/i, ''));
+            return `
             <div id="fi-wrap-${i}">
                 <div class="file-item" id="fi-${i}">
                     <span class="file-spinner" id="fsp-${i}"></span>
                     <span>📄</span>
-                    <span class="file-item-name">${sanitize(f.name)}</span>
+                    <span class="file-item-name" style="flex:1;display:flex;flex-direction:column;gap:1px">
+                        <span style="font-weight:700;color:#2d3436">${courseName}</span>
+                        <span style="font-size:0.68rem;color:#bbb;direction:rtl">${sanitize(f.name)}</span>
+                    </span>
                     <span class="file-status s-waiting" id="fs-${i}">ממתין</span>
                     <button class="file-retry" id="fr-${i}" onclick="retryFile(${i})" style="display:none">נסה שוב</button>
                 </div>
                 <div class="file-error-msg" id="fem-${i}"></div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
     }
 
     // ── PAGE PICKER ──
@@ -1213,7 +1223,16 @@
         };
         updateProgress();
 
+        const setCurrentCourse = (i) => {
+            const el = document.getElementById('ob-current-course');
+            if (!el) return;
+            if (i === null) { el.textContent = ''; return; }
+            const name = obCourseNames[i] || obFiles[i]?.name.replace(/\.pdf$/i, '') || '';
+            el.textContent = name ? `כרגע מנתח: ${name}` : '';
+        };
+
         const tasks = obFiles.map((_, i) => async () => {
+            setCurrentCourse(i);
             const sel = obPageSelections[i];
             const pgTotal = obPageCounts[i];
             const useSelection = sel && pgTotal && sel.size < pgTotal;
@@ -1237,6 +1256,7 @@
             }
         }));
 
+        setCurrentCourse(null);
         document.getElementById('ob-progress-fill').style.width = '100%';
         document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${total}`;
         document.getElementById('ob-progress-text').textContent = obResults.length === total
