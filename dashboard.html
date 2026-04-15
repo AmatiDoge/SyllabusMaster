@@ -1653,8 +1653,12 @@ function addCourseChip(course) {
             const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
             const safeTag = DOMPurify.sanitize(x.tag, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
             const safeT   = DOMPurify.sanitize(x.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
-            const courseInfo = x.c ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;color:#aaa;margin-top:2px"><span style="width:7px;height:7px;border-radius:50%;background:${getCourseColor(x.c)};flex-shrink:0"></span>${DOMPurify.sanitize(x.c,{ALLOWED_TAGS:[],ALLOWED_ATTR:[]})}</span>` : '';
-            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${safeTag}</span><div style="display:flex;flex-direction:column;gap:1px"><strong>${safeT}</strong>${courseInfo}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+            const safeC   = x.c ? DOMPurify.sanitize(x.c, {ALLOWED_TAGS: [], ALLOWED_ATTR: []}) : '';
+            const dotStyle = `width:8px;height:8px;border-radius:50%;background:${getCourseColor(x.c||'')};flex-shrink:0`;
+            const examLabel = safeC
+                ? `<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap"><span style="${dotStyle}"></span><strong>${safeC}</strong><span style="color:#ccc">—</span><span>${safeT}</span></span>`
+                : `<strong>${safeT}</strong>`;
+            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${safeTag}</span>${examLabel}</div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
         });
 
         // Tasks
