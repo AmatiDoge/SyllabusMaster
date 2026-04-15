@@ -875,7 +875,7 @@
     function startWizard() {
         obFiles.forEach((_, i) => { if (!obPageCounts[i]) loadPageCount(i); });
         document.getElementById('ob-drop-section').style.display = 'none';
-        document.getElementById('ob-wizard').style.display = '';
+        document.getElementById('ob-wizard').style.display = 'block';
         obWizardIdx = 0;
         renderWizardCard(0);
     }
@@ -983,7 +983,7 @@
             const n = pdf.numPages;
             obPageCounts[i] = n;
             // If wizard is open on this card, re-render to show page count toggle
-            if (i === obWizardIdx && document.getElementById('ob-wizard')?.style.display !== 'none') renderWizardCard(i);
+            if (i === obWizardIdx && document.getElementById('ob-wizard')?.style.display === 'block') renderWizardCard(i);
         } catch(e) { /* non-critical */ }
     }
 
@@ -1197,7 +1197,7 @@
     async function wzStartAnalysis() {
         if (!obFiles.length) return;
         document.getElementById('ob-wizard').style.display = 'none';
-        document.getElementById('ob-analysis').style.display = '';
+        document.getElementById('ob-analysis').style.display = 'block';
         renderAnalysisList();
         obResults = [];
 
@@ -1248,7 +1248,7 @@
         } else {
             // Return to wizard so user can retry
             document.getElementById('ob-analysis').style.display = 'none';
-            document.getElementById('ob-wizard').style.display = '';
+            document.getElementById('ob-wizard').style.display = 'block';
             renderWizardCard(obWizardIdx);
         }
     }
