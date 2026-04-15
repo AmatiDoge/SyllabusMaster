@@ -72,10 +72,32 @@
         .course-chip { background: #f0f0f0; border-radius: 20px; padding: 4px 13px; font-size: 0.76rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-        .ob-btn { width: 100%; padding: 14px; border-radius: 100px; font-family: 'Heebo', sans-serif; font-size: 0.97rem; font-weight: 700; cursor: pointer; border: none; background: #0d0d0d; color: white; transition: background 0.2s, transform 0.15s; margin-top: 22px; }
-        .ob-btn:hover { background: #e8522a; transform: translateY(-1px); }
-        .ob-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .ob-note { font-size: 0.74rem; color: #aaa; text-align: center; margin-top: 10px; }
+        /* CARD WIZARD */
+        #ob-wizard { display: none; }
+        #ob-analysis { display: none; }
+        .wz-header { text-align: center; margin-bottom: 20px; }
+        .wz-progress-label { font-size: 0.78rem; font-weight: 700; color: #636e72; direction: rtl; }
+        .wz-dots { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .wz-dot { width: 9px; height: 9px; border-radius: 50%; background: #ddd; transition: background 0.3s; flex-shrink: 0; }
+        .wz-dot.active { background: #e8522a; }
+        .wz-dot.done { background: #27ae60; }
+        .wz-card { background: #fafafa; border-radius: 16px; padding: 22px 22px 16px; margin-bottom: 18px; border: 1.5px solid #eee; animation: fadeUp 0.25s ease; }
+        .wz-filename { font-size: 0.73rem; color: #bbb; margin-bottom: 12px; text-align: right; direction: rtl; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .wz-label { font-size: 0.8rem; font-weight: 700; color: #555; direction: rtl; margin-bottom: 7px; }
+        .wz-input { width: 100%; padding: 12px 14px; font-family: 'Heebo', sans-serif; font-size: 1.05rem; font-weight: 600; border: 2px solid #e8e8e8; border-radius: 12px; direction: rtl; color: #2d3436; transition: border-color 0.2s; box-sizing: border-box; background: white; }
+        .wz-input:focus { outline: none; border-color: #e8522a; }
+        .wz-input.wz-error { border-color: #d63031; animation: shake 0.4s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+        .wz-err-msg { font-size: 0.75rem; color: #d63031; direction: rtl; margin-top: 5px; min-height: 1.1em; }
+        .wz-pages-toggle { margin-top: 14px; background: none; border: none; font-family: 'Heebo', sans-serif; font-size: 0.78rem; color: #aaa; cursor: pointer; padding: 0; direction: rtl; display: flex; align-items: center; gap: 5px; transition: color 0.15s; }
+        .wz-pages-toggle:hover { color: #636e72; }
+        .wz-pages-body { display: none; margin-top: 10px; }
+        .wz-pages-body.open { display: block; }
+        .wz-nav { display: flex; gap: 10px; }
+        .wz-btn-prev { background: none; border: 1.5px solid #e0e0e0; color: #888; padding: 12px 20px; border-radius: 100px; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+        .wz-btn-prev:hover { border-color: #bbb; color: #333; }
+        .wz-btn-next { flex: 1; background: #e8522a; color: white; border: none; padding: 13px 24px; border-radius: 100px; font-family: 'Heebo', sans-serif; font-size: 0.97rem; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+        .wz-btn-next:hover { background: #c9421d; transform: translateY(-1px); }
 
         /* DASHBOARD */
         #dashboard { width: 100%; display: none; flex-direction: column; align-items: center; }
@@ -365,33 +387,49 @@
 <div id="onboarding">
     <div class="ob-card">
         <span class="ob-logo">Sylla<span>Bot</span></span>
-        <div class="ob-step-label">Setup · Upload your syllabuses</div>
-        <h1 class="ob-title">Let's build your dashboard</h1>
-        <p class="ob-sub">Upload all your course PDFs at once. Our AI will automatically detect each course name, extract all important dates, tasks, readings and exams — and build your personal academic dashboard.</p>
 
-        <div class="drop-zone" id="ob-drop"
-             onclick="document.getElementById('ob-file-input').click()"
-             ondragover="event.preventDefault();this.classList.add('drag-over')"
-             ondragleave="this.classList.remove('drag-over')"
-             ondrop="obDrop(event)">
-            <input type="file" id="ob-file-input" accept=".pdf" multiple onchange="obSelectFiles(event)">
-            <div class="drop-icon">📂</div>
-            <div class="drop-title">Drop your syllabus PDFs here</div>
-            <div class="drop-sub">or <strong>click to browse</strong> · Multiple files at once</div>
-        </div>
-
-        <div class="file-list" id="ob-file-list"></div>
-        <div class="progress-wrap" id="ob-progress-wrap">
-            <div class="progress-meta">
-                <span id="ob-progress-text">Analyzing...</span>
-                <span id="ob-progress-count">0 / 0</span>
+        <!-- Step 1: Drop zone -->
+        <div id="ob-drop-section">
+            <div class="ob-step-label">Setup · Upload your syllabuses</div>
+            <h1 class="ob-title">Let's build your dashboard</h1>
+            <p class="ob-sub">Upload all your course PDFs at once. Our AI will automatically detect each course name, extract all important dates, tasks, readings and exams — and build your personal academic dashboard.</p>
+            <div class="drop-zone" id="ob-drop"
+                 onclick="document.getElementById('ob-file-input').click()"
+                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                 ondragleave="this.classList.remove('drag-over')"
+                 ondrop="obDrop(event)">
+                <input type="file" id="ob-file-input" accept=".pdf" multiple onchange="obSelectFiles(event)">
+                <div class="drop-icon">📂</div>
+                <div class="drop-title">Drop your syllabus PDFs here</div>
+                <div class="drop-sub">or <strong>click to browse</strong> · Multiple files at once</div>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="ob-progress-fill"></div></div>
         </div>
-        <div class="courses-found" id="ob-courses-found"></div>
 
-        <button class="ob-btn" id="ob-btn" onclick="obAnalyzeAll()" disabled>Build my dashboard ✨</button>
-        <p class="ob-note">Usually takes 10–30 seconds per file</p>
+        <!-- Step 2: Card wizard (per-file course name setup) -->
+        <div id="ob-wizard">
+            <div class="wz-header">
+                <div class="wz-progress-label" id="wz-progress-label"></div>
+                <div class="wz-dots" id="wz-dots"></div>
+            </div>
+            <div id="wz-card-wrap"></div>
+            <div class="wz-nav">
+                <button class="wz-btn-prev" id="wz-prev" onclick="wzNav(-1)">→ הקודם</button>
+                <button class="wz-btn-next" id="wz-next" onclick="wzNav(1)">הבא ←</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Analysis UI (progress + per-file status) -->
+        <div id="ob-analysis">
+            <div class="file-list" id="ob-file-list"></div>
+            <div class="progress-wrap" id="ob-progress-wrap">
+                <div class="progress-meta">
+                    <span id="ob-progress-text">מנתח...</span>
+                    <span id="ob-progress-count">0 / 0</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="ob-progress-fill"></div></div>
+            </div>
+            <div class="courses-found" id="ob-courses-found"></div>
+        </div>
     </div>
 
     <!-- REVIEW SCREEN (shown after analysis, before saving) -->
@@ -535,6 +573,7 @@
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
     let obFiles = [], obResults = [], reviewItems = [];
+    let obCourseNames = {}, obWizardIdx = 0;
     let semesterStart = '2026-03-15';
     let currentView = 'list';
     let workloadChart = null;
@@ -721,8 +760,6 @@
         document.querySelector('.ob-sub').textContent           = s.obSub;
         document.querySelector('.drop-title').textContent       = s.dropTitle;
         document.querySelector('.drop-sub').innerHTML           = s.dropSub;
-        document.getElementById('ob-btn').textContent           = s.obBtn;
-        document.querySelector('.ob-note').textContent          = s.obNote;
         document.getElementById('ob-progress-text').textContent = s.analyzing;
         // Dashboard top bar
         const addBtn = document.querySelector('.btn-add-course');
@@ -806,68 +843,130 @@
     // ── ONBOARDING ──
     function resetOnboarding() {
         obFiles = []; obResults = []; reviewItems = [];
+        obCourseNames = {}; obWizardIdx = 0;
         document.getElementById('ob-file-list').innerHTML = '';
         document.getElementById('ob-courses-found').style.display = 'none';
         document.getElementById('ob-courses-found').innerHTML = '';
         document.getElementById('ob-progress-wrap').style.display = 'none';
         document.getElementById('ob-progress-fill').style.width = '0%';
-        document.getElementById('ob-btn').disabled = true;
-        document.getElementById('ob-btn').textContent = 'Build my dashboard ✨';
-        document.getElementById('ob-btn').onclick = obAnalyzeAll;
         document.getElementById('ob-review').classList.remove('visible');
         document.querySelector('.ob-card').style.display = '';
+        document.getElementById('ob-drop-section').style.display = '';
+        document.getElementById('ob-wizard').style.display = 'none';
+        document.getElementById('ob-analysis').style.display = 'none';
     }
 
     function obDrop(e) {
         e.preventDefault();
         document.getElementById('ob-drop').classList.remove('drag-over');
-        [...e.dataTransfer.files].filter(f => f.type === 'application/pdf').forEach(addObFile);
+        const added = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf' && !obFiles.find(x => x.name === f.name));
+        added.forEach(f => obFiles.push(f));
+        if (obFiles.length > 0) startWizard();
     }
 
-    function obSelectFiles(e) { [...e.target.files].forEach(addObFile); e.target.value = ''; }
-
-    function addObFile(file) {
-        if (obFiles.find(f => f.name === file.name)) return;
-        obFiles.push(file);
-        renderObFileList();
-        document.getElementById('ob-btn').disabled = false;
+    function obSelectFiles(e) {
+        const added = [...e.target.files].filter(f => !obFiles.find(x => x.name === f.name));
+        added.forEach(f => obFiles.push(f));
+        e.target.value = '';
+        if (obFiles.length > 0) startWizard();
     }
 
-    function removeObFile(idx) {
-        obFiles.splice(idx, 1);
-        renderObFileList();
-        document.getElementById('ob-btn').disabled = obFiles.length === 0;
+    // ── CARD WIZARD ──
+    function startWizard() {
+        obFiles.forEach((_, i) => { if (!obPageCounts[i]) loadPageCount(i); });
+        document.getElementById('ob-drop-section').style.display = 'none';
+        document.getElementById('ob-wizard').style.display = '';
+        obWizardIdx = 0;
+        renderWizardCard(0);
     }
 
-    function renderObFileList() {
-        const list = document.getElementById('ob-file-list');
-        list.innerHTML = obFiles.map((f, i) => `
+    function renderWizardCard(idx) {
+        const total = obFiles.length;
+        const f = obFiles[idx];
+
+        // Progress label + dots
+        document.getElementById('wz-progress-label').textContent = `קורס ${idx + 1} מתוך ${total}`;
+        document.getElementById('wz-dots').innerHTML = Array.from({length: total}, (_, i) => {
+            const cls = i < idx ? 'wz-dot done' : i === idx ? 'wz-dot active' : 'wz-dot';
+            return `<div class="${cls}"></div>`;
+        }).join('');
+
+        // Prev/next buttons
+        document.getElementById('wz-prev').style.display = idx === 0 ? 'none' : '';
+        document.getElementById('wz-next').textContent = idx === total - 1 ? 'נתח הכל ✨' : 'הבא ←';
+
+        // Page count badge (may not be loaded yet)
+        const pgCount = obPageCounts[idx] ? `📄 ${obPageCounts[idx]} עמודים` : '';
+        const savedName = sanitize(obCourseNames[idx] || '');
+
+        document.getElementById('wz-card-wrap').innerHTML = `
+            <div class="wz-card">
+                <div class="wz-filename">📄 ${sanitize(f.name)}</div>
+                <div class="wz-label">שם הקורס *</div>
+                <input class="wz-input" id="wz-input-${idx}"
+                       placeholder="לדוגמה: פסיכולוגיה קוגניטיבית"
+                       value="${savedName}"
+                       oninput="obCourseNames[${idx}] = this.value; this.classList.remove('wz-error'); document.getElementById('wz-err-${idx}').textContent='';">
+                <div class="wz-err-msg" id="wz-err-${idx}"></div>
+                ${pgCount ? `<button class="wz-pages-toggle" id="wz-ptoggle-${idx}" onclick="wzTogglePages(${idx})">
+                    <span id="wz-parrow-${idx}">▾</span> בחר עמודים ספציפיים · ${pgCount}
+                </button>
+                <div class="wz-pages-body" id="wz-pbody-${idx}">
+                    <div class="ps-picker-counter" id="ps-counter-${idx}"></div>
+                    <div class="ps-thumbs" id="ps-thumbs-${idx}"></div>
+                </div>` : ''}
+            </div>`;
+
+        setTimeout(() => { const inp = document.getElementById(`wz-input-${idx}`); if (inp) inp.focus(); }, 40);
+    }
+
+    window.wzTogglePages = function(idx) {
+        const body = document.getElementById(`wz-pbody-${idx}`);
+        const arrow = document.getElementById(`wz-parrow-${idx}`);
+        if (!body) return;
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        arrow.textContent = isOpen ? '▾' : '▴';
+        if (!isOpen) {
+            const thumbs = document.getElementById(`ps-thumbs-${idx}`);
+            if (thumbs && !thumbs.children.length) renderPageThumbnails(idx);
+        }
+    };
+
+    window.wzNav = function(dir) {
+        const idx = obWizardIdx;
+        const total = obFiles.length;
+
+        if (dir === 1) {
+            // Save and validate
+            const inp = document.getElementById(`wz-input-${idx}`);
+            const val = (inp ? inp.value : (obCourseNames[idx] || '')).trim();
+            if (!val) {
+                if (inp) { inp.classList.add('wz-error'); inp.focus(); }
+                const errEl = document.getElementById(`wz-err-${idx}`);
+                if (errEl) errEl.textContent = 'שם הקורס הוא שדה חובה';
+                return;
+            }
+            obCourseNames[idx] = val;
+            if (idx === total - 1) { wzStartAnalysis(); return; }
+        }
+
+        obWizardIdx += dir;
+        renderWizardCard(obWizardIdx);
+    };
+
+    function renderAnalysisList() {
+        document.getElementById('ob-file-list').innerHTML = obFiles.map((f, i) => `
             <div id="fi-wrap-${i}">
                 <div class="file-item" id="fi-${i}">
                     <span class="file-spinner" id="fsp-${i}"></span>
                     <span>📄</span>
                     <span class="file-item-name">${sanitize(f.name)}</span>
-                    <input class="file-course-input" id="fc-name-${i}" placeholder="שם הקורס...">
-                    <span class="ps-page-count" id="ps-count-${i}"></span>
                     <span class="file-status s-waiting" id="fs-${i}">ממתין</span>
-                    <button class="file-retry" id="fr-${i}" onclick="retryFile(${i})">נסה שוב</button>
-                    <button class="file-remove" id="frm-${i}" onclick="removeObFile(${i})">×</button>
+                    <button class="file-retry" id="fr-${i}" onclick="retryFile(${i})" style="display:none">נסה שוב</button>
                 </div>
                 <div class="file-error-msg" id="fem-${i}"></div>
-                <div class="page-selector" id="ps-${i}">
-                    <p class="ps-question">האם ברצונך לנתח את כל הקובץ או עמודים ספציפיים?</p>
-                    <div class="ps-btns">
-                        <button class="btn-ps btn-ps-all" onclick="obAnalyzeFileFull(${i})">נתח הכל</button>
-                        <button class="btn-ps btn-ps-range" onclick="togglePagePicker(${i})">בחר עמודים</button>
-                    </div>
-                    <div class="ps-picker" id="ps-picker-${i}">
-                        <div class="ps-picker-counter" id="ps-counter-${i}"></div>
-                        <div class="ps-thumbs" id="ps-thumbs-${i}"></div>
-                        <button class="btn-ps btn-ps-all ps-analyze-btn" onclick="obAnalyzeSelectedPages(${i})">נתח עמודים נבחרים ✨</button>
-                    </div>
-                </div>
             </div>`).join('');
-        obFiles.forEach((_, i) => loadPageCount(i));
     }
 
     // ── PAGE PICKER ──
@@ -883,8 +982,8 @@
             obPdfCache[i] = pdf;
             const n = pdf.numPages;
             obPageCounts[i] = n;
-            const badge = document.getElementById(`ps-count-${i}`);
-            if (badge) badge.textContent = `📄 ${n} עמודים`;
+            // If wizard is open on this card, re-render to show page count toggle
+            if (i === obWizardIdx && document.getElementById('ob-wizard')?.style.display !== 'none') renderWizardCard(i);
         } catch(e) { /* non-critical */ }
     }
 
@@ -1080,7 +1179,7 @@
         }
 
         // Apply user-provided course name if given, overriding AI detection
-        const userCourseName = sanitize(document.getElementById(`fc-name-${fileIdx}`)?.value?.trim() || '');
+        const userCourseName = sanitize(obCourseNames[fileIdx] || '');
         if (userCourseName) {
             result.course = userCourseName;
             (result.syllabus || []).forEach(item => { item.c = userCourseName; });
@@ -1094,15 +1193,15 @@
         if (!skipCheck) checkAllAnalyzed();
     }
 
-    // "Build my dashboard" button — analyzes files with concurrency limit of 2
-    async function obAnalyzeAll() {
+    // Triggered from wizard last card "נתח הכל ✨"
+    async function wzStartAnalysis() {
         if (!obFiles.length) return;
-        const btn = document.getElementById('ob-btn');
-        btn.disabled = true;
-        btn.textContent = 'מנתח...';
-        document.getElementById('ob-progress-wrap').style.display = 'block';
+        document.getElementById('ob-wizard').style.display = 'none';
+        document.getElementById('ob-analysis').style.display = '';
+        renderAnalysisList();
         obResults = [];
 
+        document.getElementById('ob-progress-wrap').style.display = 'block';
         let completed = 0;
         const total = obFiles.length;
 
@@ -1114,12 +1213,18 @@
         };
         updateProgress();
 
-        // Build task list
         const tasks = obFiles.map((_, i) => async () => {
-            const statusEl = document.getElementById(`fs-${i}`);
-            if (statusEl?.classList.contains('s-done')) { completed++; updateProgress(); return; }
-            document.getElementById(`ps-${i}`)?.style && (document.getElementById(`ps-${i}`).style.display = 'none');
-            await _runAnalysis(i, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) }), true);
+            const sel = obPageSelections[i];
+            const pgTotal = obPageCounts[i];
+            const useSelection = sel && pgTotal && sel.size < pgTotal;
+            await _runAnalysis(i, async () => {
+                if (useSelection) {
+                    const pages = [...sel].sort((a, b) => a - b);
+                    const images = await extractPages(obFiles[i], pages);
+                    return JSON.stringify({ imagesBase64: images });
+                }
+                return JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) });
+            }, true);
             completed++; updateProgress();
         });
 
@@ -1141,8 +1246,10 @@
         if (obResults.length > 0) {
             showReviewScreen();
         } else {
-            btn.textContent = 'נסה שוב';
-            btn.disabled = false;
+            // Return to wizard so user can retry
+            document.getElementById('ob-analysis').style.display = 'none';
+            document.getElementById('ob-wizard').style.display = '';
+            renderWizardCard(obWizardIdx);
         }
     }
 
@@ -1152,13 +1259,7 @@
             return el && (el.classList.contains('s-done') || el.classList.contains('s-error'));
         });
         if (!allDone) return;
-        if (obResults.length > 0) {
-            showReviewScreen();
-        } else {
-            const btn = document.getElementById('ob-btn');
-            btn.disabled = false;
-            btn.textContent = 'נסה שוב';
-        }
+        if (obResults.length > 0) showReviewScreen();
     }
 
     async function retryFile(fileIdx) {
