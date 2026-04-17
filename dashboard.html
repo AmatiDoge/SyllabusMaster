@@ -2307,7 +2307,8 @@ function addCourseChip(course) {
                 allCourses.map(c => {
                     const color = getCourseColor(c);
                     const active = !wlDeselectedCourses.has(c);
-                    return `<button class="wl-pill${active ? ' active' : ''}" style="border-color:${color};color:${color};${active ? `background:${color}1a` : ''}" onclick="wlToggleCourse(${JSON.stringify(c)})"><span class="wl-pill-dot" style="background:${color}"></span>${sanitize(c)}</button>`;
+                    const safeAttr = c.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                    return `<button class="wl-pill${active ? ' active' : ''}" style="border-color:${color};color:${color};${active ? `background:${color}1a` : ''}" data-course="${safeAttr}" onclick="wlToggleCourse(this.dataset.course)"><span class="wl-pill-dot" style="background:${color}"></span>${sanitize(c)}</button>`;
                 }).join('');
             filterEl.style.display = 'flex';
         } else {
