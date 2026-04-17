@@ -650,8 +650,8 @@
             //     if (checkoutData.url) { window.location.href = checkoutData.url; return; }
             // }
 
-            // Set language from user metadata
-            const lang = currentUser.user_metadata?.lang || 'he';
+            // Set language from user metadata, falling back to localStorage preference
+            const lang = currentUser.user_metadata?.lang || localStorage.getItem('landing-lang') || 'he';
             currentLang = lang;
             applyLang(lang);
 
@@ -809,6 +809,24 @@
         if (sylTypeOtherOpt) sylTypeOtherOpt.textContent = s.sylOtherOpt;
         const sylCustomType = document.getElementById('sylCustomType');
         if (sylCustomType) sylCustomType.placeholder = s.sylCustomTypePh;
+        // Document direction
+        const isEn = lang === 'en';
+        document.documentElement.lang = lang;
+        document.documentElement.dir = isEn ? 'ltr' : 'rtl';
+        localStorage.setItem('landing-lang', lang);
+
+        // Text input direction
+        document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(inp => {
+            inp.dir = isEn ? 'ltr' : 'rtl';
+            inp.style.textAlign = isEn ? 'left' : 'right';
+        });
+
+        // Week nav arrows: ‹ = prev in LTR, › = prev in RTL
+        const prevBtn = document.querySelector('.nav-btn[onclick*="changeWeek(-1)"]');
+        const nextBtn = document.querySelector('.nav-btn[onclick*="changeWeek(1)"]');
+        if (prevBtn) prevBtn.textContent = isEn ? '‹' : '›';
+        if (nextBtn) nextBtn.textContent = isEn ? '›' : '‹';
+
         // Re-render to update dynamic strings
         if (document.getElementById('dashboard').classList.contains('visible')) render();
     }
