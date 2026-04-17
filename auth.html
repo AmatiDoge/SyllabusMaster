@@ -585,6 +585,12 @@
     const toggleBtn = document.getElementById('lang-toggle');
     if (toggleBtn) toggleBtn.textContent = t.toggleLabel;
 
+    // Input placeholder direction
+    document.querySelectorAll('input').forEach(inp => {
+      inp.dir = lang === 'en' ? 'ltr' : 'rtl';
+      inp.style.textAlign = lang === 'en' ? 'left' : 'right';
+    });
+
     // Update any open modals immediately
     const modalDir = lang === 'en' ? 'ltr' : 'rtl';
     document.querySelectorAll('.legal-overlay.open .legal-modal').forEach(m => m.dir = modalDir);
