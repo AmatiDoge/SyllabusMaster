@@ -478,6 +478,7 @@
       btnLogin: 'כניסה', loadingLogin: 'נכנס...',
       googleLogin: 'כניסה עם Google', forgotPassword: 'שכחת סיסמה?',
       signupName: 'שם מלא', signupEmail: 'אימייל', signupPassword: 'סיסמה',
+      phName: 'ישראל ישראלי', phPass: 'לפחות 6 תווים',
       btnSignup: 'יצירת חשבון', loadingSignup: 'יוצר חשבון...',
       googleSignup: 'הרשמה עם Google',
       forgotDesc: 'נשלח לך קישור לאיפוס סיסמה',
@@ -504,6 +505,7 @@
       btnLogin: 'Login', loadingLogin: 'Signing in...',
       googleLogin: 'Continue with Google', forgotPassword: 'Forgot password?',
       signupName: 'Full name', signupEmail: 'Email', signupPassword: 'Password',
+      phName: 'John Smith', phPass: 'At least 6 characters',
       btnSignup: 'Create account', loadingSignup: 'Creating account...',
       googleSignup: 'Continue with Google',
       forgotDesc: 'We will send you a password reset link',
@@ -555,6 +557,10 @@
     const btnSignup = document.getElementById('btn-signup');
     if (btnSignup) { btnSignup.textContent = t.btnSignup; btnSignup.setAttribute('data-label', t.btnSignup); }
     updateGoogleBtn('#form-signup .btn-google', t.googleSignup);
+    const phName = document.getElementById('signup-name');
+    if (phName) phName.placeholder = t.phName;
+    const phPass = document.getElementById('signup-password');
+    if (phPass) phPass.placeholder = t.phPass;
 
     // Forgot password form
     const forgotDesc = document.querySelector('#form-forgot p');
