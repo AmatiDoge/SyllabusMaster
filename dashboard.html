@@ -725,6 +725,15 @@
             wzErrRequired: 'שם הקורס הוא שדה חובה',
             seqNote:       'מנתח קורס אחד בכל פעם כדי להבטיח איכות מיטבית',
             curCourse:     (name) => `כרגע מנתח: ${name}`,
+            statusWaiting:   'ממתין',
+            statusAnalyzing: 'מנתח...',
+            statusError:     'שגיאה',
+            statusRetry:     'נסה שוב',
+            statusBusy:      (s) => `עמוס (${s}...)`,
+            statusRateLimit: (s) => `מגבלת קצב (${s}...)`,
+            statusRetrying:  'מנסה שוב...',
+            progressDone:    'הכל הושלם! ✓',
+            progressText:    (c, t) => `מנתח קבצים (${c}/${t})...`,
             typingNames:   ['פסיכולוגיה קוגניטיבית', 'מבוא לכלכלה', 'חשבון דיפרנציאלי', 'מדעי המחשב', 'ביולוגיה כללית', 'היסטוריה של המזרח התיכון', 'מבוא למשפט', 'סוציולוגיה', 'פיזיקה 1', 'שיטות מחקר'],
             fbBtn:         '💬 פידבק',
             fbTitle:       'ספר לנו מה אתה חושב',
@@ -784,6 +793,15 @@
             wzErrRequired: 'Course name is required',
             seqNote:       'Analyzing one course at a time for best quality',
             curCourse:     (name) => `Now analyzing: ${name}`,
+            statusWaiting:   'Waiting',
+            statusAnalyzing: 'Analyzing...',
+            statusError:     'Error',
+            statusRetry:     'Retry',
+            statusBusy:      (s) => `Busy (${s}s...)`,
+            statusRateLimit: (s) => `Rate limit (${s}s...)`,
+            statusRetrying:  'Retrying...',
+            progressDone:    'All done! ✓',
+            progressText:    (c, t) => `Analyzing (${c}/${t})...`,
             typingNames:   ['Cognitive Psychology', 'Introduction to Economics', 'Calculus', 'Computer Science', 'General Biology', 'History of the Middle East', 'Introduction to Law', 'Sociology', 'Physics 1', 'Research Methods'],
             fbBtn:         '💬 Feedback',
             fbTitle:       'Tell us what you think',
@@ -895,9 +913,23 @@
         const fbThanksP = document.querySelector('#feedback-success p');
         if (fbThanksP) fbThanksP.textContent = s.fbThanksMsg;
 
-        // Sequential note text
+        // Sequential note text + analysis container direction
         const seqNote = document.getElementById('ob-sequential-note');
-        if (seqNote) seqNote.textContent = s.seqNote;
+        if (seqNote) {
+            seqNote.textContent = s.seqNote;
+            seqNote.style.direction = isEn ? 'ltr' : 'rtl';
+            seqNote.style.textAlign = isEn ? 'left' : 'right';
+        }
+        const curCourseEl = document.getElementById('ob-current-course');
+        if (curCourseEl) {
+            curCourseEl.style.direction = isEn ? 'ltr' : 'rtl';
+            curCourseEl.style.textAlign = isEn ? 'left' : 'right';
+        }
+        const progText = document.getElementById('ob-progress-text');
+        if (progText) {
+            progText.style.direction = isEn ? 'ltr' : 'rtl';
+            progText.style.textAlign = isEn ? 'left' : 'right';
+        }
 
         // Re-render wizard card if open (to update all wizard text + typing names)
         if (document.getElementById('ob-wizard')?.style.display === 'block') {
@@ -1125,6 +1157,8 @@
     };
 
     function renderAnalysisList() {
+        const _s = STRINGS[currentLang] || STRINGS.he;
+        const fnDir = currentLang === 'en' ? 'ltr' : 'rtl';
         document.getElementById('ob-file-list').innerHTML = obFiles.map((f, i) => {
             const courseName = sanitize(obCourseNames[i] || f.name.replace(/\.pdf$/i, ''));
             return `
@@ -1132,12 +1166,12 @@
                 <div class="file-item" id="fi-${i}">
                     <span class="file-spinner" id="fsp-${i}"></span>
                     <span>📄</span>
-                    <span class="file-item-name" style="flex:1;display:flex;flex-direction:column;gap:1px">
-                        <span style="font-weight:700;color:#2d3436">${courseName}</span>
-                        <span style="font-size:0.68rem;color:#bbb;direction:rtl">${sanitize(f.name)}</span>
+                    <span class="file-item-name" style="flex:1;display:flex;flex-direction:column;gap:1px;min-width:0">
+                        <span style="font-weight:700;color:#2d3436;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${courseName}</span>
+                        <span style="font-size:0.68rem;color:#bbb;direction:${fnDir};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sanitize(f.name)}</span>
                     </span>
-                    <span class="file-status s-waiting" id="fs-${i}">ממתין</span>
-                    <button class="file-retry" id="fr-${i}" onclick="retryFile(${i})" style="display:none">נסה שוב</button>
+                    <span class="file-status s-waiting" id="fs-${i}">${_s.statusWaiting}</span>
+                    <button class="file-retry" id="fr-${i}" onclick="retryFile(${i})" style="display:none">${_s.statusRetry}</button>
                 </div>
                 <div class="file-error-msg" id="fem-${i}"></div>
             </div>`;
@@ -1263,24 +1297,24 @@
 
         // Pre-flight validation
         if (file.size > 10 * 1024 * 1024) {
-            setFileStatus(fileIdx, 's-error', 'גדול מדי', 'הקובץ גדול מדי. נסה להעלות קובץ קטן יותר.');
+            setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'הקובץ גדול מדי. נסה להעלות קובץ קטן יותר.');
             if (!skipCheck) checkAllAnalyzed();
             return;
         }
         if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
-            setFileStatus(fileIdx, 's-error', 'סוג שגוי', 'רק קבצי PDF נתמכים כרגע.');
+            setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'רק קבצי PDF נתמכים כרגע.');
             if (!skipCheck) checkAllAnalyzed();
             return;
         }
 
-        setFileStatus(fileIdx, 's-analyzing', 'מנתח...');
+        setFileStatus(fileIdx, 's-analyzing', (STRINGS[currentLang]||STRINGS.he).statusAnalyzing);
         let res, result;
         try {
             const body = await bodyFn();
             res = await fetch(EDGE_URL, { method: 'POST', headers: cachedHeaders || await getEdgeHeaders(), body });
         } catch(e) {
             console.error(e);
-            setFileStatus(fileIdx, 's-error', 'שגיאת רשת', 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
+            setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
             if (!skipCheck) checkAllAnalyzed();
             return;
         }
@@ -1300,17 +1334,17 @@
                 await new Promise(resolve => {
                     const iv = setInterval(() => {
                         secs--;
-                        if (badge) badge.textContent = secs > 0 ? labelFn(secs) : 'מנסה שוב...';
+                        if (badge) badge.textContent = secs > 0 ? labelFn(secs) : (STRINGS[currentLang]||STRINGS.he).statusRetrying;
                         if (secs <= 0) { clearInterval(iv); resolve(); }
                     }, 1000);
                 });
                 let res2, result2;
                 try {
                     const body2 = await bodyFn();
-                    setFileStatus(fileIdx, 's-analyzing', 'מנתח...');
+                    setFileStatus(fileIdx, 's-analyzing', (STRINGS[currentLang]||STRINGS.he).statusAnalyzing);
                     res2 = await fetch(EDGE_URL, { method: 'POST', headers: cachedHeaders || await getEdgeHeaders(), body: body2 });
                 } catch(e2) {
-                    setFileStatus(fileIdx, 's-error', 'שגיאת רשת', 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
+                    setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'בעיית חיבור לאינטרנט. בדוק את החיבור ונסה שוב.');
                     if (!skipCheck) checkAllAnalyzed();
                     return null;
                 }
@@ -1320,18 +1354,18 @@
 
             if (isOverload) {
                 console.warn('Overload detected, retrying in 10s...');
-                const retry = await autoRetry(10, s => `עמוס (${s}...)`);
+                const retry = await autoRetry(10, s => (STRINGS[currentLang]||STRINGS.he).statusBusy(s));
                 if (!retry || !retry.res.ok || (!retry.result.syllabus?.length && !retry.result.exams?.length)) {
-                    setFileStatus(fileIdx, 's-error', 'שגיאה', 'השרת עמוס כרגע. המתן מספר שניות ונסה שוב.');
+                    setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'השרת עמוס כרגע. המתן מספר שניות ונסה שוב.');
                     if (!skipCheck) checkAllAnalyzed();
                     return;
                 }
                 res = retry.res; result = retry.result;
             } else if (isRateLimit) {
                 console.warn('Rate limit detected, retrying in 15s...');
-                const retry = await autoRetry(15, s => `מגבלת קצב (${s}...)`);
+                const retry = await autoRetry(15, s => (STRINGS[currentLang]||STRINGS.he).statusRateLimit(s));
                 if (!retry || !retry.res.ok || (!retry.result.syllabus?.length && !retry.result.exams?.length)) {
-                    setFileStatus(fileIdx, 's-error', 'שגיאה', 'יותר מדי בקשות בו זמנית. מנסה שוב בעוד 15 שניות...');
+                    setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'יותר מדי בקשות בו זמנית. מנסה שוב בעוד 15 שניות...');
                     if (!skipCheck) checkAllAnalyzed();
                     return;
                 }
@@ -1341,14 +1375,14 @@
                     ? 'הניתוח לוקח יותר מדי זמן. נסה קובץ קטן יותר או בחר עמודים ספציפיים.'
                     : 'שגיאה בניתוח הקובץ. נסה שוב או נסה קובץ אחר.';
                 console.error('Edge function error:', msg);
-                setFileStatus(fileIdx, 's-error', 'שגיאה', errMsg);
+                setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, errMsg);
                 if (!skipCheck) checkAllAnalyzed();
                 return;
             }
         }
 
         if (!result.syllabus?.length && !result.exams?.length) {
-            setFileStatus(fileIdx, 's-error', 'לא נמצא', 'לא הצלחנו למצוא מידע בקובץ זה. ודא שזהו סילבוס תקין.');
+            setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'לא הצלחנו למצוא מידע בקובץ זה. ודא שזהו סילבוס תקין.');
             if (!skipCheck) checkAllAnalyzed();
             return;
         }
@@ -1386,8 +1420,9 @@
         const updateProgress = () => {
             document.getElementById('ob-progress-count').textContent = `${completed} / ${total}`;
             document.getElementById('ob-progress-fill').style.width = `${(completed / total) * 100}%`;
+            const _ps = (STRINGS[currentLang] || STRINGS.he);
             document.getElementById('ob-progress-text').textContent =
-                completed === total ? 'הכל הושלם! ✓' : `מנתח קבצים (${completed}/${total})...`;
+                completed === total ? _ps.progressDone : _ps.progressText(completed, total);
         };
         updateProgress();
 
@@ -1397,6 +1432,9 @@
             if (i === null) { el.textContent = ''; return; }
             const name = obCourseNames[i] || obFiles[i]?.name.replace(/\.pdf$/i, '') || '';
             el.textContent = name ? (STRINGS[currentLang] || STRINGS.he).curCourse(name) : '';
+            const isEn = currentLang === 'en';
+            el.style.direction = isEn ? 'ltr' : 'rtl';
+            el.style.textAlign = isEn ? 'left' : 'right';
         };
 
         const tasks = obFiles.map((_, i) => async () => {
@@ -1427,9 +1465,10 @@
         setCurrentCourse(null);
         document.getElementById('ob-progress-fill').style.width = '100%';
         document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${total}`;
+        const _finalS = (STRINGS[currentLang] || STRINGS.he);
         document.getElementById('ob-progress-text').textContent = obResults.length === total
-            ? 'הכל הושלם! ✓'
-            : `${obResults.length} מתוך ${total} הצליחו`;
+            ? _finalS.progressDone
+            : `${obResults.length} / ${total}`;
 
         if (obResults.length > 0) {
             showReviewScreen();
