@@ -1575,6 +1575,7 @@ function addCourseChip(course) {
                     source: 'exam',
                     confidence: typeof item.confidence === 'number' ? item.confidence : 80,
                     reason: sanitize(item.reason || ''),
+                    c: sanitize(item.c || ''),
                     t: sanitize(item.t || ''),
                     d: item.d || '',
                     tag: sanitize(item.tag || ''),
@@ -1749,7 +1750,7 @@ function addCourseChip(course) {
             w: i.w, c: i.c, t: i.t, txt: i.txt
         }));
         const exams = toSave.filter(i => i.source === 'exam').map(i => ({
-            t: i.t, d: i.d, tag: i.tag
+            t: i.t, d: i.d, tag: i.tag, c: i.c || ''
         }));
 
         userSyllabus = [...userSyllabus, ...syllabus];
