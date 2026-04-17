@@ -441,7 +441,7 @@
         <div class="rv-header">
             <span class="ob-logo">Sylla<span>Bot</span></span>
             <div class="ob-step-label">Setup · Review before importing</div>
-            <h2 class="rv-title">בדוק לפני שמירה ✋</h2>
+            <h2 class="rv-title" id="rv-title">בדוק לפני שמירה ✋</h2>
             <p class="rv-sub" id="rv-subtitle"></p>
             <div class="rv-pills" id="rv-pills"></div>
         </div>
@@ -451,8 +451,8 @@
         <div class="rv-footer">
             <div class="rv-save-count" id="rv-counter"></div>
             <div class="rv-actions">
-                <button class="rv-btn-confirmed" onclick="confirmReview('confirmed')">שמור תקינים בלבד</button>
-                <button class="rv-btn-all" onclick="confirmReview('all')">שמור הכל ✓</button>
+                <button class="rv-btn-confirmed" id="rv-btn-confirmed" onclick="confirmReview('confirmed')">שמור תקינים בלבד</button>
+                <button class="rv-btn-all" id="rv-btn-all" onclick="confirmReview('all')">שמור הכל ✓</button>
             </div>
         </div>
     </div>
@@ -744,6 +744,20 @@
             fbCancel:      'ביטול',
             fbThanks:      'תודה רבה!',
             fbThanksMsg:   'הפידבק שלך נשמר ויעזור לנו להשתפר',
+            rvTitle:         'בדוק לפני שמירה ✋',
+            rvSubtitle:      (a, c, u) => `מצאנו ${a} פריטים. ${c} מהם נראים בסדר, ${u} דורשים בדיקה.`,
+            rvPillOk:        (n) => `✓ ${n} תקינים`,
+            rvPillWarn:      (n) => `⚠️ ${n} לבדיקה`,
+            rvSecUncertain:  '⚠️ פריטים לבדיקה',
+            rvSecConfirmed:  (n) => `✓ פריטים תקינים (${n})`,
+            rvBtnConfirm:    '✓ נכון',
+            rvBtnEdit:       '✏️ ערוך',
+            rvBtnDelete:     '🗑️ מחק',
+            rvWeekTitle:     'שבוע (0-13)',
+            rvWeekLabel:     (n) => `שבוע ${n}`,
+            rvCounter:       (n) => `<strong>${n}</strong> פריטים יישמרו`,
+            rvSaveAll:       'שמור הכל ✓',
+            rvSaveConfirmed: 'שמור תקינים בלבד',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -812,6 +826,20 @@
             fbCancel:      'Cancel',
             fbThanks:      'Thank you!',
             fbThanksMsg:   'Your feedback has been saved and will help us improve',
+            rvTitle:         'Review before saving ✋',
+            rvSubtitle:      (a, c, u) => `The AI analyzed your syllabus. Review the items and confirm everything is correct before saving.`,
+            rvPillOk:        (n) => `✓ ${n} confirmed items`,
+            rvPillWarn:      (n) => `⚠️ ${n} to review`,
+            rvSecUncertain:  '⚠️ Items to review',
+            rvSecConfirmed:  (n) => `✓ Confirmed items (${n})`,
+            rvBtnConfirm:    '✓ Correct',
+            rvBtnEdit:       '✏️ Edit',
+            rvBtnDelete:     '🗑️ Delete',
+            rvWeekTitle:     'Week (0-13)',
+            rvWeekLabel:     (n) => `Week ${n}`,
+            rvCounter:       (n) => `<strong>${n}</strong> items will be saved`,
+            rvSaveAll:       'Save all ✓',
+            rvSaveConfirmed: 'Save confirmed only',
         },
     };
 
@@ -929,6 +957,22 @@
         if (progText) {
             progText.style.direction = isEn ? 'ltr' : 'rtl';
             progText.style.textAlign = isEn ? 'left' : 'right';
+        }
+
+        // Review screen static text + direction
+        const rvTitle = document.getElementById('rv-title');
+        if (rvTitle) rvTitle.textContent = s.rvTitle;
+        const rvBtnAll = document.getElementById('rv-btn-all');
+        if (rvBtnAll) rvBtnAll.textContent = s.rvSaveAll;
+        const rvBtnConfirmed = document.getElementById('rv-btn-confirmed');
+        if (rvBtnConfirmed) rvBtnConfirmed.textContent = s.rvSaveConfirmed;
+        const rvEl = document.getElementById('ob-review');
+        if (rvEl) {
+            rvEl.style.direction = isEn ? 'ltr' : 'rtl';
+            rvEl.style.textAlign = isEn ? 'left' : 'right';
+        }
+        if (document.getElementById('ob-review')?.classList.contains('visible')) {
+            renderReviewUI();
         }
 
         // Re-render wizard card if open (to update all wizard text + typing names)
@@ -1545,29 +1589,37 @@ function addCourseChip(course) {
     }
 
     function renderReviewUI() {
+        const _s = STRINGS[currentLang] || STRINGS.he;
         const active    = reviewItems.filter(i => !i.deleted);
         const uncertain = active.filter(i => i.confidence < 80 && !i.userConfirmed);
         const confirmed = active.filter(i => i.confidence >= 80 || i.userConfirmed);
 
         document.getElementById('rv-subtitle').textContent =
-            `מצאנו ${active.length} פריטים. ${confirmed.length} מהם נראים בסדר, ${uncertain.length} דורשים בדיקה.`;
+            _s.rvSubtitle(active.length, confirmed.length, uncertain.length);
         document.getElementById('rv-pills').innerHTML =
-            `<span class="rv-pill ok">✓ ${confirmed.length} תקינים</span>` +
-            (uncertain.length ? `<span class="rv-pill warn">⚠️ ${uncertain.length} לבדיקה</span>` : '');
+            `<span class="rv-pill ok">${_s.rvPillOk(confirmed.length)}</span>` +
+            (uncertain.length ? `<span class="rv-pill warn">${_s.rvPillWarn(uncertain.length)}</span>` : '');
 
         document.getElementById('rv-sections').innerHTML =
             rvUncertainSection(uncertain) +
             rvConfirmedSection(confirmed);
 
-        document.getElementById('rv-counter').innerHTML =
-            `<strong>${active.length}</strong> פריטים יישמרו`;
+        document.getElementById('rv-counter').innerHTML = _s.rvCounter(active.length);
+
+        const isEn = currentLang === 'en';
+        const rvEl = document.getElementById('ob-review');
+        if (rvEl) {
+            rvEl.style.direction = isEn ? 'ltr' : 'rtl';
+            rvEl.style.textAlign = isEn ? 'left' : 'right';
+        }
     }
 
     function rvUncertainSection(items) {
         if (!items.length) return '';
+        const _s = STRINGS[currentLang] || STRINGS.he;
         return `<div class="rv-section">
             <div class="rv-section-header" onclick="toggleRvSection('rvs-uncertain','rvst-uncertain')">
-                <span class="rv-section-label" style="color:#e65100">⚠️ פריטים לבדיקה</span>
+                <span class="rv-section-label" style="color:#e65100">${_s.rvSecUncertain}</span>
                 <span class="rv-section-count">${items.length}</span>
                 <span class="rv-section-toggle" id="rvst-uncertain">▾</span>
             </div>
@@ -1577,9 +1629,10 @@ function addCourseChip(course) {
 
     function rvConfirmedSection(items) {
         if (!items.length) return '';
+        const _s = STRINGS[currentLang] || STRINGS.he;
         return `<div class="rv-section">
             <div class="rv-section-header" onclick="toggleRvSection('rvs-confirmed','rvst-confirmed')">
-                <span class="rv-section-label" style="color:#27ae60">✓ פריטים תקינים (${items.length})</span>
+                <span class="rv-section-label" style="color:#27ae60">${_s.rvSecConfirmed(items.length)}</span>
                 <span class="rv-section-toggle" id="rvst-confirmed">▸</span>
             </div>
             <div class="rv-compact-list rv-cards collapsed" id="rvs-confirmed">${items.map(rvCompactHtml).join('')}</div>
@@ -1587,18 +1640,21 @@ function addCourseChip(course) {
     }
 
     function rvCardHtml(item) {
+        const _s = STRINGS[currentLang] || STRINGS.he;
         const typeLabel = item.source === 'syllabus' ? item.t : item.tag;
         const typeClass = `tag-${typeLabel || 'default'}`;
         const desc = item.source === 'syllabus' ? item.txt : item.t;
         const descField = item.source === 'syllabus' ? 'txt' : 't';
         const courseColor = courseColors[item.c] || '#888';
+        const isEn = currentLang === 'en';
         const weekOrDate = item.source === 'syllabus'
-            ? `<input class="rv-week-input" type="number" min="0" max="13" value="${item.w}" title="שבוע (0-13)" oninput="rvSetField(${item.id},'w',+this.value)">`
+            ? `<input class="rv-week-input" type="number" min="0" max="13" value="${item.w}" title="${_s.rvWeekTitle}" oninput="rvSetField(${item.id},'w',+this.value)">`
             : `<span class="rv-date-badge">${item.d ? item.d.substring(0, 10) : '?'}</span>`;
         const confirmedClass = item.userConfirmed ? ' is-confirmed' : '';
+        const cardDir = isEn ? 'ltr' : 'rtl';
         return `<div class="rv-card${confirmedClass}" id="rvi-${item.id}">
             <div class="rv-card-top">
-                <div class="rv-card-course">
+                <div class="rv-card-course" style="direction:${cardDir}">
                     <span class="rv-card-dot" style="background:${courseColor}"></span>
                     ${item.c || ''}
                 </div>
@@ -1607,25 +1663,26 @@ function addCourseChip(course) {
                     ${weekOrDate}
                 </div>
             </div>
-            <div class="rv-card-desc">
-                <input class="rv-desc-input" type="text" value="${desc.replace(/"/g, '&quot;')}" oninput="rvSetField(${item.id},'${descField}',this.value)">
+            <div class="rv-card-desc" style="direction:${cardDir}">
+                <input class="rv-desc-input" type="text" value="${desc.replace(/"/g, '&quot;')}" style="direction:${cardDir};text-align:${isEn ? 'left' : 'right'}" oninput="rvSetField(${item.id},'${descField}',this.value)">
             </div>
-            ${item.reason ? `<div class="rv-card-warning">⚠️ ${item.reason}</div>` : ''}
-            <div class="rv-card-actions">
-                <button class="rv-card-btn rv-confirm" onclick="rvConfirm(${item.id})">✓ נכון</button>
-                <button class="rv-card-btn rv-edit" onclick="rvFocusEdit(${item.id})">✏️ ערוך</button>
-                <button class="rv-card-btn rv-del" onclick="rvDelete(${item.id})">🗑️ מחק</button>
+            ${item.reason ? `<div class="rv-card-warning" style="direction:${cardDir}">⚠️ ${item.reason}</div>` : ''}
+            <div class="rv-card-actions" style="flex-direction:${isEn ? 'row' : 'row-reverse'}">
+                <button class="rv-card-btn rv-confirm" onclick="rvConfirm(${item.id})">${_s.rvBtnConfirm}</button>
+                <button class="rv-card-btn rv-edit" onclick="rvFocusEdit(${item.id})">${_s.rvBtnEdit}</button>
+                <button class="rv-card-btn rv-del" onclick="rvDelete(${item.id})">${_s.rvBtnDelete}</button>
             </div>
         </div>`;
     }
 
     function rvCompactHtml(item) {
+        const _s = STRINGS[currentLang] || STRINGS.he;
         const typeLabel = item.source === 'syllabus' ? item.t : item.tag;
         const typeClass = `tag-${typeLabel || 'default'}`;
         const desc = item.source === 'syllabus' ? item.txt : item.t;
         const courseColor = courseColors[item.c] || '#888';
         const weekOrDate = item.source === 'syllabus'
-            ? `שבוע ${item.w}`
+            ? _s.rvWeekLabel(item.w)
             : (item.d ? item.d.substring(0, 10) : '?');
         return `<div class="rv-compact-item">
             <span class="rv-card-dot" style="background:${courseColor}"></span>
