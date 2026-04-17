@@ -336,8 +336,15 @@
         #view-workload { display: none; width: 100%; max-width: 1000px; }
         #view-workload.view-visible { display: block; }
         .wl-card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 24px; }
-        .wl-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 20px; color: #333; }
-        #workload-canvas { max-height: 360px; }
+        .wl-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 14px; color: #333; }
+        #workload-canvas { max-height: 380px; }
+        .wl-filter { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; direction: rtl; }
+        .wl-filter-label { font-size: 0.78rem; color: #999; font-weight: 700; white-space: nowrap; }
+        .wl-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; border: 1.5px solid #ddd; background: white; font-family: 'Heebo', sans-serif; font-size: 0.73rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #999; }
+        .wl-pill.active { opacity: 1; }
+        .wl-pill:not(.active) { opacity: 0.45; filter: grayscale(0.4); }
+        .wl-pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .wl-empty { text-align: center; color: #bbb; padding: 60px 20px; font-size: 0.88rem; }
     </style>
 </head>
 <body>
@@ -551,6 +558,8 @@
     <div id="view-workload">
         <div class="wl-card">
             <div class="wl-title">📊 עומס לפי שבוע</div>
+            <div class="wl-filter" id="wl-filter"></div>
+            <div id="wl-empty" class="wl-empty" style="display:none">אין נתונים להצגה. העלה סילבוס כדי לראות את עומס העבודה שלך.</div>
             <canvas id="workload-canvas"></canvas>
         </div>
     </div>
@@ -581,6 +590,7 @@
     let semesterStart = '2026-03-15';
     let currentView = 'list';
     let workloadChart = null;
+    let wlDeselectedCourses = new Set();
     let preferredView = 'list';
 
     const weekRanges = ["15.03-21.03","22.03-28.03","29.03-11.04","12.04-18.04","19.04-25.04","26.04-02.05","03.05-09.05","10.05-16.05","17.05-23.05","24.05-30.05","31.05-06.06","07.06-13.06","14.06-20.06","21.06-27.06","28.06-05.07","06.07-13.07","14.07-26.07"];
@@ -2258,81 +2268,182 @@ function addCourseChip(course) {
         container.innerHTML = html;
     }
 
+    const WL_TYPE_COLORS = {
+        'שיעור': '#8e44ad',
+        'תרגול': '#16a085',
+        'קריאה': '#27ae60',
+        'מטלה':  '#e67e22',
+        'בוחן':  '#c0392b',
+        'צפייה': '#f39c12',
+        'סרטון': '#2980b9',
+    };
+    const WL_DEFAULT_COLOR = '#95a5a6';
+
+    window.wlToggleCourse = function(course) {
+        if (wlDeselectedCourses.has(course)) wlDeselectedCourses.delete(course);
+        else wlDeselectedCourses.add(course);
+        renderWorkload();
+    };
+
+    window.wlToggleAll = function() {
+        const allCourses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
+        const allSelected = allCourses.every(c => !wlDeselectedCourses.has(c));
+        if (allSelected) allCourses.forEach(c => wlDeselectedCourses.add(c));
+        else wlDeselectedCourses.clear();
+        renderWorkload();
+    };
+
     function renderWorkload() {
         const numWeeks = weekRanges.length;
-        const sylCounts  = new Array(numWeeks).fill(0);
-        const examCounts = new Array(numWeeks).fill(0);
+        const allCourses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
 
-        userSyllabus.forEach(item => {
-            const w = item.w || 0;
-            if (w >= 0 && w < numWeeks) sylCounts[w]++;
+        // ── Filter bar ──
+        const filterEl = document.getElementById('wl-filter');
+        if (allCourses.length > 0) {
+            const allSelected = allCourses.every(c => !wlDeselectedCourses.has(c));
+            filterEl.innerHTML =
+                `<span class="wl-filter-label">הצג:</span>` +
+                `<button class="wl-pill${allSelected ? ' active' : ''}" style="border-color:#555;color:#555" onclick="wlToggleAll()">הכל</button>` +
+                allCourses.map(c => {
+                    const color = getCourseColor(c);
+                    const active = !wlDeselectedCourses.has(c);
+                    return `<button class="wl-pill${active ? ' active' : ''}" style="border-color:${color};color:${color};${active ? `background:${color}1a` : ''}" onclick="wlToggleCourse(${JSON.stringify(c)})"><span class="wl-pill-dot" style="background:${color}"></span>${sanitize(c)}</button>`;
+                }).join('');
+            filterEl.style.display = 'flex';
+        } else {
+            filterEl.innerHTML = '';
+            filterEl.style.display = 'none';
+        }
+
+        // ── Filtered data ──
+        const filteredSyl = userSyllabus.filter(i => !i.c || !wlDeselectedCourses.has(i.c));
+
+        // Empty state
+        const emptyEl = document.getElementById('wl-empty');
+        const canvas  = document.getElementById('workload-canvas');
+        if (!filteredSyl.length && !userExams.length) {
+            if (workloadChart) { workloadChart.destroy(); workloadChart = null; }
+            canvas.style.display = 'none';
+            emptyEl.style.display = 'block';
+            return;
+        }
+        canvas.style.display = '';
+        emptyEl.style.display = 'none';
+
+        // ── Per-type datasets ──
+        const allTypes = [...new Set(filteredSyl.map(i => i.t).filter(Boolean))];
+        const knownOrder = Object.keys(WL_TYPE_COLORS);
+        const sortedTypes = [
+            ...knownOrder.filter(t => allTypes.includes(t)),
+            ...allTypes.filter(t => !knownOrder.includes(t)),
+        ];
+
+        const weekTotals = new Array(numWeeks).fill(0);
+        filteredSyl.forEach(item => {
+            const w = item.w ?? 0;
+            if (w >= 0 && w < numWeeks) weekTotals[w]++;
         });
 
+        const barDatasets = sortedTypes.map(type => {
+            const data = new Array(numWeeks).fill(0);
+            filteredSyl.forEach(item => {
+                if (item.t === type) {
+                    const w = item.w ?? 0;
+                    if (w >= 0 && w < numWeeks) data[w]++;
+                }
+            });
+            return {
+                type: 'bar',
+                label: type,
+                data,
+                backgroundColor: WL_TYPE_COLORS[type] || WL_DEFAULT_COLOR,
+                borderRadius: 3,
+                stack: 'syl',
+            };
+        });
+
+        // ── Exam markers ──
+        const examsByWeek = {};
         const semStart = new Date(semesterStart);
         userExams.forEach(ex => {
             if (!ex.d) return;
             const w = Math.floor((new Date(ex.d) - semStart) / (7 * 86400000));
-            if (w >= 0 && w < numWeeks) examCounts[w]++;
+            if (w >= 0 && w < numWeeks) {
+                if (!examsByWeek[w]) examsByWeek[w] = [];
+                examsByWeek[w].push(ex.t || '?');
+            }
         });
 
+        const examMarkerData = new Array(numWeeks).fill(null);
+        Object.keys(examsByWeek).forEach(w => {
+            examMarkerData[+w] = (weekTotals[+w] || 0) + 0.5;
+        });
+
+        const datasets = [...barDatasets];
+        if (Object.keys(examsByWeek).length > 0) {
+            datasets.push({
+                type: 'line',
+                label: 'בחינות ◆',
+                data: examMarkerData,
+                showLine: false,
+                pointStyle: 'rectRot',
+                pointRadius: examMarkerData.map(v => v !== null ? 9 : 0),
+                pointHoverRadius: examMarkerData.map(v => v !== null ? 11 : 0),
+                pointBackgroundColor: '#d63031',
+                borderColor: 'transparent',
+                order: 0,
+            });
+        }
+
         const labels = weekRanges.map((_, i) => `שבוע ${i + 1}`);
-        const barColors = sylCounts.map(n =>
-            n === 0 ? '#e8e8e8' : n <= 3 ? '#2ecc71' : n <= 6 ? '#e67e22' : '#d63031'
-        );
 
         if (workloadChart) { workloadChart.destroy(); workloadChart = null; }
 
-        const ctx = document.getElementById('workload-canvas').getContext('2d');
+        const ctx = canvas.getContext('2d');
         workloadChart = new Chart(ctx, {
-            data: {
-                labels,
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'משימות',
-                        data: sylCounts,
-                        backgroundColor: barColors,
-                        borderRadius: 5,
-                        yAxisID: 'y',
-                    },
-                    {
-                        type: 'line',
-                        label: 'בחינות / דד-ליינים',
-                        data: examCounts,
-                        borderColor: '#d63031',
-                        backgroundColor: 'rgba(214,48,49,0.1)',
-                        pointBackgroundColor: '#d63031',
-                        pointRadius: examCounts.map(n => n > 0 ? 6 : 3),
-                        tension: 0.3,
-                        yAxisID: 'y',
-                    }
-                ]
-            },
+            data: { labels, datasets },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'top', labels: { font: { family: 'Heebo' } } },
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Heebo' }, usePointStyle: true, padding: 14 },
+                    },
                     tooltip: {
+                        mode: 'index',
+                        filter: item => {
+                            if (item.dataset.label === 'בחינות ◆') return false;
+                            return (item.raw ?? 0) > 0;
+                        },
                         callbacks: {
-                            title: items => items[0].label,
-                            label: item => item.datasetIndex === 0
-                                ? `${item.raw} משימות`
-                                : `${item.raw} בחינות/דד-ליינים`,
-                        }
-                    }
+                            title: items => items[0]?.label || '',
+                            label: item => `${item.dataset.label}: ${item.raw}`,
+                            afterBody: items => {
+                                const wi = items[0]?.dataIndex;
+                                if (wi === undefined) return [];
+                                const lines = [];
+                                if (weekTotals[wi] > 0) lines.push(`סה״כ: ${weekTotals[wi]}`);
+                                if (examsByWeek[wi]?.length) {
+                                    lines.push('');
+                                    examsByWeek[wi].forEach(t => lines.push(`◆ ${t}`));
+                                }
+                                return lines;
+                            },
+                        },
+                    },
                 },
                 onClick: (e, elements) => {
-                    if (!elements.length) return;
-                    const w = elements[0].index;
-                    currentWeekIdx = w;
+                    const bar = elements.find(el => datasets[el.datasetIndex]?.type === 'bar');
+                    if (!bar) return;
+                    currentWeekIdx = bar.index;
                     switchView('list');
                     render();
                 },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Heebo' } } },
-                    x: { ticks: { font: { family: 'Heebo' } } }
-                }
-            }
+                    y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Heebo' } } },
+                    x: { stacked: true, ticks: { font: { family: 'Heebo' } } },
+                },
+            },
         });
     }
 
