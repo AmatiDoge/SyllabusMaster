@@ -424,7 +424,7 @@
         <div id="ob-analysis">
             <div class="file-list" id="ob-file-list"></div>
             <div class="progress-wrap" id="ob-progress-wrap">
-                <p class="ob-sequential-note" id="ob-sequential-note">מנתח קורס אחד בכל פעם כדי להבטיח איכות מיטבית</p>
+                <p class="ob-sequential-note" id="ob-sequential-note"></p>
                 <div class="ob-current-course" id="ob-current-course"></div>
                 <div class="progress-meta">
                     <span id="ob-progress-text">מנתח...</span>
@@ -713,6 +713,19 @@
             exCustomPh:    'תג מותאם...',
             sylOtherOpt:   'אחר...',
             sylCustomTypePh: 'סוג מותאם...',
+            wzProgress:    (x, y) => `קורס ${x} מתוך ${y}`,
+            wzCourseLabel: 'שם הקורס *',
+            wzNext:        'הבא ←',
+            wzPrev:        '→ הקודם',
+            wzAnalyze:     'נתח הכל ✨',
+            wzSelectPages: 'בחר עמודים ספציפיים',
+            wzPageCount:   (n) => `${n} עמודים`,
+            wzPageCounter: (sel, total) => `${sel} עמודים נבחרים מתוך ${total}`,
+            wzPageLabel:   (p) => `עמוד ${p}`,
+            wzErrRequired: 'שם הקורס הוא שדה חובה',
+            seqNote:       'מנתח קורס אחד בכל פעם כדי להבטיח איכות מיטבית',
+            curCourse:     (name) => `כרגע מנתח: ${name}`,
+            typingNames:   ['פסיכולוגיה קוגניטיבית', 'מבוא לכלכלה', 'חשבון דיפרנציאלי', 'מדעי המחשב', 'ביולוגיה כללית', 'היסטוריה של המזרח התיכון', 'מבוא למשפט', 'סוציולוגיה', 'פיזיקה 1', 'שיטות מחקר'],
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -750,6 +763,19 @@
             exCustomPh:    'Custom tag...',
             sylOtherOpt:   'Other...',
             sylCustomTypePh: 'Custom type...',
+            wzProgress:    (x, y) => `Course ${x} of ${y}`,
+            wzCourseLabel: 'Course Name *',
+            wzNext:        'Next →',
+            wzPrev:        '← Back',
+            wzAnalyze:     'Build my dashboard ✨',
+            wzSelectPages: 'Select specific pages',
+            wzPageCount:   (n) => `${n} pages`,
+            wzPageCounter: (sel, total) => `${sel} of ${total} pages selected`,
+            wzPageLabel:   (p) => `Page ${p}`,
+            wzErrRequired: 'Course name is required',
+            seqNote:       'Analyzing one course at a time for best quality',
+            curCourse:     (name) => `Now analyzing: ${name}`,
+            typingNames:   ['Cognitive Psychology', 'Introduction to Economics', 'Calculus', 'Computer Science', 'General Biology', 'History of the Middle East', 'Introduction to Law', 'Sociology', 'Physics 1', 'Research Methods'],
         },
     };
 
@@ -827,6 +853,16 @@
         if (prevBtn) prevBtn.textContent = isEn ? '‹' : '›';
         if (nextBtn) nextBtn.textContent = isEn ? '›' : '‹';
 
+        // Sequential note text
+        const seqNote = document.getElementById('ob-sequential-note');
+        if (seqNote) seqNote.textContent = s.seqNote;
+
+        // Re-render wizard card if open (to update all wizard text + typing names)
+        if (document.getElementById('ob-wizard')?.style.display === 'block') {
+            stopTypingEffect();
+            renderWizardCard(obWizardIdx);
+        }
+
         // Re-render to update dynamic strings
         if (document.getElementById('dashboard').classList.contains('visible')) render();
     }
@@ -848,6 +884,56 @@
     }
 
     function save() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToSupabase, 800); }
+
+    // ── TYPING EFFECT ──
+    let _typingTimer = null;
+    let _typingNameIdx = 0;
+    let _typingCharIdx = 0;
+    let _typingPhase = 'typing'; // 'typing' | 'pause' | 'deleting'
+
+    window.stopTypingEffect = function() {
+        clearTimeout(_typingTimer);
+        _typingTimer = null;
+    };
+
+    window.startTypingEffect = function(inp) {
+        stopTypingEffect();
+        if (!inp || inp.value) return;
+        _typingCharIdx = 0;
+        _typingPhase = 'typing';
+        _runTypingStep(inp);
+    };
+
+    function _runTypingStep(inp) {
+        if (!inp || !inp.isConnected || inp.value || document.activeElement === inp) {
+            stopTypingEffect();
+            return;
+        }
+        const names = (STRINGS[currentLang] || STRINGS.he).typingNames;
+        const name = names[_typingNameIdx % names.length];
+
+        if (_typingPhase === 'typing') {
+            _typingCharIdx++;
+            inp.placeholder = name.substring(0, _typingCharIdx);
+            if (_typingCharIdx >= name.length) {
+                _typingPhase = 'pause';
+                _typingTimer = setTimeout(() => { _typingPhase = 'deleting'; _runTypingStep(inp); }, 1500);
+            } else {
+                _typingTimer = setTimeout(() => _runTypingStep(inp), 80);
+            }
+        } else if (_typingPhase === 'deleting') {
+            _typingCharIdx--;
+            inp.placeholder = name.substring(0, _typingCharIdx);
+            if (_typingCharIdx <= 0) {
+                _typingNameIdx++;
+                _typingCharIdx = 0;
+                _typingPhase = 'typing';
+                _typingTimer = setTimeout(() => _runTypingStep(inp), 200);
+            } else {
+                _typingTimer = setTimeout(() => _runTypingStep(inp), 40);
+            }
+        }
+    }
 
     // ── VIEWS ──
     function showDashboard() {
@@ -905,9 +991,12 @@
     function renderWizardCard(idx) {
         const total = obFiles.length;
         const f = obFiles[idx];
+        const s = STRINGS[currentLang] || STRINGS.he;
+
+        stopTypingEffect();
 
         // Progress label + dots
-        document.getElementById('wz-progress-label').textContent = `קורס ${idx + 1} מתוך ${total}`;
+        document.getElementById('wz-progress-label').textContent = s.wzProgress(idx + 1, total);
         document.getElementById('wz-dots').innerHTML = Array.from({length: total}, (_, i) => {
             const cls = i < idx ? 'wz-dot done' : i === idx ? 'wz-dot active' : 'wz-dot';
             return `<div class="${cls}"></div>`;
@@ -915,23 +1004,25 @@
 
         // Prev/next buttons
         document.getElementById('wz-prev').style.display = idx === 0 ? 'none' : '';
-        document.getElementById('wz-next').textContent = idx === total - 1 ? 'נתח הכל ✨' : 'הבא ←';
+        document.getElementById('wz-prev').textContent = s.wzPrev;
+        document.getElementById('wz-next').textContent = idx === total - 1 ? s.wzAnalyze : s.wzNext;
 
         // Page count badge (may not be loaded yet)
-        const pgCount = obPageCounts[idx] ? `📄 ${obPageCounts[idx]} עמודים` : '';
+        const pgCount = obPageCounts[idx] ? `📄 ${s.wzPageCount(obPageCounts[idx])}` : '';
         const savedName = sanitize(obCourseNames[idx] || '');
 
         document.getElementById('wz-card-wrap').innerHTML = `
             <div class="wz-card">
                 <div class="wz-filename">📄 ${sanitize(f.name)}</div>
-                <div class="wz-label">שם הקורס *</div>
+                <div class="wz-label">${s.wzCourseLabel}</div>
                 <input class="wz-input" id="wz-input-${idx}"
-                       placeholder="לדוגמה: פסיכולוגיה קוגניטיבית"
                        value="${savedName}"
-                       oninput="obCourseNames[${idx}] = this.value; this.classList.remove('wz-error'); document.getElementById('wz-err-${idx}').textContent='';">
+                       oninput="obCourseNames[${idx}] = this.value; this.classList.remove('wz-error'); document.getElementById('wz-err-${idx}').textContent='';"
+                       onfocus="stopTypingEffect()"
+                       onblur="if(!this.value) startTypingEffect(this)">
                 <div class="wz-err-msg" id="wz-err-${idx}"></div>
                 ${pgCount ? `<button class="wz-pages-toggle" id="wz-ptoggle-${idx}" onclick="wzTogglePages(${idx})">
-                    <span id="wz-parrow-${idx}">▾</span> בחר עמודים ספציפיים · ${pgCount}
+                    <span id="wz-parrow-${idx}">▾</span> ${s.wzSelectPages} · ${pgCount}
                 </button>
                 <div class="wz-pages-body" id="wz-pbody-${idx}">
                     <div class="ps-picker-counter" id="ps-counter-${idx}"></div>
@@ -939,7 +1030,17 @@
                 </div>` : ''}
             </div>`;
 
-        setTimeout(() => { const inp = document.getElementById(`wz-input-${idx}`); if (inp) inp.focus(); }, 40);
+        setTimeout(() => {
+            const inp = document.getElementById(`wz-input-${idx}`);
+            if (inp) {
+                inp.focus();
+                // Start animation for users who blur immediately or on touch devices
+                inp.addEventListener('blur', function onFirstBlur() {
+                    if (!this.value) startTypingEffect(this);
+                    this.removeEventListener('blur', onFirstBlur);
+                }, { once: true });
+            }
+        }, 40);
     }
 
     window.wzTogglePages = function(idx) {
@@ -966,7 +1067,7 @@
             if (!val) {
                 if (inp) { inp.classList.add('wz-error'); inp.focus(); }
                 const errEl = document.getElementById(`wz-err-${idx}`);
-                if (errEl) errEl.textContent = 'שם הקורס הוא שדה חובה';
+                if (errEl) errEl.textContent = (STRINGS[currentLang] || STRINGS.he).wzErrRequired;
                 return;
             }
             obCourseNames[idx] = val;
@@ -1035,7 +1136,7 @@
             wrap.className = `ps-thumb ${sel.has(p) ? 'selected' : 'deselected'}`;
             const label = document.createElement('div');
             label.className = 'ps-thumb-label';
-            label.textContent = `עמוד ${p}`;
+            label.textContent = (STRINGS[currentLang] || STRINGS.he).wzPageLabel(p);
             wrap.appendChild(canvas);
             wrap.appendChild(label);
             wrap.addEventListener('click', () => {
@@ -1052,7 +1153,7 @@
         const sel = obPageSelections[i];
         const total = obPageCounts[i];
         const el = document.getElementById(`ps-counter-${i}`);
-        if (el && sel && total) el.textContent = `${sel.size} עמודים נבחרים מתוך ${total}`;
+        if (el && sel && total) el.textContent = (STRINGS[currentLang] || STRINGS.he).wzPageCounter(sel.size, total);
     }
 
     window.togglePagePicker = function(i) {
@@ -1249,7 +1350,7 @@
             if (!el) return;
             if (i === null) { el.textContent = ''; return; }
             const name = obCourseNames[i] || obFiles[i]?.name.replace(/\.pdf$/i, '') || '';
-            el.textContent = name ? `כרגע מנתח: ${name}` : '';
+            el.textContent = name ? (STRINGS[currentLang] || STRINGS.he).curCourse(name) : '';
         };
 
         const tasks = obFiles.map((_, i) => async () => {
