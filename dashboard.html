@@ -726,6 +726,15 @@
             seqNote:       'מנתח קורס אחד בכל פעם כדי להבטיח איכות מיטבית',
             curCourse:     (name) => `כרגע מנתח: ${name}`,
             typingNames:   ['פסיכולוגיה קוגניטיבית', 'מבוא לכלכלה', 'חשבון דיפרנציאלי', 'מדעי המחשב', 'ביולוגיה כללית', 'היסטוריה של המזרח התיכון', 'מבוא למשפט', 'סוציולוגיה', 'פיזיקה 1', 'שיטות מחקר'],
+            fbBtn:         '💬 פידבק',
+            fbTitle:       'ספר לנו מה אתה חושב',
+            fbSub:         'הפידבק שלך עוזר לנו לשפר את המוצר',
+            fbPlaceholder: 'מה עבד טוב? מה אפשר לשפר?',
+            fbSubmit:      'שלח',
+            fbSubmitting:  'שולח...',
+            fbCancel:      'ביטול',
+            fbThanks:      'תודה רבה!',
+            fbThanksMsg:   'הפידבק שלך נשמר ויעזור לנו להשתפר',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -776,6 +785,15 @@
             seqNote:       'Analyzing one course at a time for best quality',
             curCourse:     (name) => `Now analyzing: ${name}`,
             typingNames:   ['Cognitive Psychology', 'Introduction to Economics', 'Calculus', 'Computer Science', 'General Biology', 'History of the Middle East', 'Introduction to Law', 'Sociology', 'Physics 1', 'Research Methods'],
+            fbBtn:         '💬 Feedback',
+            fbTitle:       'Tell us what you think',
+            fbSub:         'Your feedback helps us improve the product',
+            fbPlaceholder: 'What worked well? What can be improved?',
+            fbSubmit:      'Submit',
+            fbSubmitting:  'Submitting...',
+            fbCancel:      'Cancel',
+            fbThanks:      'Thank you!',
+            fbThanksMsg:   'Your feedback has been saved and will help us improve',
         },
     };
 
@@ -852,6 +870,24 @@
         const nextBtn = document.querySelector('.nav-btn[onclick*="changeWeek(1)"]');
         if (prevBtn) prevBtn.textContent = isEn ? '‹' : '›';
         if (nextBtn) nextBtn.textContent = isEn ? '›' : '‹';
+
+        // Feedback button + modal
+        const fbBtn = document.getElementById('feedback-btn');
+        if (fbBtn) fbBtn.innerHTML = s.fbBtn;
+        const fbTitle = document.querySelector('#feedback-form-body h3');
+        if (fbTitle) fbTitle.textContent = s.fbTitle;
+        const fbSub = document.querySelector('#feedback-form-body .fb-sub');
+        if (fbSub) fbSub.textContent = s.fbSub;
+        const fbText = document.getElementById('feedback-text');
+        if (fbText) fbText.placeholder = s.fbPlaceholder;
+        const fbSubmit = document.querySelector('.fb-submit');
+        if (fbSubmit && !fbSubmit.disabled) fbSubmit.textContent = s.fbSubmit;
+        const fbCancel = document.querySelector('.fb-cancel');
+        if (fbCancel) fbCancel.textContent = s.fbCancel;
+        const fbThanksH = document.querySelector('#feedback-success h4');
+        if (fbThanksH) fbThanksH.textContent = s.fbThanks;
+        const fbThanksP = document.querySelector('#feedback-success p');
+        if (fbThanksP) fbThanksP.textContent = s.fbThanksMsg;
 
         // Sequential note text
         const seqNote = document.getElementById('ob-sequential-note');
@@ -2242,8 +2278,9 @@ function addCourseChip(course) {
         const message = document.getElementById('feedback-text').value.trim();
         const btn = document.querySelector('.fb-submit');
         if (!message && !fbRating) return;
+        const fbS = STRINGS[currentLang] || STRINGS.he;
         btn.disabled = true;
-        btn.textContent = 'שולח...';
+        btn.textContent = fbS.fbSubmitting;
         try {
             const university = currentUser?.user_metadata?.university || 'Reichman University';
             const { error } = await sb.from('feedback').insert({
@@ -2259,7 +2296,7 @@ function addCourseChip(course) {
         } catch(e) {
             console.error(e);
             btn.disabled = false;
-            btn.textContent = 'שלח';
+            btn.textContent = fbS.fbSubmit;
         }
     };
 
