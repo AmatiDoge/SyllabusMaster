@@ -295,8 +295,9 @@
     overflow-y: auto;
     position: relative;
     box-shadow: 0 24px 60px rgba(0,0,0,0.15);
-    direction: rtl;
   }
+  .legal-modal[dir="rtl"] { direction: rtl; text-align: right; }
+  .legal-modal[dir="ltr"] { direction: ltr; text-align: left; }
   .legal-modal h2 {
     font-size: 1.2rem;
     font-weight: 900;
@@ -311,7 +312,6 @@
   .legal-close {
     position: absolute;
     top: 14px;
-    left: 14px;
     background: none;
     border: none;
     font-size: 1.3rem;
@@ -321,6 +321,8 @@
     padding: 4px 8px;
     border-radius: 6px;
   }
+  .legal-modal[dir="rtl"] .legal-close { left: 14px; right: auto; }
+  .legal-modal[dir="ltr"] .legal-close { right: 14px; left: auto; }
   .legal-close:hover { background: var(--paper); color: var(--ink); }
 
   /* ── LANG TOGGLE ── */
@@ -447,7 +449,7 @@
 
 <!-- Terms of Service modal -->
 <div class="legal-overlay" id="tos-overlay" onclick="closeLegalOnBg(event,'tos-overlay')">
-  <div class="legal-modal">
+  <div class="legal-modal" dir="rtl">
     <button class="legal-close" onclick="closeLegal('tos-overlay')">✕</button>
     <h2 id="tos-title">תנאי שימוש</h2>
     <p id="tos-body">SyllaBot הוא כלי לניהול לימודים. השימוש בשירות הוא על אחריות המשתמש. אנו שומרים את הנתונים שלך בצורה מוצפנת ב-Supabase. אין אנו משתפים מידע אישי עם צדדים שלישיים. גרסת פיילוט — השירות ניתן חינם לתקופת הפיילוט.</p>
@@ -456,7 +458,7 @@
 
 <!-- Privacy Policy modal -->
 <div class="legal-overlay" id="privacy-overlay" onclick="closeLegalOnBg(event,'privacy-overlay')">
-  <div class="legal-modal">
+  <div class="legal-modal" dir="rtl">
     <button class="legal-close" onclick="closeLegal('privacy-overlay')">✕</button>
     <h2 id="privacy-title">מדיניות פרטיות</h2>
     <p id="privacy-body">אנו אוספים: כתובת אימייל, שם (אופציונלי), קבצי סילבוס שאתה מעלה. המידע משמש אך ורק לצורך מתן השירות. קבצי PDF נשלחים ל-Anthropic API לצורך ניתוח ואינם נשמרים לאחר העיבוד. ניתן למחוק את החשבון בכל עת מהגדרות הדשבורד.</p>
@@ -582,6 +584,10 @@
     // Toggle button label
     const toggleBtn = document.getElementById('lang-toggle');
     if (toggleBtn) toggleBtn.textContent = t.toggleLabel;
+
+    // Update any open modals immediately
+    const modalDir = lang === 'en' ? 'ltr' : 'rtl';
+    document.querySelectorAll('.legal-overlay.open .legal-modal').forEach(m => m.dir = modalDir);
   }
 
   function updateGoogleBtn(selector, text) {
