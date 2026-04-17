@@ -322,12 +322,34 @@
     border-radius: 6px;
   }
   .legal-close:hover { background: var(--paper); color: var(--ink); }
+
+  /* ── LANG TOGGLE ── */
+  .lang-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 500;
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .lang-toggle:hover { border-color: var(--ink); color: var(--ink); }
 </style>
 </head>
 <body>
 
 <div class="bg-circle c1"></div>
 <div class="bg-circle c2"></div>
+
+<button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
 
 <div class="container">
   <a href="index.html" class="logo">Sylla<span>Bot</span></a>
@@ -447,6 +469,130 @@
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  let currentLang = localStorage.getItem('landing-lang') || 'he';
+
+  const T = {
+    he: {
+      tabLogin: 'כניסה', tabSignup: 'הרשמה',
+      loginEmail: 'אימייל', loginPassword: 'סיסמה',
+      btnLogin: 'כניסה', loadingLogin: 'נכנס...',
+      googleLogin: 'כניסה עם Google', forgotPassword: 'שכחת סיסמה?',
+      signupName: 'שם מלא', signupEmail: 'אימייל', signupPassword: 'סיסמה',
+      btnSignup: 'יצירת חשבון', loadingSignup: 'יוצר חשבון...',
+      googleSignup: 'הרשמה עם Google',
+      forgotDesc: 'נשלח לך קישור לאיפוס סיסמה',
+      forgotEmail: 'אימייל', btnForgotSend: 'שלח קישור', btnBackLogin: '← חזרה לכניסה',
+      divider: 'או',
+      footerNote: 'בהרשמה אתה מסכים ל<a href="#" onclick="openLegal(\'tos\');return false;">תנאי השימוש</a> ול<a href="#" onclick="openLegal(\'privacy\');return false;">מדיניות הפרטיות</a>',
+      toggleLabel: 'EN',
+      errFillLogin: 'אנא מלא אימייל וסיסמה', errFillSignup: 'אנא מלא את כל השדות',
+      errPassLen: 'הסיסמה חייבת להכיל לפחות 6 תווים', errFillEmail: 'אנא הכנס אימייל',
+      successSignup: 'נשלח אליך אימייל לאישור. בדוק את תיבת הדואר שלך!',
+      successReset: 'נשלח קישור לאיפוס סיסמה לאימייל שלך',
+      errGeneric: 'אירעה שגיאה. נסה שוב',
+      errMap: {
+        'Invalid login credentials': 'אימייל או סיסמה שגויים',
+        'Email not confirmed': 'האימייל לא אושר עדיין. בדוק את תיבת הדואר שלך',
+        'User already registered': 'כבר קיים חשבון עם האימייל הזה',
+        'Password should be at least 6 characters': 'הסיסמה חייבת להכיל לפחות 6 תווים',
+        'Unable to validate email address: invalid format': 'כתובת אימייל לא תקינה',
+      },
+    },
+    en: {
+      tabLogin: 'Login', tabSignup: 'Sign up',
+      loginEmail: 'Email', loginPassword: 'Password',
+      btnLogin: 'Login', loadingLogin: 'Signing in...',
+      googleLogin: 'Continue with Google', forgotPassword: 'Forgot password?',
+      signupName: 'Full name', signupEmail: 'Email', signupPassword: 'Password',
+      btnSignup: 'Create account', loadingSignup: 'Creating account...',
+      googleSignup: 'Continue with Google',
+      forgotDesc: 'We will send you a password reset link',
+      forgotEmail: 'Email', btnForgotSend: 'Send link', btnBackLogin: '← Back to login',
+      divider: 'or',
+      footerNote: 'By signing up you agree to <a href="#" onclick="openLegal(\'tos\');return false;">Terms of Service</a> and <a href="#" onclick="openLegal(\'privacy\');return false;">Privacy Policy</a>',
+      toggleLabel: 'עב',
+      errFillLogin: 'Please enter your email and password', errFillSignup: 'Please fill in all fields',
+      errPassLen: 'Password must be at least 6 characters', errFillEmail: 'Please enter your email',
+      successSignup: 'A confirmation email was sent. Check your inbox!',
+      successReset: 'A password reset link was sent to your email',
+      errGeneric: 'An error occurred. Try again',
+      errMap: {
+        'Invalid login credentials': 'Incorrect email or password',
+        'Email not confirmed': 'Email not confirmed yet. Check your inbox',
+        'User already registered': 'An account with this email already exists',
+        'Password should be at least 6 characters': 'Password must be at least 6 characters',
+        'Unable to validate email address: invalid format': 'Invalid email address',
+      },
+    },
+  };
+
+  function applyLang(lang) {
+    const t = T[lang] || T.he;
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'en' ? 'ltr' : 'rtl';
+
+    // Tabs
+    const tabs = document.querySelectorAll('.tab');
+    if (tabs[0]) tabs[0].textContent = t.tabLogin;
+    if (tabs[1]) tabs[1].textContent = t.tabSignup;
+
+    // Login form
+    const loginLabels = document.querySelectorAll('#form-login label');
+    if (loginLabels[0]) loginLabels[0].textContent = t.loginEmail;
+    if (loginLabels[1]) loginLabels[1].textContent = t.loginPassword;
+    const btnLogin = document.getElementById('btn-login');
+    if (btnLogin) { btnLogin.textContent = t.btnLogin; btnLogin.setAttribute('data-label', t.btnLogin); }
+    const forgotLink = document.querySelector('#form-login a[onclick*="showForgot"]');
+    if (forgotLink) forgotLink.textContent = t.forgotPassword;
+    updateGoogleBtn('#form-login .btn-google', t.googleLogin);
+
+    // Signup form
+    const signupLabels = document.querySelectorAll('#form-signup label');
+    if (signupLabels[0]) signupLabels[0].textContent = t.signupName;
+    if (signupLabels[1]) signupLabels[1].textContent = t.signupEmail;
+    if (signupLabels[2]) signupLabels[2].textContent = t.signupPassword;
+    const btnSignup = document.getElementById('btn-signup');
+    if (btnSignup) { btnSignup.textContent = t.btnSignup; btnSignup.setAttribute('data-label', t.btnSignup); }
+    updateGoogleBtn('#form-signup .btn-google', t.googleSignup);
+
+    // Forgot password form
+    const forgotDesc = document.querySelector('#form-forgot p');
+    if (forgotDesc) forgotDesc.textContent = t.forgotDesc;
+    const forgotLabel = document.querySelector('#form-forgot label');
+    if (forgotLabel) forgotLabel.textContent = t.forgotEmail;
+    const btnForgotSend = document.querySelector('#form-forgot .btn');
+    if (btnForgotSend) btnForgotSend.textContent = t.btnForgotSend;
+    const backBtn = document.querySelector('#form-forgot button:not(.btn)');
+    if (backBtn) backBtn.textContent = t.btnBackLogin;
+
+    // Dividers
+    document.querySelectorAll('.divider').forEach(d => d.textContent = t.divider);
+
+    // Footer note
+    const footerNote = document.querySelector('.footer-note');
+    if (footerNote) footerNote.innerHTML = t.footerNote;
+
+    // Toggle button label
+    const toggleBtn = document.getElementById('lang-toggle');
+    if (toggleBtn) toggleBtn.textContent = t.toggleLabel;
+  }
+
+  function updateGoogleBtn(selector, text) {
+    const btn = document.querySelector(selector);
+    if (!btn) return;
+    const icon = btn.querySelector('svg');
+    btn.innerHTML = '';
+    if (icon) btn.appendChild(icon);
+    btn.appendChild(document.createTextNode(' ' + text));
+  }
+
+  function toggleLang() {
+    const next = currentLang === 'he' ? 'en' : 'he';
+    applyLang(next);
+    localStorage.setItem('landing-lang', next);
+  }
+
   // Check if already logged in
   sb.auth.getSession().then(({ data }) => {
     if (data.session) showSuccess(data.session.user);
@@ -485,30 +631,21 @@
     el.textContent = '';
   }
 
-  function setLoading(btnId, loading) {
-    const btn = document.getElementById(btnId);
-    if (loading) {
-      btn.disabled = true;
-      btn.innerHTML = btn.textContent + '<span class="spinner"></span>';
-    } else {
-      btn.disabled = false;
-      btn.innerHTML = btn.getAttribute('data-label') || btn.textContent.replace('...', '');
-    }
-  }
-
   async function login() {
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
-    if (!email || !password) return showMsg('אנא מלא אימייל וסיסמה', 'error');
+    const t = T[currentLang];
+    if (!email || !password) return showMsg(t.errFillLogin, 'error');
 
-    document.getElementById('btn-login').disabled = true;
-    document.getElementById('btn-login').innerHTML = 'נכנס... <span class="spinner"></span>';
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true;
+    btn.innerHTML = t.loadingLogin + ' <span class="spinner"></span>';
     clearMsg();
 
     const { error } = await sb.auth.signInWithPassword({ email, password });
 
-    document.getElementById('btn-login').disabled = false;
-    document.getElementById('btn-login').innerHTML = 'כניסה';
+    btn.disabled = false;
+    btn.textContent = t.btnLogin;
 
     if (error) showMsg(translateError(error.message), 'error');
   }
@@ -518,11 +655,13 @@
     const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
     const lang = document.getElementById('signup-lang').value;
-    if (!name || !email || !password) return showMsg('אנא מלא את כל השדות', 'error');
-    if (password.length < 6) return showMsg('הסיסמה חייבת להכיל לפחות 6 תווים', 'error');
+    const t = T[currentLang];
+    if (!name || !email || !password) return showMsg(t.errFillSignup, 'error');
+    if (password.length < 6) return showMsg(t.errPassLen, 'error');
 
-    document.getElementById('btn-signup').disabled = true;
-    document.getElementById('btn-signup').innerHTML = 'יוצר חשבון... <span class="spinner"></span>';
+    const btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+    btn.innerHTML = t.loadingSignup + ' <span class="spinner"></span>';
     clearMsg();
 
     const { error } = await sb.auth.signUp({
@@ -530,13 +669,13 @@
       options: { data: { full_name: name, lang, university: 'Reichman University' } }
     });
 
-    document.getElementById('btn-signup').disabled = false;
-    document.getElementById('btn-signup').innerHTML = 'יצירת חשבון';
+    btn.disabled = false;
+    btn.textContent = t.btnSignup;
 
     if (error) {
       showMsg(translateError(error.message), 'error');
     } else {
-      showMsg('נשלח אליך אימייל לאישור. בדוק את תיבת הדואר שלך!', 'success');
+      showMsg(t.successSignup, 'success');
     }
   }
 
@@ -549,7 +688,8 @@
 
   async function resetPassword() {
     const email = document.getElementById('forgot-email').value.trim();
-    if (!email) return showMsg('אנא הכנס אימייל', 'error');
+    const t = T[currentLang];
+    if (!email) return showMsg(t.errFillEmail, 'error');
 
     const { error } = await sb.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/reset.html'
@@ -558,7 +698,7 @@
     if (error) {
       showMsg(translateError(error.message), 'error');
     } else {
-      showMsg('נשלח קישור לאיפוס סיסמה לאימייל שלך', 'success');
+      showMsg(t.successReset, 'success');
     }
   }
 
@@ -570,69 +710,26 @@
 
     // PAYMENT WALL DISABLED - FREE LAUNCH PERIOD
     window.location.href = 'dashboard.html';
-
-    // try {
-    //   const { data } = await sb.auth.getSession();
-    //   const token = data.session?.access_token;
-
-    //   // Check if already paid
-    //   console.log('Checking paid status for user:', user.id);
-    //   const { data: userData, error: paidError } = await sb.from('user_data').select('paid').eq('user_id', user.id).single();
-    //   console.log('user_data query response:', JSON.stringify(userData), 'error:', JSON.stringify(paidError));
-    //   console.log('paid value:', userData?.paid);
-    //   if (userData?.paid) {
-    //     window.location.href = 'dashboard.html';
-    //     return;
-    //   }
-
-    //   const res = await fetch('https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/create-checkout', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${token}`,
-    //     },
-    //   });
-
-    //   const body = await res.json();
-    //   console.log('create-checkout response:', body);
-    //   if (body.error) throw new Error(body.error);
-    //   if (!body.url) throw new Error('No checkout URL returned');
-    //   window.location.href = body.url;
-    // } catch (err) {
-    //   document.getElementById('success-msg').textContent = 'אירעה שגיאה. נסה שוב.';
-    //   console.error('Checkout error:', err.message);
-    // }
   }
 
   const legalContent = {
     tos: {
-      he: {
-        title: 'תנאי שימוש',
-        body: 'SyllaBot הוא כלי לניהול לימודים. השימוש בשירות הוא על אחריות המשתמש. אנו שומרים את הנתונים שלך בצורה מוצפנת ב-Supabase. אין אנו משתפים מידע אישי עם צדדים שלישיים. גרסת פיילוט — השירות ניתן חינם לתקופת הפיילוט.',
-      },
-      en: {
-        title: 'Terms of Service',
-        body: 'SyllaBot is a study management tool. Use of the service is at the user\'s own risk. We store your data encrypted on Supabase. We do not share personal information with third parties. Pilot version — the service is free during the pilot period.',
-      },
+      he: { title: 'תנאי שימוש', body: 'SyllaBot הוא כלי לניהול לימודים. השימוש בשירות הוא על אחריות המשתמש. אנו שומרים את הנתונים שלך בצורה מוצפנת ב-Supabase. אין אנו משתפים מידע אישי עם צדדים שלישיים. גרסת פיילוט — השירות ניתן חינם לתקופת הפיילוט.' },
+      en: { title: 'Terms of Service', body: 'SyllaBot is a study management tool. Use of the service is at the user\'s own risk. We store your data encrypted on Supabase. We do not share personal information with third parties. Pilot version — the service is free during the pilot period.' },
     },
     privacy: {
-      he: {
-        title: 'מדיניות פרטיות',
-        body: 'אנו אוספים: כתובת אימייל, שם (אופציונלי), קבצי סילבוס שאתה מעלה. המידע משמש אך ורק לצורך מתן השירות. קבצי PDF נשלחים ל-Anthropic API לצורך ניתוח ואינם נשמרים לאחר העיבוד. ניתן למחוק את החשבון בכל עת מהגדרות הדשבורד.',
-      },
-      en: {
-        title: 'Privacy Policy',
-        body: 'We collect: email address, name (optional), syllabus files you upload. This information is used solely to provide the service. PDF files are sent to the Anthropic API for analysis and are not stored after processing. You can delete your account at any time from the dashboard settings.',
-      },
+      he: { title: 'מדיניות פרטיות', body: 'אנו אוספים: כתובת אימייל, שם (אופציונלי), קבצי סילבוס שאתה מעלה. המידע משמש אך ורק לצורך מתן השירות. קבצי PDF נשלחים ל-Anthropic API לצורך ניתוח ואינם נשמרים לאחר העיבוד. ניתן למחוק את החשבון בכל עת מהגדרות הדשבורד.' },
+      en: { title: 'Privacy Policy', body: 'We collect: email address, name (optional), syllabus files you upload. This information is used solely to provide the service. PDF files are sent to the Anthropic API for analysis and are not stored after processing. You can delete your account at any time from the dashboard settings.' },
     },
   };
 
   function openLegal(type) {
-    const lang = document.documentElement.lang === 'en' ? 'en' : 'he';
+    const lang = currentLang === 'en' ? 'en' : 'he';
     const overlayId = type + '-overlay';
     const content = legalContent[type][lang];
     document.getElementById(type + '-title').textContent = content.title;
     document.getElementById(type + '-body').textContent = content.body;
+    document.querySelector('#' + overlayId + ' .legal-modal').dir = lang === 'en' ? 'ltr' : 'rtl';
     document.getElementById(overlayId).classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -647,78 +744,11 @@
   }
 
   function translateError(msg) {
-    const isEn = document.documentElement.lang === 'en';
-    const map = isEn ? {
-      'Invalid login credentials': 'Incorrect email or password',
-      'Email not confirmed': 'Email not confirmed yet. Check your inbox',
-      'User already registered': 'An account with this email already exists',
-      'Password should be at least 6 characters': 'Password must be at least 6 characters',
-      'Unable to validate email address: invalid format': 'Invalid email address',
-    } : {
-      'Invalid login credentials': 'אימייל או סיסמה שגויים',
-      'Email not confirmed': 'האימייל לא אושר עדיין. בדוק את תיבת הדואר שלך',
-      'User already registered': 'כבר קיים חשבון עם האימייל הזה',
-      'Password should be at least 6 characters': 'הסיסמה חייבת להכיל לפחות 6 תווים',
-      'Unable to validate email address: invalid format': 'כתובת אימייל לא תקינה',
-    };
-    return map[msg] || (isEn ? 'An error occurred. Try again' : 'אירעה שגיאה. נסה שוב');
+    const t = T[currentLang];
+    return t.errMap[msg] || t.errGeneric;
   }
 
-  // Apply language from localStorage (set on index.html)
-  (function applyStoredLang() {
-    const lang = localStorage.getItem('landing-lang');
-    if (lang !== 'en') return;
-
-    document.documentElement.lang = 'en';
-    document.documentElement.dir = 'ltr';
-
-    // Tabs
-    const tabs = document.querySelectorAll('.tab');
-    if (tabs[0]) tabs[0].textContent = 'Login';
-    if (tabs[1]) tabs[1].textContent = 'Sign up';
-
-    // Login form
-    const loginLabels = document.querySelectorAll('#form-login label');
-    if (loginLabels[0]) loginLabels[0].textContent = 'Email';
-    if (loginLabels[1]) loginLabels[1].textContent = 'Password';
-    const btnLogin = document.getElementById('btn-login');
-    if (btnLogin) { btnLogin.textContent = 'Login'; btnLogin.setAttribute('data-label', 'Login'); }
-    const forgotLink = document.querySelector('#form-login a[onclick*="showForgot"]');
-    if (forgotLink) forgotLink.textContent = 'Forgot password?';
-    const loginGoogleBtn = document.querySelector('#form-login .btn-google');
-    if (loginGoogleBtn) {
-      loginGoogleBtn.innerHTML = loginGoogleBtn.innerHTML.replace('כניסה עם Google', 'Continue with Google');
-    }
-
-    // Signup form
-    const signupLabels = document.querySelectorAll('#form-signup label');
-    if (signupLabels[0]) signupLabels[0].textContent = 'Full name';
-    if (signupLabels[1]) signupLabels[1].textContent = 'Email';
-    if (signupLabels[2]) signupLabels[2].textContent = 'Password';
-    const btnSignup = document.getElementById('btn-signup');
-    if (btnSignup) { btnSignup.textContent = 'Create account'; btnSignup.setAttribute('data-label', 'Create account'); }
-    const signupGoogleBtn = document.querySelector('#form-signup .btn-google');
-    if (signupGoogleBtn) {
-      signupGoogleBtn.innerHTML = signupGoogleBtn.innerHTML.replace('הרשמה עם Google', 'Continue with Google');
-    }
-
-    // Forgot password form
-    const forgotLabel = document.querySelector('#form-forgot label');
-    if (forgotLabel) forgotLabel.textContent = 'Email';
-    const forgotDesc = document.querySelector('#form-forgot p');
-    if (forgotDesc) forgotDesc.textContent = 'We will send you a password reset link';
-    const btnForgot = document.querySelector('#form-forgot .btn');
-    if (btnForgot) btnForgot.textContent = 'Send link';
-    const backBtn = document.querySelector('#form-forgot button:not(.btn)');
-    if (backBtn) backBtn.textContent = '← Back to login';
-
-    // Footer note
-    const footerNote = document.querySelector('.footer-note');
-    if (footerNote) {
-      footerNote.innerHTML = 'By signing up you agree to <a href="#" onclick="openLegal(\'tos\');return false;">Terms of Service</a> and <a href="#" onclick="openLegal(\'privacy\');return false;">Privacy Policy</a>';
-    }
-
-  })();
+  applyLang(currentLang);
 </script>
 </body>
 </html>
