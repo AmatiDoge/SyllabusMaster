@@ -647,15 +647,78 @@
   }
 
   function translateError(msg) {
-    const map = {
+    const isEn = document.documentElement.lang === 'en';
+    const map = isEn ? {
+      'Invalid login credentials': 'Incorrect email or password',
+      'Email not confirmed': 'Email not confirmed yet. Check your inbox',
+      'User already registered': 'An account with this email already exists',
+      'Password should be at least 6 characters': 'Password must be at least 6 characters',
+      'Unable to validate email address: invalid format': 'Invalid email address',
+    } : {
       'Invalid login credentials': 'אימייל או סיסמה שגויים',
       'Email not confirmed': 'האימייל לא אושר עדיין. בדוק את תיבת הדואר שלך',
       'User already registered': 'כבר קיים חשבון עם האימייל הזה',
       'Password should be at least 6 characters': 'הסיסמה חייבת להכיל לפחות 6 תווים',
       'Unable to validate email address: invalid format': 'כתובת אימייל לא תקינה',
     };
-    return map[msg] || 'אירעה שגיאה. נסה שוב';
+    return map[msg] || (isEn ? 'An error occurred. Try again' : 'אירעה שגיאה. נסה שוב');
   }
+
+  // Apply language from localStorage (set on index.html)
+  (function applyStoredLang() {
+    const lang = localStorage.getItem('landing-lang');
+    if (lang !== 'en') return;
+
+    document.documentElement.lang = 'en';
+    document.documentElement.dir = 'ltr';
+
+    // Tabs
+    const tabs = document.querySelectorAll('.tab');
+    if (tabs[0]) tabs[0].textContent = 'Login';
+    if (tabs[1]) tabs[1].textContent = 'Sign up';
+
+    // Login form
+    const loginLabels = document.querySelectorAll('#form-login label');
+    if (loginLabels[0]) loginLabels[0].textContent = 'Email';
+    if (loginLabels[1]) loginLabels[1].textContent = 'Password';
+    const btnLogin = document.getElementById('btn-login');
+    if (btnLogin) { btnLogin.textContent = 'Login'; btnLogin.setAttribute('data-label', 'Login'); }
+    const forgotLink = document.querySelector('#form-login a[onclick*="showForgot"]');
+    if (forgotLink) forgotLink.textContent = 'Forgot password?';
+    const loginGoogleBtn = document.querySelector('#form-login .btn-google');
+    if (loginGoogleBtn) {
+      loginGoogleBtn.innerHTML = loginGoogleBtn.innerHTML.replace('כניסה עם Google', 'Continue with Google');
+    }
+
+    // Signup form
+    const signupLabels = document.querySelectorAll('#form-signup label');
+    if (signupLabels[0]) signupLabels[0].textContent = 'Full name';
+    if (signupLabels[1]) signupLabels[1].textContent = 'Email';
+    if (signupLabels[2]) signupLabels[2].textContent = 'Password';
+    const btnSignup = document.getElementById('btn-signup');
+    if (btnSignup) { btnSignup.textContent = 'Create account'; btnSignup.setAttribute('data-label', 'Create account'); }
+    const signupGoogleBtn = document.querySelector('#form-signup .btn-google');
+    if (signupGoogleBtn) {
+      signupGoogleBtn.innerHTML = signupGoogleBtn.innerHTML.replace('הרשמה עם Google', 'Continue with Google');
+    }
+
+    // Forgot password form
+    const forgotLabel = document.querySelector('#form-forgot label');
+    if (forgotLabel) forgotLabel.textContent = 'Email';
+    const forgotDesc = document.querySelector('#form-forgot p');
+    if (forgotDesc) forgotDesc.textContent = 'We will send you a password reset link';
+    const btnForgot = document.querySelector('#form-forgot .btn');
+    if (btnForgot) btnForgot.textContent = 'Send link';
+    const backBtn = document.querySelector('#form-forgot button:not(.btn)');
+    if (backBtn) backBtn.textContent = '← Back to login';
+
+    // Footer note
+    const footerNote = document.querySelector('.footer-note');
+    if (footerNote) {
+      footerNote.innerHTML = 'By signing up you agree to <a href="#" onclick="openLegal(\'tos\');return false;">Terms of Service</a> and <a href="#" onclick="openLegal(\'privacy\');return false;">Privacy Policy</a>';
+    }
+
+  })();
 </script>
 </body>
 </html>

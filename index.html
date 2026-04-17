@@ -487,8 +487,8 @@
     background: #0d0d0d;
     color: white;
     text-align: center;
-    padding: 10px 48px;
-    font-size: 0.82rem;
+    padding: 6px 16px;
+    font-size: 0.78rem;
     font-weight: 500;
     position: relative;
     z-index: 200;
@@ -511,7 +511,7 @@
     transition: color 0.2s;
   }
   #pilot-banner-dismiss:hover { color: white; }
-  @media (max-width: 768px) { #pilot-banner { padding: 10px 40px 10px 16px; font-size: 0.76rem; } }
+  @media (max-width: 768px) { #pilot-banner { padding: 6px 32px 6px 12px; font-size: 0.74rem; } }
 
   /* ── LANG TOGGLE ── */
   .lang-toggle {
@@ -1188,9 +1188,20 @@
     applyLang(currentLang === 'he' ? 'en' : 'he');
   }
 
+  function adjustNavForBanner() {
+    const banner = document.getElementById('pilot-banner');
+    const nav = document.querySelector('nav');
+    if (banner && !banner.classList.contains('hidden')) {
+      nav.style.top = banner.offsetHeight + 'px';
+    } else {
+      nav.style.top = '0';
+    }
+  }
+
   function dismissBanner() {
     document.getElementById('pilot-banner').classList.add('hidden');
     localStorage.setItem('pilot-banner-dismissed', '1');
+    adjustNavForBanner();
   }
 
   if (localStorage.getItem('pilot-banner-dismissed') === '1') {
@@ -1198,6 +1209,7 @@
   }
 
   applyLang(currentLang);
+  adjustNavForBanner();
 </script>
 </body>
 </html>
