@@ -862,6 +862,7 @@
         // Text input direction
         document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(inp => {
             inp.dir = isEn ? 'ltr' : 'rtl';
+            inp.style.direction = isEn ? 'ltr' : 'rtl';
             inp.style.textAlign = isEn ? 'left' : 'right';
         });
 
@@ -879,7 +880,12 @@
         const fbSub = document.querySelector('#feedback-form-body .fb-sub');
         if (fbSub) fbSub.textContent = s.fbSub;
         const fbText = document.getElementById('feedback-text');
-        if (fbText) fbText.placeholder = s.fbPlaceholder;
+        if (fbText) {
+            fbText.placeholder = s.fbPlaceholder;
+            fbText.dir = isEn ? 'ltr' : 'rtl';
+            fbText.style.direction = isEn ? 'ltr' : 'rtl';
+            fbText.style.textAlign = isEn ? 'left' : 'right';
+        }
         const fbSubmit = document.querySelector('.fb-submit');
         if (fbSubmit && !fbSubmit.disabled) fbSubmit.textContent = s.fbSubmit;
         const fbCancel = document.querySelector('.fb-cancel');
@@ -1046,17 +1052,21 @@
         // Page count badge (may not be loaded yet)
         const pgCount = obPageCounts[idx] ? `📄 ${s.wzPageCount(obPageCounts[idx])}` : '';
         const savedName = sanitize(obCourseNames[idx] || '');
+        const wzDir = currentLang === 'en' ? 'ltr' : 'rtl';
+        const wzAlign = currentLang === 'en' ? 'left' : 'right';
 
         document.getElementById('wz-card-wrap').innerHTML = `
             <div class="wz-card">
                 <div class="wz-filename">📄 ${sanitize(f.name)}</div>
-                <div class="wz-label">${s.wzCourseLabel}</div>
+                <div class="wz-label" style="direction:${wzDir};text-align:${wzAlign}">${s.wzCourseLabel}</div>
                 <input class="wz-input" id="wz-input-${idx}"
+                       dir="${wzDir}"
+                       style="direction:${wzDir};text-align:${wzAlign}"
                        value="${savedName}"
                        oninput="obCourseNames[${idx}] = this.value; this.classList.remove('wz-error'); document.getElementById('wz-err-${idx}').textContent='';"
                        onfocus="stopTypingEffect()"
                        onblur="if(!this.value) startTypingEffect(this)">
-                <div class="wz-err-msg" id="wz-err-${idx}"></div>
+                <div class="wz-err-msg" id="wz-err-${idx}" style="direction:${wzDir};text-align:${wzAlign}"></div>
                 ${pgCount ? `<button class="wz-pages-toggle" id="wz-ptoggle-${idx}" onclick="wzTogglePages(${idx})">
                     <span id="wz-parrow-${idx}">▾</span> ${s.wzSelectPages} · ${pgCount}
                 </button>
