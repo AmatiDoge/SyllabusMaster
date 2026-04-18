@@ -385,7 +385,6 @@
         <div class="sp-divider"></div>
         <div class="sp-section">
             <div class="sp-section-title">חשבון</div>
-            <button class="sp-account-btn" onclick="manageSubscription()">💳 ניהול מנוי</button>
             <button class="sp-account-btn danger" onclick="deleteAccount()">🗑️ מחק חשבון</button>
         </div>
     </div>
@@ -783,7 +782,6 @@
             spSave:          'שמור',
             spLang:          'שפה',
             spAccount:       'חשבון',
-            spManageSub:     '💳 ניהול מנוי',
             spDeleteAcct:    '🗑️ מחק חשבון',
             spCoursePh:      'שם הקורס...',
             spDeleteConfirm: 'האם אתה בטוח?\nפעולה זו תמחק את כל הנתונים שלך לצמיתות.',
@@ -881,7 +879,6 @@
             spSave:          'Save',
             spLang:          'Language',
             spAccount:       'Account',
-            spManageSub:     '💳 Manage Subscription',
             spDeleteAcct:    '🗑️ Delete Account',
             spCoursePh:      'Course name...',
             spDeleteConfirm: 'Are you sure?\nThis will permanently delete all your data.',
@@ -1037,8 +1034,6 @@
         if (spSections[3]) spSections[3].textContent = s.spAccount;
         const spSaveDateBtn = document.getElementById('sp-save-date-btn');
         if (spSaveDateBtn && !spSaveDateBtn.dataset.saving) spSaveDateBtn.textContent = s.spSave;
-        const spManageBtn = document.querySelector('.sp-account-btn:not(.danger)');
-        if (spManageBtn) spManageBtn.textContent = s.spManageSub;
         const spDeleteBtn = document.querySelector('.sp-account-btn.danger');
         if (spDeleteBtn) spDeleteBtn.textContent = s.spDeleteAcct;
         document.querySelectorAll('.sp-course-input').forEach(inp => { inp.placeholder = s.spCoursePh; });
