@@ -427,6 +427,15 @@
             </div>
         </div>
 
+        <!-- Step 2b: Semester start date picker -->
+        <div id="ob-semester-step" style="display:none;text-align:center">
+            <div class="ob-step-label" id="ob-semester-step-label">Setup · Semester dates</div>
+            <h2 class="ob-title" id="ob-semester-title" style="font-size:1.4rem;margin-bottom:8px">מתי מתחיל הסמסטר שלך?</h2>
+            <p class="ob-sub" id="ob-semester-sub" style="margin-bottom:24px">זה יעזור לנו לשייך את המשימות לשבועות הנכונים</p>
+            <input type="date" id="ob-semester-date" value="2026-03-15" style="width:100%;border:1.5px solid #e8e8e8;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:1rem;margin-bottom:20px;box-sizing:border-box;text-align:center">
+            <button id="ob-semester-btn" onclick="obSemesterNext()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">המשך</button>
+        </div>
+
         <!-- Step 3: Analysis UI (progress + per-file status) -->
         <div id="ob-analysis">
             <div class="file-list" id="ob-file-list"></div>
@@ -768,6 +777,22 @@
             rvCounter:       (n) => `<strong>${n}</strong> פריטים יישמרו`,
             rvSaveAll:       'שמור הכל ✓',
             rvSaveConfirmed: 'שמור תקינים בלבד',
+            spTitle:         '⚙️ הגדרות',
+            spCourses:       'הקורסים שלי',
+            spSemester:      'תחילת הסמסטר',
+            spSave:          'שמור',
+            spLang:          'שפה',
+            spAccount:       'חשבון',
+            spManageSub:     '💳 ניהול מנוי',
+            spDeleteAcct:    '🗑️ מחק חשבון',
+            spCoursePh:      'שם הקורס...',
+            spDeleteConfirm: 'האם אתה בטוח?\nפעולה זו תמחק את כל הנתונים שלך לצמיתות.',
+            obSemesterTitle: 'מתי מתחיל הסמסטר שלך?',
+            obSemesterSub:   'זה יעזור לנו לשייך את המשימות לשבועות הנכונים',
+            obSemesterBtn:   'המשך',
+            vbList:          '📋 רשימה',
+            vbTimeline:      '⏱️ ציר זמן',
+            vbWorkload:      '📊 עומס',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -850,6 +875,22 @@
             rvCounter:       (n) => `<strong>${n}</strong> items will be saved`,
             rvSaveAll:       'Save all ✓',
             rvSaveConfirmed: 'Save confirmed only',
+            spTitle:         '⚙️ Settings',
+            spCourses:       'My Courses',
+            spSemester:      'Semester Start',
+            spSave:          'Save',
+            spLang:          'Language',
+            spAccount:       'Account',
+            spManageSub:     '💳 Manage Subscription',
+            spDeleteAcct:    '🗑️ Delete Account',
+            spCoursePh:      'Course name...',
+            spDeleteConfirm: 'Are you sure?\nThis will permanently delete all your data.',
+            obSemesterTitle: 'When does your semester start?',
+            obSemesterSub:   'This helps us assign tasks to the correct weeks',
+            obSemesterBtn:   'Continue',
+            vbList:          '📋 List',
+            vbTimeline:      '⏱️ Timeline',
+            vbWorkload:      '📊 Workload',
         },
     };
 
@@ -985,6 +1026,37 @@
             renderReviewUI();
         }
 
+        // Settings panel
+        const spTitleEl = document.querySelector('.sp-title');
+        if (spTitleEl) spTitleEl.textContent = s.spTitle;
+        const spSections = document.querySelectorAll('.sp-section-title');
+        // 0=courses, 1=semester, 2=lang, 3=account
+        if (spSections[0]) spSections[0].textContent = s.spCourses;
+        if (spSections[1]) spSections[1].textContent = s.spSemester;
+        if (spSections[2]) spSections[2].textContent = s.spLang;
+        if (spSections[3]) spSections[3].textContent = s.spAccount;
+        const spSaveDateBtn = document.getElementById('sp-save-date-btn');
+        if (spSaveDateBtn && !spSaveDateBtn.dataset.saving) spSaveDateBtn.textContent = s.spSave;
+        const spManageBtn = document.querySelector('.sp-account-btn:not(.danger)');
+        if (spManageBtn) spManageBtn.textContent = s.spManageSub;
+        const spDeleteBtn = document.querySelector('.sp-account-btn.danger');
+        if (spDeleteBtn) spDeleteBtn.textContent = s.spDeleteAcct;
+        document.querySelectorAll('.sp-course-input').forEach(inp => { inp.placeholder = s.spCoursePh; });
+        // View switcher buttons
+        const vbList = document.getElementById('vb-list');
+        if (vbList) vbList.textContent = s.vbList;
+        const vbTimeline = document.getElementById('vb-timeline');
+        if (vbTimeline) vbTimeline.textContent = s.vbTimeline;
+        const vbWorkload = document.getElementById('vb-workload');
+        if (vbWorkload) vbWorkload.textContent = s.vbWorkload;
+
+        // Semester step (if visible)
+        if (document.getElementById('ob-semester-step')?.style.display !== 'none') {
+            document.getElementById('ob-semester-title').textContent = s.obSemesterTitle;
+            document.getElementById('ob-semester-sub').textContent   = s.obSemesterSub;
+            document.getElementById('ob-semester-btn').textContent   = s.obSemesterBtn;
+        }
+
         // Re-render wizard card if open (to update all wizard text + typing names)
         if (document.getElementById('ob-wizard')?.style.display === 'block') {
             stopTypingEffect();
@@ -1089,6 +1161,7 @@
         document.querySelector('.ob-card').style.display = '';
         document.getElementById('ob-drop-section').style.display = '';
         document.getElementById('ob-wizard').style.display = 'none';
+        document.getElementById('ob-semester-step').style.display = 'none';
         document.getElementById('ob-analysis').style.display = 'none';
     }
 
@@ -1203,7 +1276,7 @@
                 return;
             }
             obCourseNames[idx] = val;
-            if (idx === total - 1) { wzStartAnalysis(); return; }
+            if (idx === total - 1) { showSemesterStep(); return; }
         }
 
         obWizardIdx += dir;
@@ -1455,6 +1528,31 @@
         addCourseChip(courseName);
         if (!skipCheck) checkAllAnalyzed();
     }
+
+    // ── SEMESTER DATE STEP ──
+    function showSemesterStep() {
+        const _s = STRINGS[currentLang] || STRINGS.he;
+        document.getElementById('ob-wizard').style.display = 'none';
+        const step = document.getElementById('ob-semester-step');
+        step.style.display = 'block';
+        document.getElementById('ob-semester-title').textContent = _s.obSemesterTitle;
+        document.getElementById('ob-semester-sub').textContent   = _s.obSemesterSub;
+        document.getElementById('ob-semester-btn').textContent   = _s.obSemesterBtn;
+        // Pre-fill with current semesterStart
+        document.getElementById('ob-semester-date').value = semesterStart;
+    }
+
+    window.obSemesterNext = function() {
+        const val = document.getElementById('ob-semester-date').value;
+        if (val) {
+            semesterStart = val;
+            const newRanges = buildWeekRanges(semesterStart);
+            weekRanges.splice(0, weekRanges.length, ...newRanges);
+            document.getElementById('sp-semester-date').value = val;
+        }
+        document.getElementById('ob-semester-step').style.display = 'none';
+        wzStartAnalysis();
+    };
 
     // Triggered from wizard last card "נתח הכל ✨"
     async function wzStartAnalysis() {
@@ -2117,10 +2215,11 @@ function addCourseChip(course) {
         currentWeekIdx = Math.max(0, Math.min(weekRanges.length - 1, diffDays >= 0 ? Math.floor(diffDays / 7) : 0));
         save();
         render();
-        const origText = btn.textContent;
+        const origText = (STRINGS[currentLang] || STRINGS.he).spSave;
+        btn.dataset.saving = '1';
         btn.textContent = '✓';
         btn.style.background = '#27ae60';
-        setTimeout(() => { btn.textContent = origText; btn.style.background = ''; }, 1500);
+        setTimeout(() => { btn.textContent = origText; btn.style.background = ''; delete btn.dataset.saving; }, 1500);
     }
 
     async function setLang(lang) {
@@ -2153,7 +2252,7 @@ function addCourseChip(course) {
     }
 
     async function deleteAccount() {
-        if (!confirm('האם אתה בטוח?\nפעולה זו תמחק את כל הנתונים שלך לצמיתות.')) return;
+        if (!confirm((STRINGS[currentLang] || STRINGS.he).spDeleteConfirm)) return;
         try {
             await sb.from('user_data').delete().eq('user_id', currentUser.id);
             await sb.auth.signOut();
