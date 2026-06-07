@@ -384,6 +384,13 @@
         </div>
         <div class="sp-divider"></div>
         <div class="sp-section">
+            <div class="sp-section-title">יומן</div>
+            <button class="sp-save-btn" style="width:100%;margin-bottom:8px" onclick="downloadICS()">⬇️ הורד קובץ יומן (.ics)</button>
+            <button class="sp-save-btn" style="width:100%;background:#2980b9" onclick="copyCalendarFeed(this)">🔗 העתק קישור להרשמה ליומן</button>
+            <div style="font-size:0.72rem;color:#888;margin-top:6px">הוסף ל-Google/Apple Calendar כדי לקבל עדכונים אוטומטית, כולל תזכורת יום לפני כל מבחן</div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-section">
             <div class="sp-section-title">חשבון</div>
             <button class="sp-account-btn danger" onclick="deleteAccount()">🗑️ מחק חשבון</button>
         </div>
@@ -592,11 +599,65 @@
     const COLOR_PALETTE = ['#27ae60','#2980b9','#8e44ad','#e67e22','#16a085','#3f51b5','#c0392b','#b8860b','#1abc9c','#d35400'];
 
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
+    let currentRev = 0, rowExists = false, icsToken = null;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
     let obFiles = [], obResults = [], reviewItems = [];
     let obCourseNames = {}, obWizardIdx = 0;
     let semesterStart = '2026-03-15';
     let currentView = 'list';
+
+    // ── ANALYTICS: fire-and-forget funnel events (no external account) ──
+    function track(name, props = {}) {
+        try {
+            if (!currentUser) return;
+            sb.from('events').insert({ user_id: currentUser.id, name, props }).then(() => {}, () => {});
+        } catch (_) { /* analytics must never break the app */ }
+        // To layer PostHog on later: if (window.posthog) window.posthog.capture(name, props);
+    }
+
+    // ── CALENDAR (.ics): client download + subscribe feed ──
+    function buildICS() {
+        const fmt = (d) => {
+            const dt = new Date(d); if (isNaN(dt.getTime())) return null;
+            const p = n => String(n).padStart(2, '0');
+            return `${dt.getFullYear()}${p(dt.getMonth()+1)}${p(dt.getDate())}T${p(dt.getHours())}${p(dt.getMinutes())}00`;
+        };
+        const esc = (s) => String(s || '').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
+        const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//SyllaBot//Calendar//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:SyllaBot'];
+        const now = fmt(new Date().toISOString());
+        (userExams || []).forEach((ex, i) => {
+            const start = ex.d ? fmt(ex.d) : null; if (!start) return;
+            const title = esc([ex.c, ex.t].filter(Boolean).join(' — '));
+            lines.push('BEGIN:VEVENT', `UID:syllabot-local-${i}@syllabot`, `DTSTAMP:${now}`, `DTSTART:${start}`, `SUMMARY:${title}`);
+            if (ex.tag) lines.push(`DESCRIPTION:${esc(ex.tag)}`);
+            lines.push('BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY',`DESCRIPTION:${title}`,'END:VALARM','END:VEVENT');
+        });
+        lines.push('END:VCALENDAR');
+        return lines.join('\r\n');
+    }
+    function downloadICS() {
+        const blob = new Blob([buildICS()], { type: 'text/calendar' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'syllabot.ics';
+        document.body.appendChild(a); a.click(); a.remove();
+        track('ics_download');
+    }
+    async function ensureIcsToken() {
+        if (icsToken) return icsToken;
+        try {
+            const { data } = await sb.from('user_data').select('ics_token').eq('user_id', currentUser.id).single();
+            icsToken = data?.ics_token || null;
+        } catch (_) {}
+        return icsToken;
+    }
+    async function copyCalendarFeed(btn) {
+        const t = await ensureIcsToken();
+        if (!t) { alert('שמור קודם את לוח הזמנים שלך'); return; }
+        const url = `https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/calendar-feed?token=${t}`;
+        try { await navigator.clipboard.writeText(url); } catch (_) {}
+        if (btn) { const o = btn.textContent; btn.textContent = '✓ הקישור הועתק'; setTimeout(() => btn.textContent = o, 1800); }
+        track('calendar_subscribe_copy');
+    }
     let workloadChart = null;
     let wlDeselectedCourses = new Set();
     let preferredView = 'list';
@@ -627,8 +688,53 @@
     // ── DATA ──
     function setSyncStatus(s) { document.getElementById('sync-dot').className = 'sync-dot ' + s; }
 
+    // ── DATA INTEGRITY: optimistic concurrency + local backup ──
+    const backupKey = () => `sb_backup_${currentUser?.id || 'anon'}`;
+    function writeLocalBackup(payload) {
+        try { localStorage.setItem(backupKey(), JSON.stringify(payload)); } catch (_) {}
+    }
+    function readLocalBackup() {
+        try { return JSON.parse(localStorage.getItem(backupKey()) || 'null'); } catch (_) { return null; }
+    }
+    function showBanner(msg, actionLabel, actionFn) {
+        let b = document.getElementById('sb-banner');
+        if (!b) {
+            b = document.createElement('div');
+            b.id = 'sb-banner';
+            b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:1200;background:#2d3436;color:#fff;padding:10px 16px;font-size:0.85rem;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,0.25)';
+            document.body.appendChild(b);
+        }
+        b.textContent = '';
+        const span = document.createElement('span'); span.textContent = msg; b.appendChild(span);
+        if (actionLabel) {
+            const btn = document.createElement('button');
+            btn.textContent = actionLabel;
+            btn.style.cssText = 'background:#27ae60;color:#fff;border:none;border-radius:8px;padding:6px 14px;font:inherit;font-weight:700;cursor:pointer';
+            btn.onclick = actionFn; b.appendChild(btn);
+        }
+        const x = document.createElement('button');
+        x.textContent = '✕'; x.style.cssText = 'background:transparent;color:#fff;border:none;cursor:pointer;font-size:1rem;line-height:1';
+        x.onclick = () => b.remove(); b.appendChild(x);
+    }
+    function maybeOfferLocalRestore(serverData) {
+        const backup = readLocalBackup();
+        if (!backup || !backup.updated_at) return;
+        const serverTime = serverData?.updated_at ? new Date(serverData.updated_at).getTime() : 0;
+        if (new Date(backup.updated_at).getTime() > serverTime + 1000) {
+            showBanner('We found newer unsynced changes saved on this device.', 'Restore them', () => {
+                userTasks = backup.tasks || []; userExams = backup.exams || [];
+                userSyllabus = backup.syllabus || []; doneMap = backup.done_map || {};
+                courseColors = backup.course_colors || {};
+                if (backup.semester_start) semesterStart = backup.semester_start;
+                document.getElementById('sb-banner')?.remove();
+                render(); save();
+            });
+        }
+    }
+
     async function loadFromSupabase() {
         setSyncStatus('syncing');
+        track('app_open');
 
         const params = new URLSearchParams(window.location.search);
         const stripeSuccess = params.get('paid') === 'true';
@@ -651,6 +757,9 @@
             const { data, error } = await sb.from('user_data').select('*').eq('user_id', currentUser.id).single();
             if (error && error.code !== 'PGRST116') throw error;
             console.log('User data from DB:', JSON.stringify(data));
+            rowExists = !!data;
+            currentRev = data?.rev || 0;
+            icsToken = data?.ics_token || null;
 
             // PAYMENT WALL DISABLED - FREE LAUNCH PERIOD
             const isPaid = true; // was: stripeSuccess || !!data?.paid;
@@ -685,6 +794,7 @@
                     const newRanges = buildWeekRanges(semesterStart);
                     weekRanges.splice(0, weekRanges.length, ...newRanges);
                 }
+                maybeOfferLocalRestore(data);
                 setSyncStatus('synced');
                 showDashboard();
             } else {
@@ -1064,18 +1174,34 @@
 
     async function saveToSupabase(onboardingComplete = false) {
         setSyncStatus('syncing');
+        const nextRev = currentRev + 1;
+        const payload = {
+            user_id: currentUser.id, tasks: userTasks, exams: userExams,
+            syllabus: userSyllabus, done_map: doneMap, course_colors: courseColors,
+            semester_start: semesterStart, rev: nextRev,
+            updated_at: new Date().toISOString()
+        };
+        if (onboardingComplete) payload.onboarding_complete = true;
+        writeLocalBackup(payload); // recovery net before the network round-trip
         try {
-            const payload = {
-                user_id: currentUser.id, tasks: userTasks, exams: userExams,
-                syllabus: userSyllabus, done_map: doneMap, course_colors: courseColors,
-                semester_start: semesterStart,
-                updated_at: new Date().toISOString()
-            };
-            if (onboardingComplete) payload.onboarding_complete = true;
-            const { error } = await sb.from('user_data').upsert(payload, { onConflict: 'user_id' });
-            if (error) throw error;
+            if (!rowExists) {
+                const { error } = await sb.from('user_data').upsert(payload, { onConflict: 'user_id' });
+                if (error) throw error;
+                rowExists = true; currentRev = nextRev;
+            } else {
+                // Optimistic concurrency: only overwrite if nobody else wrote since we loaded
+                const { data: updated, error } = await sb.from('user_data')
+                    .update(payload).eq('user_id', currentUser.id).eq('rev', currentRev).select('rev');
+                if (error) throw error;
+                if (!updated || updated.length === 0) {
+                    setSyncStatus('error');
+                    showBanner('Your schedule was changed on another device — reload to get the latest. Your recent edits are backed up on this device.', 'Reload', () => location.reload());
+                    return;
+                }
+                currentRev = nextRev;
+            }
             setSyncStatus('synced');
-        } catch(e) { console.error(e); setSyncStatus('error'); }
+        } catch (e) { console.error(e); setSyncStatus('error'); }
     }
 
     function save() { clearTimeout(saveTimer); saveTimer = setTimeout(saveToSupabase, 800); }
@@ -1134,6 +1260,7 @@
     function showDashboard() {
         document.getElementById('onboarding').classList.remove('visible');
         document.getElementById('dashboard').classList.add('visible');
+        track('schedule_viewed');
         startApp();
     }
 
@@ -1504,6 +1631,7 @@
         }
 
         if (!result.syllabus?.length && !result.exams?.length) {
+            track('parse_fail', { reason: 'empty' });
             setFileStatus(fileIdx, 's-error', (STRINGS[currentLang]||STRINGS.he).statusError, 'לא הצלחנו למצוא מידע בקובץ זה. ודא שזהו סילבוס תקין.');
             if (!skipCheck) checkAllAnalyzed();
             return;
@@ -1518,6 +1646,7 @@
         }
 
         obResults.push(result);
+        track('parse_success', { course: result.course || '', syllabus: result.syllabus?.length || 0, exams: result.exams?.length || 0 });
         const courseName = result.course || file.name.replace(/\.pdf$/i, '');
         setFileStatus(fileIdx, 's-done', `✓ ${courseName}`);
         addCourseChip(courseName);
@@ -1860,6 +1989,7 @@ function addCourseChip(course) {
         userExams    = [...userExams,    ...exams];
         userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
         userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
+        track('onboarding_complete', { syllabus: userSyllabus.length, exams: userExams.length });
         await saveToSupabase(true);
         showDashboard();
     }
@@ -1880,6 +2010,7 @@ function addCourseChip(course) {
         });
         userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
         userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
+        track('onboarding_complete', { syllabus: userSyllabus.length, exams: userExams.length });
         await saveToSupabase(true);
         showDashboard();
     }
@@ -2603,6 +2734,10 @@ function addCourseChip(course) {
                 university,
             });
             if (error) throw error;
+            if (document.getElementById('fb-interview-optin')?.checked) {
+                try { await sb.from('user_data').update({ interview_opt_in: true }).eq('user_id', currentUser.id); } catch (_) {}
+                track('interview_optin');
+            }
             document.getElementById('feedback-form-body').style.display = 'none';
             document.getElementById('feedback-success').style.display = 'block';
             setTimeout(closeFeedback, 2200);
@@ -2635,6 +2770,10 @@ function addCourseChip(course) {
             </div>
             <div class="fb-rating-label" id="fb-rating-label"></div>
             <textarea id="feedback-text" placeholder="מה עבד טוב? מה אפשר לשפר?"></textarea>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:#555;margin:10px 0 4px;cursor:pointer">
+                <input type="checkbox" id="fb-interview-optin" style="width:16px;height:16px;flex-shrink:0">
+                אשמח שתפנו אליי לשיחה קצרה על המוצר 🙌
+            </label>
             <div class="fb-actions">
                 <button class="fb-submit" onclick="submitFeedback()">שלח</button>
                 <button class="fb-cancel" onclick="closeFeedback()">ביטול</button>
