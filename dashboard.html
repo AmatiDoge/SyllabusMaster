@@ -583,7 +583,7 @@
 <script>
     const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
-    const EDGE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/analyze-syllabus';
+    const EDGE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/analyze-syllabus-v2';
     const ANON_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
     async function getEdgeHeaders() {
       const { data: { session } } = await sb.auth.getSession();
@@ -1494,7 +1494,7 @@
 
     window.obAnalyzeFileFull = async function(fileIdx) {
         document.getElementById(`ps-${fileIdx}`).style.display = 'none';
-        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }));
+        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]), semester_start: semesterStart }));
     };
 
     window.obAnalyzeSelectedPages = async function(fileIdx) {
@@ -1504,7 +1504,7 @@
         const pages = [...sel].sort((a, b) => a - b);
         await _runAnalysis(fileIdx, async () => {
             const images = await extractPages(obFiles[fileIdx], pages);
-            return JSON.stringify({ imagesBase64: images });
+            return JSON.stringify({ imagesBase64: images, semester_start: semesterStart });
         });
     };
 
@@ -1722,7 +1722,7 @@
                 if (useSelection) {
                     const pages = [...sel].sort((a, b) => a - b);
                     const images = await extractPages(obFiles[i], pages);
-                    return JSON.stringify({ imagesBase64: images });
+                    return JSON.stringify({ imagesBase64: images, semester_start: semesterStart });
                 }
                 return JSON.stringify({ pdfBase64: await fileToBase64(obFiles[i]) });
             }, true, sharedHeaders);
@@ -1766,7 +1766,7 @@
     }
 
     async function retryFile(fileIdx) {
-        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]) }), true);
+        await _runAnalysis(fileIdx, async () => JSON.stringify({ pdfBase64: await fileToBase64(obFiles[fileIdx]), semester_start: semesterStart }), true);
         const allSettled = obFiles.every((_, i) => {
             const el = document.getElementById(`fs-${i}`);
             return el && (el.classList.contains('s-done') || el.classList.contains('s-error'));
