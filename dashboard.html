@@ -179,6 +179,15 @@
         .rv-section-toggle { margin-right: auto; font-size: 0.8rem; color: #bbb; }
         .rv-cards { display: flex; flex-direction: column; gap: 10px; }
         .rv-cards.collapsed { display: none; }
+        .rv-course-group { margin-bottom: 12px; border: 1px solid #eee; border-radius: 14px; overflow: hidden; background: #fff; }
+        .rv-course-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; user-select: none; }
+        .rv-course-name { font-size: 0.9rem; font-weight: 800; }
+        .rv-course-status { font-size: 0.74rem; font-weight: 700; margin-inline-start: auto; }
+        .rv-course-status.ok { color: #27ae60; }
+        .rv-course-status.warn { color: #e65100; }
+        .rv-course-group .rv-cards { padding: 0 14px 14px; }
+        .rv-confirm-course { align-self: flex-start; background: #eef7ee; color: #27ae60; border: 1px solid #cde8cd; border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .rv-confirm-course:hover { background: #e2f1e2; }
         .rv-card { border-radius: 12px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.07); border-right: 4px solid #ff9800; transition: opacity 0.3s, transform 0.3s, border-color 0.3s; overflow: hidden; }
         .rv-card.is-confirmed { border-right-color: #27ae60; }
         .rv-card.deleting { opacity: 0; transform: translateX(30px); }
@@ -884,6 +893,11 @@
             rvWeekTitle:     'שבוע (0-13)',
             rvWeekLabel:     (n) => `שבוע ${n}`,
             rvCounter:       (n) => `<strong>${n}</strong> פריטים יישמרו`,
+            rvAllGood:       '✓ הכל נראה תקין',
+            rvCourseToCheck: (n) => `${n} לבדיקה`,
+            rvCourseAllOk:   'תקין',
+            rvConfirmCourse: '✓ אשר את כל הקורס',
+            rvNoCourse:      'כללי',
             rvSaveAll:       'שמור הכל ✓',
             rvSaveConfirmed: 'שמור תקינים בלבד',
             spTitle:         '⚙️ הגדרות',
@@ -981,6 +995,11 @@
             rvWeekTitle:     'Week (0-13)',
             rvWeekLabel:     (n) => `Week ${n}`,
             rvCounter:       (n) => `<strong>${n}</strong> items will be saved`,
+            rvAllGood:       '✓ Everything looks good',
+            rvCourseToCheck: (n) => `${n} to check`,
+            rvCourseAllOk:   'all good',
+            rvConfirmCourse: '✓ Confirm whole course',
+            rvNoCourse:      'General',
             rvSaveAll:       'Save all ✓',
             rvSaveConfirmed: 'Save confirmed only',
             spTitle:         '⚙️ Settings',
@@ -1821,6 +1840,7 @@ function addCourseChip(course) {
         renderReviewUI();
     }
 
+    let _rvCourses = [];
     function renderReviewUI() {
         const _s = STRINGS[currentLang] || STRINGS.he;
         const active    = reviewItems.filter(i => !i.deleted);
@@ -1831,11 +1851,11 @@ function addCourseChip(course) {
             _s.rvSubtitle(active.length, confirmed.length, uncertain.length);
         document.getElementById('rv-pills').innerHTML =
             `<span class="rv-pill ok">${_s.rvPillOk(confirmed.length)}</span>` +
-            (uncertain.length ? `<span class="rv-pill warn">${_s.rvPillWarn(uncertain.length)}</span>` : '');
+            (uncertain.length
+                ? `<span class="rv-pill warn">${_s.rvPillWarn(uncertain.length)}</span>`
+                : `<span class="rv-pill ok">${_s.rvAllGood}</span>`);
 
-        document.getElementById('rv-sections').innerHTML =
-            rvUncertainSection(uncertain) +
-            rvConfirmedSection(confirmed);
+        document.getElementById('rv-sections').innerHTML = rvCourseGroupsHtml(active);
 
         document.getElementById('rv-counter').innerHTML = _s.rvCounter(active.length);
 
@@ -1845,6 +1865,52 @@ function addCourseChip(course) {
             rvEl.style.direction = isEn ? 'ltr' : 'rtl';
             rvEl.style.textAlign = isEn ? 'left' : 'right';
         }
+    }
+
+    // Group review items by course: courses with flagged items expand; all-good courses collapse.
+    function rvCourseGroupsHtml(active) {
+        const _s = STRINGS[currentLang] || STRINGS.he;
+        const byCourse = new Map();
+        active.forEach(i => {
+            const key = i.c || _s.rvNoCourse;
+            if (!byCourse.has(key)) byCourse.set(key, []);
+            byCourse.get(key).push(i);
+        });
+        _rvCourses = [...byCourse.keys()];
+        return _rvCourses.map((course, ci) => {
+            const items   = byCourse.get(course);
+            const flagged = items.filter(i => i.confidence < 80 && !i.userConfirmed);
+            const ok      = items.filter(i => i.confidence >= 80 || i.userConfirmed);
+            const color   = courseColors[course] || '#888';
+            const collapsed = flagged.length === 0;
+            const status = flagged.length
+                ? `<span class="rv-course-status warn">⚠️ ${_s.rvCourseToCheck(flagged.length)}</span>`
+                : `<span class="rv-course-status ok">✓ ${_s.rvCourseAllOk}</span>`;
+            return `<div class="rv-course-group">
+                <div class="rv-course-header" onclick="toggleRvSection('rvc-${ci}','rvct-${ci}')">
+                    <span class="rv-card-dot" style="background:${color}"></span>
+                    <span class="rv-course-name">${course}</span>
+                    ${status}
+                    <span class="rv-section-count">${items.length}</span>
+                    <span class="rv-section-toggle" id="rvct-${ci}">${collapsed ? '▸' : '▾'}</span>
+                </div>
+                <div class="rv-cards${collapsed ? ' collapsed' : ''}" id="rvc-${ci}">
+                    ${flagged.length > 1 ? `<button class="rv-confirm-course" onclick="rvConfirmCourse(${ci})">${_s.rvConfirmCourse}</button>` : ''}
+                    ${flagged.map(rvCardHtml).join('')}
+                    ${ok.map(rvCompactHtml).join('')}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function rvConfirmCourse(ci) {
+        const _s = STRINGS[currentLang] || STRINGS.he;
+        const course = _rvCourses[ci];
+        if (course == null) return;
+        reviewItems.forEach(i => {
+            if (!i.deleted && (i.c || _s.rvNoCourse) === course) i.userConfirmed = true;
+        });
+        renderReviewUI();
     }
 
     function rvUncertainSection(items) {
