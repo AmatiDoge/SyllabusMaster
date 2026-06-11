@@ -4,21 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SyllaBot – כניסה</title>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --ink: #0d0d0d;
-    --paper: #f5f2eb;
-    --accent: #e8522a;
-    --muted: #6b6760;
-    --border: rgba(0,0,0,0.1);
+    --ink: #1b1714;
+    --paper: #f4f1ea;
+    --accent: #df4a22;
+    --muted: #736d64;
+    --border: rgba(27,23,20,0.10);
     --card: #ffffff;
+    --sans: 'Rubik', 'Heebo', sans-serif;
+    --display: 'Frank Ruhl Libre', 'Rubik', serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     background: var(--paper);
     color: var(--ink);
     min-height: 100vh;
@@ -26,7 +30,9 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
+    -webkit-font-smoothing: antialiased;
   }
+  .logo, .dashboard-redirect h3, .legal-modal h2 { font-family: var(--display); font-weight: 800; }
 
   body::before {
     content: '';
@@ -103,7 +109,7 @@
     text-align: center;
     font-size: 0.9rem;
     font-weight: 500;
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     border: none;
     background: transparent;
     color: var(--muted);
@@ -134,7 +140,7 @@
     padding: 13px 16px;
     border: 1.5px solid var(--border);
     border-radius: 12px;
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     font-size: 0.95rem;
     color: var(--ink);
     background: var(--paper);
@@ -154,7 +160,7 @@
     width: 100%;
     padding: 14px;
     border-radius: 100px;
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -186,7 +192,7 @@
     width: 100%;
     padding: 13px;
     border-radius: 100px;
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
@@ -251,7 +257,7 @@
     color: white;
     padding: 14px 32px;
     border-radius: 100px;
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     font-size: 0.95rem;
     font-weight: 700;
     text-decoration: none;
@@ -336,7 +342,7 @@
     border: 1.5px solid var(--border);
     padding: 8px 16px;
     border-radius: 100px;
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
