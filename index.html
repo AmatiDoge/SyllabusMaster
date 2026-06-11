@@ -5,25 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SyllaBot – הסמסטר שלך, מאורגן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #0d0d0d;
-    --paper: #f5f2eb;
-    --accent: #e8522a;
-    --accent2: #2a6ee8;
-    --muted: #6b6760;
+    --ink: #1b1714;
+    --paper: #f4f1ea;
+    --paper-2: #ece7dc;
+    --accent: #df4a22;
+    --accent-soft: #fbe9e2;
+    --accent2: #225fa8;
+    --muted: #736d64;
     --card: #ffffff;
-    --border: rgba(0,0,0,0.1);
+    --border: rgba(27,23,20,0.10);
+    --border-strong: rgba(27,23,20,0.18);
+    --sans: 'Rubik', 'Heebo', sans-serif;
+    --display: 'Frank Ruhl Libre', 'Rubik', serif;
+    --shadow-sm: 0 1px 3px rgba(27,23,20,0.06), 0 1px 2px rgba(27,23,20,0.04);
+    --shadow-md: 0 8px 28px rgba(27,23,20,0.08);
+    --shadow-lg: 0 30px 80px rgba(27,23,20,0.16);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'Heebo', sans-serif;
+    font-family: var(--sans);
     background: var(--paper);
     color: var(--ink);
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, .section-title, .logo, .stat-num, .modal h2, .cta-section h2, .cta-section::before {
+    font-family: var(--display);
+    font-weight: 800;
   }
 
   /* ── NOISE TEXTURE ── */
@@ -187,7 +203,7 @@
     align-items: center;
     gap: 10px;
   }
-  .btn-primary:hover { background: var(--accent); transform: translateY(-2px); }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(223,74,34,0.32); }
   .btn-primary svg { transition: transform 0.2s; }
   .btn-primary:hover svg { transform: translateX(-4px); }
 
@@ -243,12 +259,13 @@
 
   .demo-wrapper {
     background: var(--ink);
-    border-radius: 20px;
+    border-radius: 22px;
     overflow: hidden;
     position: relative;
     max-width: 960px;
     margin: 0 auto;
-    box-shadow: 0 40px 120px rgba(0,0,0,0.25);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255,255,255,0.06);
   }
 
   .demo-topbar {
@@ -390,9 +407,9 @@
     background: var(--paper);
     padding: 48px 36px;
     position: relative;
-    transition: background 0.2s;
+    transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
   }
-  .step:hover { background: #ffffff; }
+  .step:hover { background: #ffffff; transform: translateY(-4px); box-shadow: var(--shadow-md); z-index: 1; }
 
   .step-num {
     font-size: 4rem;
