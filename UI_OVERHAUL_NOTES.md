@@ -27,3 +27,11 @@ A cohesive visual refresh across all three pages (landing → auth → dashboard
 
 ## Ship (already done on this branch's merge)
 `git checkout main && git merge ui-overhaul && git push origin main`
+
+## Brutalist pass (2026-06-11, follow-up)
+User feedback: the first pass "doesn't really look like you changed anything besides the font." Direction chosen: **editorial-brutalism**. Added a "BRUTALIST LAYER" override block at the end of each page's `<style>` (targets existing classes — no structural/JS changes):
+- Thick `2–3px` ink borders on cards, inputs, buttons, nav.
+- Hard offset shadows (no blur): `box-shadow: Npx Npx 0 ink/accent`; buttons "press" on hover (translate + shrink shadow).
+- Oversized serif headlines; loud bordered chips for labels; terracotta solid CTAs.
+- Academic dot-grid page background + marker-swash hero highlight (landing).
+Verified: dashboard `node --check` clean; no console errors on landing/auth/onboarding; RTL Hebrew confirmed.

@@ -358,6 +358,30 @@
         .wl-pill:not(.active) { opacity: 0.45; filter: grayscale(0.4); }
         .wl-pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .wl-empty { text-align: center; color: #bbb; padding: 60px 20px; font-size: 0.88rem; }
+
+        /* ═══════════ BRUTALIST LAYER ═══════════ */
+        .ob-card { border: 3px solid var(--text); border-radius: 18px; box-shadow: 12px 12px 0 #e8522a; }
+        .drop-zone { border: 2.5px dashed var(--text); border-radius: 12px; }
+        .drop-zone:hover, .drop-zone.drag-over { border-color: var(--syllabus); box-shadow: 5px 5px 0 rgba(39,174,96,0.35); }
+        #ob-review, #settings-panel { border: 3px solid var(--text); }
+        .rv-course-group { border: 2.5px solid var(--text); border-radius: 12px; box-shadow: 5px 5px 0 rgba(43,38,34,0.12); }
+        .rv-card { border: 2px solid var(--text); border-inline-start-width: 5px; border-radius: 10px; box-shadow: 4px 4px 0 rgba(43,38,34,0.10); }
+        .rv-compact-item { border: 1.5px solid var(--text); border-inline-start-width: 4px; border-radius: 8px; }
+        /* buttons: hard offset + press */
+        .rv-btn-all, .rv-btn-confirmed, .rv-confirm-course, .sp-save-btn, .fb-submit, #feedback-btn, .ob-cta, .add-btn {
+            border: 2.5px solid var(--text); border-radius: 10px; box-shadow: 3px 3px 0 var(--text);
+            transition: transform 0.12s, box-shadow 0.12s;
+        }
+        .rv-btn-all:hover, .rv-btn-confirmed:hover, .rv-confirm-course:hover, .sp-save-btn:hover, .fb-submit:hover, #feedback-btn:hover, .ob-cta:hover, .add-btn:hover {
+            transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--text);
+        }
+        #feedback-btn { box-shadow: 4px 4px 0 var(--text); }
+        /* inputs */
+        .file-course-input, .rv-desc-input, .rv-week-input, #feedback-text, .sp-date-input, .sp-semester-date, #sp-semester-date {
+            border: 2px solid var(--text) !important; border-radius: 8px;
+        }
+        /* loud badges */
+        .badge { border: 1.5px solid var(--text); font-weight: 800; border-radius: 6px; }
     </style>
 </head>
 <body>

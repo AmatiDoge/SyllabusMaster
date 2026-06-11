@@ -350,6 +350,25 @@
     letter-spacing: 0.04em;
   }
   .lang-toggle:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* ═══════════ BRUTALIST LAYER ═══════════ */
+  .logo { font-size: 1.9rem; }
+  .card { border: 3px solid var(--ink); border-radius: 16px; box-shadow: 12px 12px 0 var(--accent); }
+  .tabs { border: 2px solid var(--ink); border-radius: 12px; background: var(--paper); padding: 5px; }
+  .tab.active { border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink); background: #fff; }
+  input, #signup-lang { border: 2px solid var(--ink) !important; border-radius: 10px; }
+  input:focus { box-shadow: 4px 4px 0 var(--accent); border-color: var(--ink); }
+  .btn, .btn-google, .lang-toggle, .btn-dashboard {
+    border: 2.5px solid var(--ink); border-radius: 11px; box-shadow: 4px 4px 0 var(--ink);
+    transition: transform 0.12s, box-shadow 0.12s, background 0.15s, color 0.15s;
+  }
+  .btn { background: var(--accent); color: #fff; }
+  .btn:hover, .btn-google:hover, .lang-toggle:hover, .btn-dashboard:hover { transform: translate(3px,3px); box-shadow: 1px 1px 0 var(--ink); }
+  .lang-toggle { background: var(--paper); color: var(--ink); font-weight: 800; }
+  .legal-modal { border: 3px solid var(--ink); border-radius: 14px; box-shadow: 10px 10px 0 var(--ink); }
+  .checkmark { border-width: 3px !important; border-color: var(--ink) !important; box-shadow: 4px 4px 0 var(--accent); }
+  .msg.error { border: 2px solid #cf1322; }
+  .msg.success { border: 2px solid #389e0d; }
 </style>
 </head>
 <body>
