@@ -14,374 +14,592 @@
     <style>
         * { box-sizing: border-box; }
         :root {
-            --bg: #f4f1ea; --card: #fff; --exam: #8e44ad; --task: #2980b9;
-            --syllabus: #27ae60; --red: #d63031; --orange: #e67e22; --green: #2ecc71; --text: #2b2622;
-            --sans: 'Rubik', var(--sans); --display: 'Frank Ruhl Libre', 'Rubik', serif;
+            /* ── Fonts ── */
+            --font-display: 'Frank Ruhl Libre', 'Rubik', serif;
+            --font-body: 'Rubik', 'Heebo', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+            /* ── Font Sizes ── */
+            --text-xs: 0.72rem; --text-sm: 0.82rem; --text-base: 0.95rem;
+            --text-md: 1.05rem; --text-lg: 1.2rem; --text-xl: 1.5rem;
+            --text-2xl: 2rem; --text-3xl: clamp(2.4rem, 5vw, 3.2rem);
+            --text-4xl: clamp(3rem, 7vw, 5rem);
+
+            /* ── Font Weights ── */
+            --weight-light: 300; --weight-normal: 400; --weight-medium: 500;
+            --weight-semibold: 600; --weight-bold: 700; --weight-black: 900;
+
+            /* ── Line Heights ── */
+            --leading-tight: 1.1; --leading-snug: 1.3;
+            --leading-normal: 1.5; --leading-relaxed: 1.7;
+
+            /* ── Letter Spacing ── */
+            --tracking-tight: -0.03em; --tracking-normal: 0;
+            --tracking-wide: 0.08em; --tracking-wider: 0.14em;
+
+            /* ── Colors: Backgrounds ── */
+            --color-bg: #f4f1ea; --color-bg-secondary: #ece7dc;
+            --color-bg-card: #ffffff; --color-bg-inverse: #1b1714;
+
+            /* ── Colors: Text ── */
+            --color-text: #1b1714; --color-text-secondary: #2b2622;
+            --color-text-muted: #736d64; --color-text-inverse: #f4f1ea;
+            --color-text-link: #c03d18;
+
+            /* ── Colors: Accent ── */
+            --color-accent: #df4a22; --color-accent-hover: #c03d18;
+            --color-accent-active: #a83515; --color-accent-soft: #fbe9e2;
+            --color-accent-text: #c03d18;
+
+            /* ── Colors: Secondary Accent ── */
+            --color-accent2: #225fa8; --color-accent2-soft: #e8f0fa;
+
+            /* ── Colors: Status ── */
+            --color-success: #27ae60; --color-success-soft: #f6ffed;
+            --color-warning: #e67e22; --color-warning-soft: #fff8f0;
+            --color-error: #d63031; --color-error-soft: #fff1f0;
+
+            /* ── Colors: Borders ── */
+            --color-border: rgba(27, 23, 20, 0.10);
+            --color-border-strong: rgba(27, 23, 20, 0.18);
+            --color-border-ink: #1b1714; --color-border-focus: #df4a22;
+
+            /* ── Colors: Surfaces ── */
+            --color-overlay: rgba(27, 23, 20, 0.45);
+
+            /* ── Colors: Event Types ── */
+            --color-type-exam: #8e44ad; --color-type-task: #e67e22;
+            --color-type-reading: #27ae60; --color-type-lecture: #8e44ad;
+            --color-type-practice: #16a085; --color-type-quiz: #c0392b;
+            --color-type-video: #2980b9; --color-type-presentation: #d35400;
+
+            /* ── Colors: Urgency ── */
+            --color-urgency-critical: #d63031; --color-urgency-soon: #e67e22;
+            --color-urgency-ok: #27ae60;
+
+            /* ── Spacing ── */
+            --space-0: 0; --space-1: 2px; --space-2: 4px; --space-3: 6px;
+            --space-4: 8px; --space-5: 12px; --space-6: 16px; --space-7: 24px;
+            --space-8: 32px; --space-9: 48px; --space-10: 64px;
+            --space-11: 96px; --space-12: 128px;
+
+            /* ── Layout ── */
+            --max-width-content: 700px; --max-width-wide: 960px; --max-width-page: 1200px;
+
+            /* ── Border Radius ── */
+            --radius-sm: 6px; --radius-md: 12px; --radius-lg: 16px; --radius-pill: 100px;
+
+            /* ── Borders: Structural ── */
+            --border-thin: 1.5px solid var(--color-border);
+            --border-structural: 2.5px solid var(--color-border-ink);
+            --border-heavy: 3px solid var(--color-border-ink);
+
+            /* ── Shadows: Soft ── */
+            --shadow-sm: 0 1px 3px rgba(27, 23, 20, 0.06);
+            --shadow-md: 0 8px 24px rgba(27, 23, 20, 0.08);
+            --shadow-lg: 0 20px 60px rgba(27, 23, 20, 0.12);
+
+            /* ── Shadows: Hard ── */
+            --shadow-hard-sm: 2px 2px 0 var(--color-border-ink);
+            --shadow-hard-md: 4px 4px 0 var(--color-border-ink);
+            --shadow-hard-lg: 6px 6px 0 var(--color-border-ink);
+            --shadow-hard-accent: 4px 4px 0 var(--color-accent);
+
+            /* ── Shadows: Press effect ── */
+            --shadow-press-rest: var(--shadow-hard-md);
+            --shadow-press-hover: 1px 1px 0 var(--color-border-ink);
+            --press-translate: translate(3px, 3px);
+
+            /* ── Shadows: Focus ── */
+            --shadow-focus: 0 0 0 3px rgba(223, 74, 34, 0.25);
+
+            /* ── Motion ── */
+            --duration-instant: 50ms; --duration-fast: 120ms;
+            --duration-normal: 200ms; --duration-slow: 400ms; --duration-slower: 600ms;
+            --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-out: cubic-bezier(0, 0, 0.2, 1);
+            --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        body { font-family: var(--sans); background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; }
-        .ob-logo, .ob-title, .rv-title, .dash-title, #week-title, .sp-title { font-family: var(--display); font-weight: 800; letter-spacing: 0; }
-        body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; }
+        .ob-logo, .ob-title, .rv-title, .dash-title, #week-title, .sp-title { font-family: var(--font-display); font-weight: var(--weight-black); letter-spacing: var(--tracking-tight); }
 
         /* AUTH LOADING */
-        #auth-loading { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 12px; }
+        #auth-loading { position: fixed; inset: 0; background: var(--color-bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: var(--space-5); }
         #auth-loading.hidden { display: none; }
-        .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: var(--syllabus); border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .spinner { width: 32px; height: 32px; border: 3px solid var(--color-border); border-top-color: var(--color-accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #auth-loading p { font-size: 0.85rem; color: #999; }
+        #auth-loading p { font-size: var(--text-sm); color: var(--color-text-muted); }
 
         /* ONBOARDING */
-        #onboarding { position: fixed; inset: 0; background: #f5f2eb; display: none; align-items: center; justify-content: center; z-index: 500; padding: 20px; overflow-y: auto; }
+        #onboarding { position: fixed; inset: 0; background: var(--color-bg-secondary); display: none; align-items: center; justify-content: center; z-index: 500; padding: var(--space-7); overflow-y: auto; }
         #onboarding.visible { display: flex; }
-        .ob-card { background: white; border-radius: 24px; padding: 44px 40px; max-width: 560px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.1); animation: fadeUp 0.5s ease; }
+        .ob-card { background: var(--color-bg-card); border-radius: var(--radius-lg); padding: 44px 40px; max-width: 560px; width: 100%; animation: fadeUp 0.5s var(--ease-out); }
         @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        .ob-logo { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 32px; display: block; font-family: var(--sans); }
-        .ob-logo span { color: #e8522a; }
-        .ob-step-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #27ae60; margin-bottom: 8px; }
-        .ob-title { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 10px; }
-        .ob-sub { font-size: 0.88rem; color: #636e72; line-height: 1.65; margin-bottom: 28px; }
+        .ob-logo { font-size: 1.4rem; font-weight: var(--weight-black); letter-spacing: var(--tracking-tight); margin-bottom: var(--space-8); display: block; font-family: var(--font-display); }
+        .ob-logo span { color: var(--color-accent); }
+        .ob-step-label { font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--color-success); margin-bottom: var(--space-4); }
+        .ob-title { font-size: var(--text-2xl); font-weight: var(--weight-black); letter-spacing: var(--tracking-tight); line-height: var(--leading-tight); margin-bottom: var(--space-5); }
+        .ob-sub { font-size: var(--text-base); color: var(--color-text-muted); line-height: var(--leading-relaxed); margin-bottom: var(--space-7); }
 
-        .drop-zone { border: 2px dashed #ddd; border-radius: 14px; padding: 32px 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .drop-zone:hover, .drop-zone.drag-over { border-color: #27ae60; background: #f6ffed; }
+        .drop-zone { border: 2.5px dashed var(--color-border-strong); border-radius: var(--radius-md); padding: var(--space-8) var(--space-7); text-align: center; cursor: pointer; transition: all var(--duration-normal); }
+        .drop-zone:hover, .drop-zone.drag-over { border-color: var(--color-success); background: var(--color-success-soft); }
         .drop-zone input { display: none; }
-        .drop-icon { font-size: 2rem; margin-bottom: 10px; }
-        .drop-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
-        .drop-sub { font-size: 0.8rem; color: #636e72; }
-        .drop-sub strong { color: #27ae60; }
+        .drop-icon { font-size: 2rem; margin-bottom: var(--space-5); }
+        .drop-title { font-size: var(--text-base); font-weight: var(--weight-bold); margin-bottom: var(--space-2); }
+        .drop-sub { font-size: var(--text-sm); color: var(--color-text-muted); }
+        .drop-sub strong { color: var(--color-success); }
 
-        .file-list { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
-        .file-item { display: flex; align-items: center; gap: 10px; background: #f8f9fa; border-radius: 10px; padding: 9px 13px; font-size: 0.8rem; }
-        .file-item-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .file-course-input { flex: 1; min-width: 80px; border: 1.5px solid #e8e8e8; border-radius: 8px; padding: 4px 9px; font-family: var(--sans); font-size: 0.74rem; color: #2d3436; background: #fff; direction: rtl; transition: border-color 0.2s; }
-        .file-course-input:focus { outline: none; border-color: #27ae60; }
-        .file-course-input::placeholder { color: #ccc; }
-        .file-status { font-size: 0.72rem; padding: 2px 10px; border-radius: 20px; white-space: nowrap; font-weight: 600; }
-        .s-waiting  { background: #f0f0f0; color: #999; }
-        .s-analyzing { background: #fff3e0; color: #e67e22; }
-        .s-done  { background: #f6ffed; color: #27ae60; }
-        .s-error { background: #fff1f0; color: #d63031; }
-        .file-remove { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1.1rem; padding: 0; line-height: 1; }
-        .file-remove:hover { color: #d63031; }
-        .file-spinner { display: none; width: 14px; height: 14px; border: 2px solid #e67e22; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
-        .file-retry { background: #fff3e0; color: #e67e22; border: 1px solid #e67e22; border-radius: 8px; font-family: var(--sans); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; display: none; }
-        .file-retry:hover { background: #e67e22; color: white; }
-        .file-error-msg { font-size: 0.73rem; color: #d63031; direction: rtl; padding: 4px 13px 5px; display: none; line-height: 1.4; }
+        .file-list { margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+        .file-item { display: flex; align-items: center; gap: var(--space-5); background: var(--color-bg-secondary); border-radius: var(--radius-sm); padding: var(--space-4) var(--space-5); font-size: var(--text-sm); border: var(--border-thin); }
+        .file-item-name { font-weight: var(--weight-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-course-input { flex: 1; min-width: 80px; border: 1.5px solid var(--color-border-strong); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-4); font-family: var(--font-body); font-size: var(--text-xs); color: var(--color-text); background: var(--color-bg-card); direction: rtl; transition: border-color var(--duration-normal); }
+        .file-course-input:focus { outline: none; border-color: var(--color-accent); }
+        .file-course-input::placeholder { color: var(--color-text-muted); opacity: 0.5; }
+        .file-status { font-size: var(--text-xs); padding: 2px 10px; border-radius: var(--radius-pill); white-space: nowrap; font-weight: var(--weight-semibold); }
+        .s-waiting  { background: var(--color-bg-secondary); color: var(--color-text-muted); }
+        .s-analyzing { background: var(--color-warning-soft); color: var(--color-warning); }
+        .s-done  { background: var(--color-success-soft); color: var(--color-success); }
+        .s-error { background: var(--color-error-soft); color: var(--color-error); }
+        .file-remove { background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: 1.1rem; padding: 0; line-height: 1; }
+        .file-remove:hover { color: var(--color-error); }
+        .file-spinner { display: none; width: 14px; height: 14px; border: 2px solid var(--color-warning); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+        .file-retry { background: var(--color-warning-soft); color: var(--color-warning); border: 1px solid var(--color-warning); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--weight-bold); padding: 2px 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all var(--duration-fast); display: none; }
+        .file-retry:hover { background: var(--color-warning); color: white; }
+        .file-error-msg { font-size: var(--text-xs); color: var(--color-error); direction: rtl; padding: var(--space-2) var(--space-5) var(--space-3); display: none; line-height: 1.4; }
         .file-status { transition: background 0.3s, color 0.3s; }
 
-        .progress-wrap { margin-top: 18px; display: none; }
-        .ob-sequential-note { font-size: 0.75rem; color: #aaa; direction: rtl; text-align: right; margin: 0 0 6px; }
-        .ob-current-course { font-size: 0.82rem; font-weight: 700; color: #e8522a; direction: rtl; text-align: right; margin-bottom: 8px; min-height: 1.2em; }
-        .progress-meta { font-size: 0.78rem; color: #636e72; margin-bottom: 6px; display: flex; justify-content: space-between; }
-        .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; background: #27ae60; border-radius: 3px; transition: width 0.4s; width: 0%; }
+        .progress-wrap { margin-top: var(--space-6); display: none; }
+        .ob-sequential-note { font-size: var(--text-xs); color: var(--color-text-muted); direction: rtl; text-align: right; margin: 0 0 var(--space-3); }
+        .ob-current-course { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--color-accent); direction: rtl; text-align: right; margin-bottom: var(--space-4); min-height: 1.2em; }
+        .progress-meta { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3); display: flex; justify-content: space-between; }
+        .progress-bar { height: 6px; background: var(--color-bg-secondary); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--color-success); border-radius: 3px; transition: width var(--duration-slow); width: 0%; }
 
-        .courses-found { margin-top: 14px; display: none; flex-wrap: wrap; gap: 7px; }
-        .course-chip { background: #f0f0f0; border-radius: 20px; padding: 4px 13px; font-size: 0.76rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .courses-found { margin-top: var(--space-6); display: none; flex-wrap: wrap; gap: var(--space-4); }
+        .course-chip { background: var(--color-bg-secondary); border: var(--border-thin); border-radius: var(--radius-pill); padding: var(--space-2) var(--space-5); font-size: var(--text-xs); font-weight: var(--weight-semibold); display: flex; align-items: center; gap: var(--space-3); }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
         /* CARD WIZARD */
         #ob-wizard { display: none; }
         #ob-analysis { display: none; }
-        .wz-header { text-align: center; margin-bottom: 20px; }
-        .wz-progress-label { font-size: 0.78rem; font-weight: 700; color: #636e72; direction: rtl; }
-        .wz-dots { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
-        .wz-dot { width: 9px; height: 9px; border-radius: 50%; background: #ddd; transition: background 0.3s; flex-shrink: 0; }
-        .wz-dot.active { background: #e8522a; }
-        .wz-dot.done { background: #27ae60; }
-        .wz-card { background: #fafafa; border-radius: 16px; padding: 22px 22px 16px; margin-bottom: 18px; border: 1.5px solid #eee; animation: fadeUp 0.25s ease; }
-        .wz-filename { font-size: 0.73rem; color: #bbb; margin-bottom: 12px; text-align: right; direction: rtl; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .wz-label { font-size: 0.8rem; font-weight: 700; color: #555; direction: rtl; margin-bottom: 7px; }
-        .wz-input { width: 100%; padding: 12px 14px; font-family: var(--sans); font-size: 1.05rem; font-weight: 600; border: 2px solid #e8e8e8; border-radius: 12px; direction: rtl; color: #2d3436; transition: border-color 0.2s; box-sizing: border-box; background: white; }
-        .wz-input:focus { outline: none; border-color: #e8522a; }
-        .wz-input.wz-error { border-color: #d63031; animation: shake 0.4s ease; }
+        .wz-header { text-align: center; margin-bottom: var(--space-7); }
+        .wz-progress-label { font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-muted); direction: rtl; }
+        .wz-dots { display: flex; gap: var(--space-4); justify-content: center; margin-top: var(--space-5); flex-wrap: wrap; }
+        .wz-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-border); transition: background var(--duration-normal); flex-shrink: 0; }
+        .wz-dot.active { background: var(--color-accent); }
+        .wz-dot.done { background: var(--color-success); }
+        .wz-card { background: var(--color-bg-secondary); border-radius: var(--radius-lg); padding: var(--space-7) var(--space-7) var(--space-6); margin-bottom: var(--space-6); border: var(--border-thin); animation: fadeUp 0.25s var(--ease-out); }
+        .wz-filename { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-5); text-align: right; direction: rtl; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .wz-label { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--color-text-secondary); direction: rtl; margin-bottom: var(--space-4); }
+        .wz-input { width: 100%; padding: var(--space-5) var(--space-6); font-family: var(--font-body); font-size: var(--text-md); font-weight: var(--weight-semibold); border: 2px solid var(--color-border-ink); border-radius: var(--radius-md); direction: rtl; color: var(--color-text); transition: border-color var(--duration-normal); box-sizing: border-box; background: var(--color-bg-card); }
+        .wz-input:focus { outline: none; border-color: var(--color-accent); box-shadow: var(--shadow-focus); }
+        .wz-input.wz-error { border-color: var(--color-error); animation: shake 0.4s ease; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
-        .wz-err-msg { font-size: 0.75rem; color: #d63031; direction: rtl; margin-top: 5px; min-height: 1.1em; }
-        .wz-pages-toggle { margin-top: 14px; background: none; border: none; font-family: var(--sans); font-size: 0.78rem; color: #aaa; cursor: pointer; padding: 0; direction: rtl; display: flex; align-items: center; gap: 5px; transition: color 0.15s; }
-        .wz-pages-toggle:hover { color: #636e72; }
-        .wz-pages-body { display: none; margin-top: 10px; }
+        .wz-err-msg { font-size: var(--text-xs); color: var(--color-error); direction: rtl; margin-top: var(--space-3); min-height: 1.1em; }
+        .wz-pages-toggle { margin-top: var(--space-6); background: none; border: none; font-family: var(--font-body); font-size: var(--text-xs); color: var(--color-text-muted); cursor: pointer; padding: 0; direction: rtl; display: flex; align-items: center; gap: 5px; transition: color var(--duration-fast); }
+        .wz-pages-toggle:hover { color: var(--color-text-secondary); }
+        .wz-pages-body { display: none; margin-top: var(--space-5); }
         .wz-pages-body.open { display: block; }
-        .wz-nav { display: flex; gap: 10px; }
-        .wz-btn-prev { background: none; border: 1.5px solid #e0e0e0; color: #888; padding: 12px 20px; border-radius: 100px; font-family: var(--sans); font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
-        .wz-btn-prev:hover { border-color: #bbb; color: #333; }
-        .wz-btn-next { flex: 1; background: #e8522a; color: white; border: none; padding: 13px 24px; border-radius: 100px; font-family: var(--sans); font-size: 0.97rem; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; }
-        .wz-btn-next:hover { background: #c9421d; transform: translateY(-1px); }
+        .wz-nav { display: flex; gap: var(--space-5); }
+        .wz-btn-prev { background: var(--color-bg-card); border: var(--border-structural); color: var(--color-text-muted); padding: var(--space-5) var(--space-7); border-radius: 11px; font-family: var(--font-body); font-size: var(--text-base); font-weight: var(--weight-bold); cursor: pointer; box-shadow: var(--shadow-hard-sm); transition: transform var(--duration-fast), box-shadow var(--duration-fast); white-space: nowrap; flex-shrink: 0; }
+        .wz-btn-prev:hover { transform: var(--press-translate); box-shadow: var(--shadow-press-hover); color: var(--color-text); }
+        .wz-btn-next { flex: 1; background: var(--color-accent); color: white; border: var(--border-structural); padding: var(--space-5) var(--space-7); border-radius: 11px; font-family: var(--font-body); font-size: var(--text-base); font-weight: var(--weight-bold); cursor: pointer; box-shadow: var(--shadow-press-rest); transition: transform var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-normal); }
+        .wz-btn-next:hover { background: var(--color-accent-hover); transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
 
         /* DASHBOARD */
         #dashboard { width: 100%; display: none; flex-direction: column; align-items: center; }
         #dashboard.visible { display: flex; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1400px; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; background: white; border-radius: 14px; padding: 8px 16px; border-bottom: 1px solid rgba(0,0,0,0.07); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .top-bar h1 { font-size: 1.2rem; margin: 0; }
-        #date-display { font-size: 0.8rem; background: #fff; padding: 4px 12px; border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .user-bar { display: flex; align-items: center; gap: 8px; }
-        .user-name { font-size: 0.78rem; color: #636e72; background: #fff; padding: 4px 12px; border-radius: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .btn-sm { font-size: 0.75rem; color: white; border: none; padding: 4px 12px; border-radius: 15px; cursor: pointer; font-family: inherit; transition: background 0.2s; }
-        .btn-add-course { background: #e8522a; border-radius: 100px; }
-        .btn-add-course:hover { background: #c9421d; }
-        .btn-logout { background: #ff4d4f; border-radius: 100px; }
-        .btn-logout:hover { background: #cf1322; }
-        .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; display: inline-block; transition: background 0.3s; }
-        .sync-dot.synced { background: var(--green); }
-        .sync-dot.syncing { background: var(--orange); animation: pulse 1s ease-in-out infinite; }
-        .sync-dot.error { background: var(--red); }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: var(--max-width-page); margin-bottom: var(--space-6); gap: var(--space-5); flex-wrap: wrap; background: var(--color-bg-card); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); border-bottom: var(--border-structural); }
+        .top-bar-logo { font-family: var(--font-display); font-weight: var(--weight-black); font-size: 1.3rem; letter-spacing: var(--tracking-tight); text-decoration: none; color: var(--color-text); }
+        .top-bar-logo span { color: var(--color-accent); }
+        #date-display { font-size: var(--text-xs); color: var(--color-text-muted); padding: var(--space-2) var(--space-5); border-radius: var(--radius-sm); background: var(--color-bg-secondary); }
+        .user-bar { display: flex; align-items: center; gap: var(--space-4); }
+        .user-name { font-size: var(--text-xs); color: var(--color-text-muted); padding: var(--space-2) var(--space-5); border-radius: var(--radius-sm); background: var(--color-bg-secondary); }
+        .btn-sm { font-size: var(--text-xs); color: var(--color-text); border: var(--border-structural); padding: var(--space-2) var(--space-5); border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: var(--weight-bold); box-shadow: var(--shadow-hard-sm); transition: transform var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-normal); background: var(--color-bg-card); }
+        .btn-sm:hover { transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
+        .btn-add-course { background: var(--color-accent); color: white; }
+        .btn-add-course:hover { background: var(--color-accent-hover); transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
+        .btn-settings { background: var(--color-bg-card); }
+        .btn-logout { background: var(--color-bg-card); color: var(--color-error); }
+        .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-border); display: inline-block; transition: background var(--duration-normal); }
+        .sync-dot.synced { background: var(--color-success); }
+        .sync-dot.syncing { background: var(--color-warning); animation: pulse 1s ease-in-out infinite; }
+        .sync-dot.error { background: var(--color-error); }
+        .sync-badge { font-size: 0.65rem; padding: 2px 7px; border-radius: 100px; font-weight: 600; }
+        .sync-badge.ok { background: #e6f9ee; color: #1a7a42; }
+        .sync-badge.stale { background: #fff3e0; color: #b36b00; }
+        .sync-badge.error { background: #ffeaea; color: #c0392b; }
+        .sync-badge.pending { background: #f0f0f0; color: #666; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-        .container { display: flex; flex-wrap: wrap; gap: 15px; width: 100%; max-width: 1400px; align-items: flex-start; justify-content: center; }
-        .box { background: var(--card); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); flex: 1; min-width: 350px; max-width: 480px; overflow: hidden; display: flex; flex-direction: column; }
-        .header { padding: 12px; color: white; text-align: center; font-weight: bold; font-size: 0.95rem; }
-        .h-exams { background: var(--exam); }
-        .h-tasks { background: var(--task); }
-        .h-syllabus { background: var(--syllabus); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
-        .syl-add-toggle { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; border-radius: 50%; width: 24px; height: 24px; font-size: 1.1rem; font-weight: bold; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.2s; flex-shrink: 0; }
-        .syl-add-toggle:hover { background: rgba(255,255,255,0.35); }
+        .container { display: flex; flex-direction: column; gap: var(--space-7); width: 100%; max-width: var(--max-width-wide); align-items: stretch; }
+        .box { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); overflow: hidden; display: flex; flex-direction: column; }
+        .header { padding: var(--space-6); font-family: var(--font-display); font-weight: var(--weight-black); font-size: var(--text-md); color: var(--color-text); display: flex; justify-content: space-between; align-items: center; border-bottom: var(--border-thin); }
+        .header .section-label { font-size: var(--text-xs); font-family: var(--font-body); font-weight: var(--weight-bold); color: var(--color-text-muted); letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+        .h-exams { }
+        .h-tasks { }
+        .h-syllabus { }
+        /* ── FOCUS SECTIONS ── */
+        .focus-section { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); overflow: hidden; }
+        .focus-header { padding: var(--space-6); font-family: var(--font-display); font-weight: var(--weight-black); font-size: var(--text-md); color: var(--color-text); display: flex; justify-content: space-between; align-items: center; border-bottom: var(--border-thin); }
+        .focus-header-left { display: flex; align-items: center; gap: var(--space-4); }
+        .focus-header-right { display: flex; align-items: center; gap: var(--space-3); }
+        .focus-progress { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--color-text-muted); }
+        .focus-progress .done-count { color: var(--color-success); }
+        .focus-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5) var(--space-6); border-bottom: var(--border-thin); transition: background var(--duration-normal), opacity var(--duration-normal); font-size: var(--text-sm); }
+        .focus-item:last-child { border-bottom: none; }
+        .focus-item:hover { background: var(--color-bg-secondary); }
+        .focus-item.is-done { opacity: 0.5; }
+        .focus-item.is-done .focus-item-text { color: var(--color-text-muted); }
+        .focus-item-urgency { border-inline-start-width: 4px; border-inline-start-style: solid; }
+        .focus-item-urgency.urgency-critical { border-inline-start-color: var(--color-error); }
+        .focus-item-urgency.urgency-soon { border-inline-start-color: var(--color-warning); }
+        .focus-item-urgency.urgency-ok { border-inline-start-color: var(--color-border); }
+        .focus-item-urgency.urgency-past { border-inline-start-color: var(--color-border); opacity: 0.4; }
+        .focus-item-text { flex: 1; display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+        .focus-item-actions { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+        .focus-checkbox { width: 20px; height: 20px; border-radius: var(--radius-sm); border: 2px solid var(--color-border-ink); background: var(--color-bg-card); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background var(--duration-fast), border-color var(--duration-fast); }
+        .focus-checkbox:hover { border-color: var(--color-success); }
+        .focus-checkbox.checked { background: var(--color-success); border-color: var(--color-success); }
+        .focus-checkbox.checked svg { opacity: 1; }
+        .focus-checkbox svg { width: 14px; height: 14px; stroke: var(--color-bg-card); stroke-width: 3; fill: none; opacity: 0; transition: opacity var(--duration-fast); }
+        .focus-checkbox.completing { animation: checkBounce 300ms var(--ease-bounce); }
+        @keyframes checkBounce { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .focus-course-group { padding-top: var(--space-2); }
+        .focus-course-label { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-6); font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-muted); letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+        .focus-course-dot { width: 8px; height: 8px; border-radius: var(--radius-full); flex-shrink: 0; }
+        .focus-add-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-6); border-top: var(--border-thin); cursor: pointer; color: var(--color-text-muted); font-size: var(--text-sm); transition: background var(--duration-fast); }
+        .focus-add-row:hover { background: var(--color-bg-secondary); }
+        .focus-add-row .plus { font-size: var(--text-md); font-weight: var(--weight-bold); line-height: 1; }
+        .focus-add-input { flex: 1; border: none; background: transparent; font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text); outline: none; padding: var(--space-2) 0; }
+        .focus-add-input::placeholder { color: var(--color-text-muted); }
+        .focus-add-active { border-top: 2px solid var(--color-border-ink); }
+        @media (prefers-reduced-motion: reduce) {
+            .focus-checkbox.completing { animation: none; }
+            .focus-item.is-done { transition: none; }
+        }
+        .syl-add-toggle { background: var(--color-bg-secondary); border: 1.5px solid var(--color-border-ink); color: var(--color-text); cursor: pointer; border-radius: 50%; width: 24px; height: 24px; font-size: 1.1rem; font-weight: bold; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background var(--duration-normal), transform var(--duration-normal); flex-shrink: 0; }
+        .syl-add-toggle:hover { background: var(--color-accent-soft); }
         .syl-add-toggle.open { transform: rotate(45deg); }
-        .syl-inputs { padding: 10px; background: #fafafa; border-bottom: 1px solid #eee; display: none; flex-direction: column; gap: 6px; }
+        .syl-inputs { padding: var(--space-5); background: var(--color-bg-secondary); border-bottom: var(--border-thin); display: none; flex-direction: column; gap: var(--space-3); }
         .syl-inputs.open { display: flex; }
-        .syl-inputs select, .syl-inputs input { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; font-family: inherit; background: white; width: 100%; }
-        .syl-inputs select:focus, .syl-inputs input:focus { outline: none; border-color: var(--syllabus); }
-        .syl-row { display: flex; gap: 6px; }
+        .syl-inputs select, .syl-inputs input { padding: var(--space-3); border: 2px solid var(--color-border-ink); border-radius: var(--radius-sm); font-size: var(--text-sm); font-family: inherit; background: var(--color-bg-card); width: 100%; }
+        .syl-inputs select:focus, .syl-inputs input:focus { outline: none; border-color: var(--color-border-focus); box-shadow: var(--shadow-focus); }
+        .syl-row { display: flex; gap: var(--space-3); }
         .syl-row select, .syl-row input { flex: 1; width: auto; }
         .syl-week-input { flex: 0 0 70px !important; width: 70px !important; }
-        .syl-add-btn { background: #2d3436; color: white; border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; font-family: inherit; align-self: flex-end; white-space: nowrap; transition: background 0.2s; }
-        .syl-add-btn:hover { background: var(--syllabus); }
-        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; font-size: 1rem; }
-        .inputs { padding: 10px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; gap: 6px; flex-wrap: wrap; }
-        .inputs input, .inputs select { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.8rem; flex: 1; font-family: inherit; }
-        .btn-add { background: #e8522a; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
-        .btn-add:hover { background: #c9421d; }
-        .item-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #f1f1f1; transition: 0.2s; font-size: 0.82rem; cursor: pointer; }
-        .item-row:hover { background: #f9f9f9; }
-        .row-right { display: flex; align-items: center; gap: 8px; flex: 1; }
-        .course-label { font-weight: bold; color: #fff; padding: 4px 15px; font-size: 0.72rem; border-bottom: 1px solid #eee; margin-top: 4px; }
-        .badge { font-size: 0.55rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; white-space: nowrap; }
-        .tag-קריאה { background:#e8f5e9;color:#2e7d32; } .tag-סרטון { background:#e3f2fd;color:#1565c0; }
-        .tag-מטלה { background:#fff3e0;color:#ef6c00; } .tag-בוחן { background:#fce4ec;color:#c2185b; }
-        .tag-שיעור { background:#f3e5f5;color:#7b1fa2; } .tag-תרגול { background:#e0f2f1;color:#00796b; }
-        .tag-מבחן { background:#ffebee;color:#c62828; } .tag-מועד-ב { background:#2d3436;color:white; }
-        .tag-default { background:#f0f0f0;color:#636e72; }
-        .tag-פרזנטציה { background:#e0f2f1;color:#00897b; } .tag-צפייה { background:#fffde7;color:#f57f17; }
-        .timer { font-weight: bold; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; white-space: nowrap; }
-        .bg-red { background:#fff1f0;color:var(--red); } .bg-green { background:#f6ffed;color:var(--green); } .bg-passed { background:#f5f5f5;color:#bfbfbf; }
-        .done { opacity: 0.5; } .done span { text-decoration: line-through; }
-        .del-btn { color: #ff4d4f; cursor: pointer; border: none; background: none; font-size: 1rem; padding: 0; }
-        .empty-state { padding: 28px; text-align: center; color: #bbb; font-size: 0.84rem; }
-        .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 8px; }
+        .syl-add-btn { background: var(--color-text); color: var(--color-text-inverse); border: var(--border-structural); padding: var(--space-3) var(--space-6); border-radius: 10px; cursor: pointer; font-weight: var(--weight-bold); font-size: var(--text-sm); font-family: inherit; align-self: flex-end; white-space: nowrap; box-shadow: var(--shadow-hard-sm); transition: transform var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-normal); }
+        .syl-add-btn:hover { transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
+        .nav-btn { background: var(--color-bg-secondary); border: 1.5px solid var(--color-border-ink); color: var(--color-text); cursor: pointer; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; font-size: 1rem; transition: background var(--duration-normal); }
+        .nav-btn:hover { background: var(--color-accent-soft); }
+        .inputs { padding: var(--space-5); background: var(--color-bg-secondary); border-bottom: var(--border-thin); display: flex; gap: var(--space-3); flex-wrap: wrap; }
+        .inputs input, .inputs select { padding: var(--space-3); border: 2px solid var(--color-border-ink); border-radius: var(--radius-sm); font-size: var(--text-sm); flex: 1; font-family: inherit; background: var(--color-bg-card); }
+        .inputs input:focus, .inputs select:focus { outline: none; border-color: var(--color-border-focus); box-shadow: var(--shadow-focus); }
+        .btn-add { background: var(--color-accent); color: white; border: var(--border-structural); padding: var(--space-3) var(--space-6); border-radius: 10px; cursor: pointer; font-weight: var(--weight-bold); font-size: var(--text-sm); box-shadow: var(--shadow-hard-sm); transition: transform var(--duration-fast), box-shadow var(--duration-fast); }
+        .btn-add:hover { transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
+        .item-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-5) var(--space-6); border-bottom: var(--border-thin); transition: background var(--duration-normal); font-size: var(--text-sm); cursor: pointer; }
+        .item-row:hover { background: var(--color-bg-secondary); }
+        .row-right { display: flex; align-items: center; gap: var(--space-4); flex: 1; }
+        .course-label { font-weight: var(--weight-bold); color: var(--color-text-inverse); padding: var(--space-2) var(--space-6); font-size: var(--text-xs); border-bottom: var(--border-thin); margin-top: var(--space-2); }
+        .badge { font-size: 0.55rem; padding: 2px 6px; border-radius: var(--radius-sm); font-weight: var(--weight-bold); white-space: nowrap; border: var(--border-thin); }
+        .tag-קריאה { background:color-mix(in srgb, var(--color-type-reading) 12%, var(--color-bg-card));color:var(--color-type-reading); }
+        .tag-סרטון, .tag-צפייה { background:color-mix(in srgb, var(--color-type-video) 12%, var(--color-bg-card));color:var(--color-type-video); }
+        .tag-מטלה { background:color-mix(in srgb, var(--color-type-task) 12%, var(--color-bg-card));color:var(--color-type-task); }
+        .tag-בוחן { background:color-mix(in srgb, var(--color-type-quiz) 12%, var(--color-bg-card));color:var(--color-type-quiz); }
+        .tag-שיעור { background:color-mix(in srgb, var(--color-type-lecture) 12%, var(--color-bg-card));color:var(--color-type-lecture); }
+        .tag-תרגול { background:color-mix(in srgb, var(--color-type-practice) 12%, var(--color-bg-card));color:var(--color-type-practice); }
+        .tag-מבחן { background:var(--color-error-soft);color:var(--color-type-exam); }
+        .tag-מועד-ב { background:var(--color-bg-inverse);color:var(--color-text-inverse); }
+        .tag-default { background:var(--color-bg-secondary);color:var(--color-text-muted); }
+        .tag-פרזנטציה { background:color-mix(in srgb, var(--color-type-presentation) 12%, var(--color-bg-card));color:var(--color-type-presentation); }
+        .timer { font-weight: var(--weight-bold); padding: 2px 10px; border-radius: var(--radius-sm); font-size: var(--text-xs); white-space: nowrap; }
+        .bg-red { background:var(--color-error-soft);color:var(--color-error); } .bg-green { background:var(--color-success-soft);color:var(--color-success); } .bg-passed { background:var(--color-bg-secondary);color:var(--color-text-muted); }
+        .done { opacity: 0.45; transition: opacity var(--duration-normal) var(--ease-default); } .done span { text-decoration: line-through; color: var(--color-text-muted); }
+        .del-btn { color: var(--color-error); cursor: pointer; border: none; background: none; font-size: 1rem; padding: 0; transition: opacity var(--duration-fast); }
+        .del-btn:hover { opacity: 0.7; }
+        .empty-state { padding: var(--space-9); text-align: center; color: var(--color-text-muted); font-size: var(--text-sm); }
+        .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: var(--space-4); }
 
         /* REVIEW SCREEN */
-        #ob-review { display: none; background: #f4f5f7; border-radius: 24px; padding: 0; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.12); animation: fadeUp 0.5s ease; }
+        #ob-review { display: none; background: var(--color-bg-secondary); border-radius: var(--radius-lg); padding: 0; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; animation: fadeUp 0.5s var(--ease-out); }
         #ob-review.visible { display: flex; flex-direction: column; }
-        .rv-header { padding: 28px 32px 18px; background: white; border-radius: 24px 24px 0 0; border-bottom: 1px solid #eee; }
-        .rv-title { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px; }
-        .rv-sub { font-size: 0.85rem; color: #636e72; line-height: 1.6; margin-bottom: 12px; direction: rtl; }
-        .rv-pills { display: flex; gap: 8px; flex-direction: row-reverse; }
-        .rv-pill { font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
-        .rv-pill.ok { background: #e8f5e9; color: #2e7d32; }
-        .rv-pill.warn { background: #fff3e0; color: #e65100; }
-        .rv-body { padding: 18px 32px 8px; flex: 1; }
-        .rv-section { margin-bottom: 16px; }
-        .rv-section-header { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer; user-select: none; }
-        .rv-section-label { font-size: 0.82rem; font-weight: 800; direction: rtl; }
-        .rv-section-count { font-size: 0.72rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 2px 8px; }
-        .rv-section-toggle { margin-right: auto; font-size: 0.8rem; color: #bbb; }
-        .rv-cards { display: flex; flex-direction: column; gap: 10px; }
+        .rv-header { padding: var(--space-7) var(--space-8) var(--space-6); background: var(--color-bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: var(--border-thin); }
+        .rv-title { font-size: var(--text-xl); font-weight: var(--weight-black); letter-spacing: var(--tracking-tight); margin-bottom: var(--space-3); }
+        .rv-sub { font-size: var(--text-sm); color: var(--color-text-muted); line-height: var(--leading-relaxed); margin-bottom: var(--space-5); direction: rtl; }
+        .rv-pills { display: flex; gap: var(--space-4); flex-direction: row-reverse; }
+        .rv-pill { font-size: var(--text-xs); font-weight: var(--weight-bold); padding: var(--space-2) var(--space-5); border-radius: var(--radius-pill); border: var(--border-thin); }
+        .rv-pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+        .rv-pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
+        .rv-body { padding: var(--space-6) var(--space-8) var(--space-4); flex: 1; }
+        .rv-section { margin-bottom: var(--space-6); }
+        .rv-section-header { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) 0; cursor: pointer; user-select: none; }
+        .rv-section-label { font-size: var(--text-sm); font-weight: var(--weight-black); direction: rtl; }
+        .rv-section-count { font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-bg-secondary); border-radius: var(--radius-pill); padding: 2px 8px; border: var(--border-thin); }
+        .rv-section-toggle { margin-right: auto; font-size: var(--text-sm); color: var(--color-text-muted); }
+        .rv-cards { display: flex; flex-direction: column; gap: var(--space-5); }
         .rv-cards.collapsed { display: none; }
-        .rv-course-group { margin-bottom: 12px; border: 1px solid #eee; border-radius: 14px; overflow: hidden; background: #fff; }
-        .rv-course-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; user-select: none; }
-        .rv-course-name { font-size: 0.9rem; font-weight: 800; }
-        .rv-course-status { font-size: 0.74rem; font-weight: 700; margin-inline-start: auto; }
-        .rv-course-status.ok { color: #27ae60; }
-        .rv-course-status.warn { color: #e65100; }
-        .rv-course-group .rv-cards { padding: 0 14px 14px; }
-        .rv-confirm-course { align-self: flex-start; background: #eef7ee; color: #27ae60; border: 1px solid #cde8cd; border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
-        .rv-confirm-course:hover { background: #e2f1e2; }
-        .rv-card { border-radius: 12px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.07); border-right: 4px solid #ff9800; transition: opacity 0.3s, transform 0.3s, border-color 0.3s; overflow: hidden; }
-        .rv-card.is-confirmed { border-right-color: #27ae60; }
+        .rv-course-group { margin-bottom: var(--space-5); overflow: hidden; background: var(--color-bg-card); }
+        .rv-course-header { display: flex; align-items: center; gap: var(--space-5); padding: var(--space-5) var(--space-6); cursor: pointer; user-select: none; }
+        .rv-course-name { font-size: var(--text-base); font-weight: var(--weight-black); }
+        .rv-course-status { font-size: var(--text-xs); font-weight: var(--weight-bold); margin-inline-start: auto; }
+        .rv-course-status.ok { color: var(--color-success); }
+        .rv-course-status.warn { color: var(--color-warning); }
+        .rv-course-group .rv-cards { padding: 0 var(--space-6) var(--space-6); }
+        .rv-confirm-course { align-self: flex-start; background: var(--color-success-soft); color: var(--color-success); border: 1px solid var(--color-success); border-radius: var(--radius-sm); padding: var(--space-4) var(--space-5); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; }
+        .rv-confirm-course:hover { background: var(--color-success); color: white; }
+        .rv-card { border-radius: var(--radius-md); background: var(--color-bg-card); border: var(--border-thin); border-inline-start-width: 4px; border-inline-start-color: var(--color-warning); transition: opacity var(--duration-normal), transform var(--duration-normal), border-color var(--duration-normal); overflow: hidden; }
+        .rv-card.is-confirmed { border-inline-start-color: var(--color-success); }
         .rv-card.deleting { opacity: 0; transform: translateX(30px); }
-        .rv-card-top { display: flex; align-items: center; gap: 8px; padding: 11px 14px 5px; flex-direction: row-reverse; }
-        .rv-card-course { font-size: 0.72rem; font-weight: 700; color: #555; display: flex; align-items: center; gap: 5px; flex-direction: row-reverse; direction: rtl; }
+        .rv-card-top { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5) var(--space-6) var(--space-2); flex-direction: row-reverse; }
+        .rv-card-course { font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-secondary); display: flex; align-items: center; gap: 5px; flex-direction: row-reverse; direction: rtl; }
         .rv-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .rv-card-meta { display: flex; align-items: center; gap: 6px; margin-right: auto; }
-        .rv-week-input { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 2px 6px; width: 44px; border: 1px solid transparent; font-family: inherit; text-align: center; flex-shrink: 0; }
-        .rv-week-input:focus { outline: none; border-color: #27ae60; background: white; }
-        .rv-date-badge { font-size: 0.7rem; color: #888; background: #f0f0f0; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
-        .rv-card-desc { padding: 3px 14px 7px; direction: rtl; }
-        .rv-desc-input { width: 100%; border: none; background: transparent; font-family: var(--sans); font-size: 0.92rem; color: #2d3436; direction: rtl; font-weight: 500; padding: 2px 4px; border-radius: 4px; box-sizing: border-box; }
-        .rv-desc-input:focus { outline: 1px solid #27ae60; background: #f8fff8; }
-        .rv-card-warning { padding: 0 14px 7px; font-size: 0.73rem; color: #e65100; direction: rtl; }
-        .rv-card-actions { display: flex; gap: 6px; padding: 8px 14px 11px; border-top: 1px solid #f5f5f5; flex-direction: row-reverse; }
-        .rv-card-btn { font-family: var(--sans); font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.15s; }
-        .rv-card-btn.rv-confirm { background: #e8f5e9; color: #2e7d32; }
-        .rv-card-btn.rv-confirm:hover { background: #27ae60; color: white; }
-        .rv-card-btn.rv-edit { background: #f5f5f5; color: #555; }
-        .rv-card-btn.rv-edit:hover { background: #e0e0e0; }
-        .rv-card-btn.rv-del { background: #ffebee; color: #c62828; }
-        .rv-card-btn.rv-del:hover { background: #d63031; color: white; }
-        .rv-compact-list { display: flex; flex-direction: column; gap: 6px; }
-        .rv-compact-item { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; background: white; border-right: 3px solid #27ae60; font-size: 0.8rem; color: #555; direction: rtl; flex-direction: row-reverse; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .rv-footer { position: sticky; bottom: 0; background: white; padding: 12px 32px 24px; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        .rv-save-count { font-size: 0.82rem; color: #636e72; direction: rtl; white-space: nowrap; }
-        .rv-save-count strong { color: #2d3436; }
-        .rv-actions { display: flex; gap: 8px; }
-        .rv-btn-all { padding: 12px 18px; border-radius: 12px; font-family: var(--sans); font-size: 0.88rem; font-weight: 700; cursor: pointer; border: none; background: #0d0d0d; color: white; transition: background 0.2s; white-space: nowrap; }
-        .rv-btn-all:hover { background: #27ae60; }
-        .rv-btn-confirmed { padding: 12px 16px; border-radius: 12px; font-family: var(--sans); font-size: 0.88rem; font-weight: 700; cursor: pointer; border: 1.5px solid #27ae60; background: white; color: #27ae60; transition: all 0.2s; white-space: nowrap; }
-        .rv-btn-confirmed:hover { background: #27ae60; color: white; }
+        .rv-card-meta { display: flex; align-items: center; gap: var(--space-3); margin-right: auto; }
+        .rv-week-input { font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-bg-secondary); border-radius: var(--radius-sm); padding: 2px 6px; width: 44px; border: 1px solid transparent; font-family: inherit; text-align: center; flex-shrink: 0; }
+        .rv-week-input:focus { outline: none; border-color: var(--color-accent); background: var(--color-bg-card); }
+        .rv-date-badge { font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-bg-secondary); border-radius: var(--radius-sm); padding: 2px 8px; white-space: nowrap; }
+        .rv-card-desc { padding: var(--space-1) var(--space-6) var(--space-4); direction: rtl; }
+        .rv-desc-input { width: 100%; border: none; background: transparent; font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text); direction: rtl; font-weight: var(--weight-medium); padding: 2px 4px; border-radius: var(--radius-sm); box-sizing: border-box; }
+        .rv-desc-input:focus { outline: 1px solid var(--color-accent); background: var(--color-accent-soft); }
+        .rv-card-warning { padding: 0 var(--space-6) var(--space-4); font-size: var(--text-xs); color: var(--color-warning); direction: rtl; }
+        .rv-card-actions { display: flex; gap: var(--space-3); padding: var(--space-4) var(--space-6) var(--space-5); border-top: var(--border-thin); flex-direction: row-reverse; }
+        .rv-card-btn { font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--weight-bold); padding: var(--space-3) var(--space-5); border-radius: var(--radius-sm); border: none; cursor: pointer; transition: all var(--duration-fast); }
+        .rv-card-btn.rv-confirm { background: var(--color-success-soft); color: var(--color-success); }
+        .rv-card-btn.rv-confirm:hover { background: var(--color-success); color: white; }
+        .rv-card-btn.rv-edit { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
+        .rv-card-btn.rv-edit:hover { background: var(--color-border); }
+        .rv-card-btn.rv-del { background: var(--color-error-soft); color: var(--color-error); }
+        .rv-card-btn.rv-del:hover { background: var(--color-error); color: white; }
+        .rv-compact-list { display: flex; flex-direction: column; gap: var(--space-3); }
+        .rv-compact-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); border-radius: var(--radius-sm); background: var(--color-bg-card); border: var(--border-thin); border-inline-start-width: 3px; border-inline-start-color: var(--color-success); font-size: var(--text-sm); color: var(--color-text-secondary); direction: rtl; flex-direction: row-reverse; }
+        .rv-footer { position: sticky; bottom: 0; background: var(--color-bg-card); padding: var(--space-5) var(--space-8) var(--space-7); border-top: var(--border-structural); display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); }
+        .rv-save-count { font-size: var(--text-sm); color: var(--color-text-muted); direction: rtl; white-space: nowrap; }
+        .rv-save-count strong { color: var(--color-text); }
+        .rv-actions { display: flex; gap: var(--space-4); }
+        .rv-btn-all { padding: var(--space-5) var(--space-7); border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-base); font-weight: var(--weight-bold); cursor: pointer; border: none; background: var(--color-text); color: var(--color-text-inverse); white-space: nowrap; }
+        .rv-btn-all:hover { background: var(--color-accent); }
+        .rv-btn-confirmed { padding: var(--space-5) var(--space-6); border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-base); font-weight: var(--weight-bold); cursor: pointer; border: 1.5px solid var(--color-success); background: var(--color-bg-card); color: var(--color-success); white-space: nowrap; }
+        .rv-btn-confirmed:hover { background: var(--color-success); color: white; }
         @media (max-width: 520px) {
           #ob-review { border-radius: 0; max-height: 100vh; }
-          .rv-header, .rv-body, .rv-footer { padding-left: 18px; padding-right: 18px; }
+          .rv-header, .rv-body, .rv-footer { padding-left: var(--space-6); padding-right: var(--space-6); }
         }
 
         /* PAGE SELECTOR */
-        .page-selector { padding: 8px 4px 4px; }
-        .ps-question { font-size: 0.78rem; color: #636e72; margin: 0 0 7px; }
-        .ps-btns { display: flex; gap: 7px; }
-        .btn-ps { padding: 6px 14px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-ps-all { background: #0d0d0d; color: white; }
-        .btn-ps-all:hover { background: #27ae60; }
-        .btn-ps-range { background: #f0f0f0; color: #555; border: 1.5px solid #ddd; }
-        .btn-ps-range:hover { background: #e8f5e9; color: #27ae60; border-color: #27ae60; }
-        .ps-page-count { font-size: 0.72rem; color: #888; background: #f0f0f0; border-radius: 10px; padding: 1px 8px; margin-right: 6px; }
-        .ps-picker { display: none; margin-top: 8px; }
-        .ps-picker-counter { font-size: 0.74rem; color: #636e72; margin-bottom: 6px; }
-        .ps-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
-        .ps-thumb { cursor: pointer; text-align: center; transition: opacity 0.15s; }
-        .ps-thumb canvas { display: block; border-radius: 4px; transition: border 0.15s; }
-        .ps-thumb.selected canvas { border: 3px solid #27ae60; opacity: 1; }
-        .ps-thumb.deselected canvas { border: 3px solid #ddd; opacity: 0.5; }
-        .ps-thumb-label { font-size: 0.68rem; color: #888; margin-top: 3px; }
-        .ps-analyze-btn { margin-top: 9px; }
+        .page-selector { padding: var(--space-4) var(--space-2) var(--space-2); }
+        .ps-question { font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 var(--space-4); }
+        .ps-btns { display: flex; gap: var(--space-4); }
+        .btn-ps { padding: var(--space-3) var(--space-6); border-radius: var(--radius-sm); border: none; font-family: inherit; font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; transition: background var(--duration-normal); }
+        .btn-ps-all { background: var(--color-text); color: var(--color-text-inverse); }
+        .btn-ps-all:hover { background: var(--color-accent); }
+        .btn-ps-range { background: var(--color-bg-secondary); color: var(--color-text-secondary); border: var(--border-thin); }
+        .btn-ps-range:hover { background: var(--color-success-soft); color: var(--color-success); border-color: var(--color-success); }
+        .ps-page-count { font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-bg-secondary); border-radius: var(--radius-pill); padding: 1px 8px; margin-right: 6px; }
+        .ps-picker { display: none; margin-top: var(--space-4); }
+        .ps-picker-counter { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3); }
+        .ps-thumbs { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+        .ps-thumb { cursor: pointer; text-align: center; transition: opacity var(--duration-fast); }
+        .ps-thumb canvas { display: block; border-radius: var(--radius-sm); transition: border var(--duration-fast); }
+        .ps-thumb.selected canvas { border: 3px solid var(--color-success); opacity: 1; }
+        .ps-thumb.deselected canvas { border: 3px solid var(--color-border); opacity: 0.5; }
+        .ps-thumb-label { font-size: 0.68rem; color: var(--color-text-muted); margin-top: var(--space-1); }
+        .ps-analyze-btn { margin-top: var(--space-4); }
 
         /* SETTINGS PANEL */
-        #settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 900; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #settings-overlay { position: fixed; inset: 0; background: var(--color-overlay); z-index: 900; opacity: 0; transition: opacity var(--duration-normal); pointer-events: none; }
         #settings-overlay.open { opacity: 1; pointer-events: auto; }
-        #settings-panel { position: fixed; top: 0; right: 0; height: 100vh; width: 360px; background: #fff; box-shadow: -4px 0 24px rgba(0,0,0,0.14); z-index: 901; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow: hidden; border-radius: 20px 0 0 20px; }
+        #settings-panel { position: fixed; top: 0; right: 0; height: 100vh; width: 360px; background: var(--color-bg-card); box-shadow: var(--shadow-hard-lg); z-index: 901; transform: translateX(100%); transition: transform var(--duration-normal) var(--ease-default); display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
         #settings-panel.open { transform: translateX(0); }
-        .sp-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
-        .sp-title { font-size: 1rem; font-weight: 800; }
-        .sp-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #999; padding: 5px 7px; line-height: 1; border-radius: 6px; }
-        .sp-close:hover { color: #333; background: #f5f5f5; }
-        .sp-body { flex: 1; overflow-y: auto; padding-bottom: 20px; }
-        .sp-section { padding: 18px 20px 10px; }
-        .sp-section-title { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: #bbb; margin-bottom: 12px; }
-        .sp-divider { height: 1px; background: #f0f0f0; margin: 4px 20px; }
-        .sp-course-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
-        .sp-color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; flex-shrink: 0; border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s; }
-        .sp-color-dot:hover { border-color: #333; transform: scale(1.15); }
-        .sp-course-input { flex: 1; border: 1px solid #e8e8e8; border-radius: 8px; padding: 6px 10px; font-family: inherit; font-size: 0.82rem; background: #fafafa; direction: rtl; }
-        .sp-course-input:focus { outline: none; border-color: #27ae60; background: #fff; }
-        .sp-del-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 0.95rem; padding: 2px 4px; flex-shrink: 0; line-height: 1; }
-        .sp-del-btn:hover { color: #d63031; }
-        #sp-color-picker { position: fixed; background: #fff; border-radius: 12px; box-shadow: 0 4px 22px rgba(0,0,0,0.18); padding: 10px; display: none; z-index: 950; flex-wrap: wrap; width: 138px; gap: 7px; }
+        .sp-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-6) var(--space-7) var(--space-5); border-bottom: var(--border-structural); flex-shrink: 0; }
+        .sp-title { font-size: var(--text-md); font-weight: var(--weight-black); }
+        .sp-close { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--color-text-muted); padding: 5px 7px; line-height: 1; border-radius: var(--radius-sm); }
+        .sp-close:hover { color: var(--color-text); background: var(--color-bg-secondary); }
+        .sp-body { flex: 1; overflow-y: auto; padding-bottom: var(--space-7); }
+        .sp-section { padding: var(--space-6) var(--space-7) var(--space-5); }
+        .sp-section-title { font-size: var(--text-xs); font-weight: var(--weight-black); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--color-text-muted); margin-bottom: var(--space-5); }
+        .sp-divider { height: 1px; background: var(--color-border); margin: var(--space-2) var(--space-7); }
+        .sp-course-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; }
+        .sp-color-dot { width: 22px; height: 22px; border-radius: var(--radius-full); cursor: pointer; flex-shrink: 0; border: 2px solid transparent; transition: border-color var(--duration-fast), transform var(--duration-fast); }
+        .sp-color-dot:hover { border-color: var(--color-border-ink); transform: scale(1.15); }
+        .sp-course-input { flex: 1; border: 2px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-4); font-family: var(--font-body); font-size: var(--text-sm); background: var(--color-bg); direction: rtl; transition: border-color var(--duration-fast), box-shadow var(--duration-fast); }
+        .sp-course-input:focus { outline: none; border-color: var(--color-border-ink); background: var(--color-bg-card); box-shadow: var(--shadow-focus); }
+        .sp-del-btn { background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: var(--text-base); padding: 2px 4px; flex-shrink: 0; line-height: 1; transition: color var(--duration-fast); }
+        .sp-del-btn:hover { color: var(--color-error); }
+        #sp-color-picker { position: fixed; background: var(--color-bg-card); border-radius: var(--radius-md); border: var(--border-structural); box-shadow: var(--shadow-hard-md); padding: var(--space-4); display: none; z-index: 950; flex-wrap: wrap; width: 138px; gap: var(--space-3); }
         #sp-color-picker.visible { display: flex; }
-        .sp-swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; transition: transform 0.15s; flex-shrink: 0; }
+        .sp-swatch { width: 22px; height: 22px; border-radius: var(--radius-full); cursor: pointer; transition: transform var(--duration-fast); flex-shrink: 0; border: 2px solid transparent; }
         .sp-swatch:hover { transform: scale(1.25); }
-        .sp-date-row { display: flex; gap: 8px; align-items: center; }
-        .sp-date-input { flex: 1; border: 1px solid #e8e8e8; border-radius: 8px; padding: 7px 10px; font-family: inherit; font-size: 0.82rem; background: #fafafa; }
-        .sp-date-input:focus { outline: none; border-color: #27ae60; }
-        .sp-save-btn { background: #0d0d0d; color: white; border: none; border-radius: 8px; padding: 7px 14px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
-        .sp-save-btn:hover { background: #27ae60; }
-        .sp-lang-toggle { display: flex; background: #f0f0f0; border-radius: 10px; padding: 3px; gap: 2px; }
-        .sp-lang-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-family: inherit; font-size: 0.84rem; font-weight: 700; cursor: pointer; background: none; color: #999; transition: all 0.2s; }
-        .sp-lang-btn.active { background: white; color: #333; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
-        .sp-account-btn { width: 100%; padding: 11px 14px; border-radius: 10px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1.5px solid #e8e8e8; background: #fafafa; color: #333; text-align: right; margin-bottom: 8px; transition: all 0.2s; display: block; }
-        .sp-account-btn:hover { background: #f0f0f0; border-color: #ccc; }
-        .sp-account-btn.danger { background: #fff1f0; border-color: #ffccc7; color: #d63031; }
-        .sp-account-btn.danger:hover { background: #d63031; color: white; border-color: #d63031; }
-        .btn-settings { background: #f0f0f0; color: #555; }
-        .btn-settings:hover { background: #e0e0e0; color: #333; }
+        .sp-swatch.selected { border-color: var(--color-border-ink); box-shadow: 0 0 0 2px var(--color-bg-card), 0 0 0 4px var(--color-border-ink); }
+        .sp-date-row { display: flex; gap: var(--space-3); align-items: center; }
+        .sp-date-input { flex: 1; border: 2px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); font-family: var(--font-body); font-size: var(--text-sm); background: var(--color-bg); transition: border-color var(--duration-fast), box-shadow var(--duration-fast); }
+        .sp-date-input:focus { outline: none; border-color: var(--color-border-ink); box-shadow: var(--shadow-focus); }
+        .sp-save-btn { background: var(--color-border-ink); color: var(--color-bg-card); border: none; border-radius: var(--radius-sm); padding: var(--space-3) var(--space-5); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; white-space: nowrap; transition: background var(--duration-normal); }
+        .sp-save-btn:hover { background: var(--color-accent); }
+        .sp-lang-toggle { display: flex; background: var(--color-bg); border: var(--border-thin); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+        .sp-lang-btn { flex: 1; padding: var(--space-3); border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; background: none; color: var(--color-text-muted); transition: all var(--duration-normal); }
+        .sp-lang-btn.active { background: var(--color-bg-card); color: var(--color-text); border: 2px solid var(--color-border-ink); box-shadow: var(--shadow-hard-sm); }
+        .sp-account-btn { width: 100%; padding: var(--space-4) var(--space-5); border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; border: var(--border-thin); background: var(--color-bg); color: var(--color-text); text-align: right; margin-bottom: var(--space-3); transition: all var(--duration-normal); display: block; }
+        .sp-account-btn:hover { background: var(--color-bg-secondary); border-color: var(--color-border); }
+        .sp-account-btn.danger { background: var(--color-error-soft); border-color: var(--color-error); color: var(--color-error); }
+        .sp-account-btn.danger:hover { background: var(--color-error); color: var(--color-bg-card); border-color: var(--color-error); }
+        .btn-settings { background: var(--color-bg); color: var(--color-text-muted); border: var(--border-thin); }
+        .btn-settings:hover { background: var(--color-bg-secondary); color: var(--color-text); }
 
         /* ── FEEDBACK ── */
-        #feedback-btn { position: fixed; bottom: 24px; left: 24px; z-index: 800; background: #27ae60; color: white; border: none; border-radius: 100px; padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(39,174,96,0.4); transition: background 0.2s, transform 0.15s; display: flex; align-items: center; gap: 7px; }
-        #feedback-btn:hover { background: #219a52; transform: translateY(-2px); }
-        #feedback-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 900; display: none; align-items: center; justify-content: center; padding: 20px; }
+        #feedback-btn { position: fixed; bottom: 24px; left: 24px; z-index: 800; background: var(--color-accent); color: var(--color-bg-card); border: none; border-radius: var(--radius-full); padding: var(--space-4) var(--space-6); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; transition: background var(--duration-normal), transform var(--duration-fast); display: flex; align-items: center; gap: var(--space-3); }
+        #feedback-btn:hover { background: var(--color-accent-text); }
+        #feedback-overlay { position: fixed; inset: 0; background: var(--color-overlay); z-index: 900; display: none; align-items: center; justify-content: center; padding: var(--space-7); }
         #feedback-overlay.open { display: flex; }
-        #feedback-modal { background: #fff; border-radius: 20px; padding: 32px 28px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: feedbackIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+        #feedback-modal { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-heavy); box-shadow: var(--shadow-hard-accent); padding: var(--space-9) var(--space-8); width: 100%; max-width: 420px; animation: feedbackIn var(--duration-normal) var(--ease-bounce); }
         @keyframes feedbackIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:none; } }
-        #feedback-modal h3 { font-size: 1.15rem; font-weight: 900; margin-bottom: 6px; }
-        #feedback-modal .fb-sub { font-size: 0.82rem; color: #636e72; margin-bottom: 20px; }
-        .fb-stars { display: flex; gap: 4px; margin-bottom: 6px; direction: ltr; justify-content: flex-start; }
-        .fb-star { font-size: 1.8rem; cursor: pointer; color: #ddd; transition: color 0.1s; line-height: 1; user-select: none; }
-        .fb-star.filled { color: #f39c12; }
-        .fb-rating-label { font-size: 0.78rem; color: #888; margin-bottom: 14px; min-height: 1.2em; }
-        #feedback-text { width: 100%; padding: 11px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-family: inherit; font-size: 0.88rem; resize: vertical; min-height: 90px; direction: rtl; transition: border-color 0.2s; }
-        #feedback-text:focus { outline: none; border-color: #27ae60; }
-        .fb-actions { display: flex; gap: 8px; margin-top: 14px; }
-        .fb-submit { flex: 1; background: #27ae60; color: white; border: none; padding: 11px; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .fb-submit:hover { background: #219a52; }
-        .fb-submit:disabled { background: #ccc; cursor: not-allowed; }
-        .fb-cancel { background: #f0f0f0; color: #555; border: none; padding: 11px 16px; border-radius: 10px; font-family: inherit; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
-        .fb-cancel:hover { background: #e0e0e0; }
-        #feedback-success { display: none; text-align: center; padding: 12px 0 4px; }
-        #feedback-success .fb-ok { font-size: 2.4rem; margin-bottom: 10px; }
-        #feedback-success h4 { font-size: 1.05rem; font-weight: 900; margin-bottom: 6px; }
-        #feedback-success p { font-size: 0.82rem; color: #636e72; }
+        #feedback-modal h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-black); margin-bottom: var(--space-2); }
+        #feedback-modal .fb-sub { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-7); }
+        .fb-stars { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); direction: ltr; justify-content: flex-start; }
+        .fb-star { font-size: 1.8rem; cursor: pointer; color: var(--color-border); transition: color var(--duration-instant); line-height: 1; user-select: none; }
+        .fb-star.filled { color: var(--color-warning); }
+        .fb-rating-label { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-5); min-height: 1.2em; }
+        #feedback-text { width: 100%; padding: var(--space-4) var(--space-5); border: 2px solid var(--color-border-ink); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-base); resize: vertical; min-height: 90px; direction: rtl; transition: border-color var(--duration-fast), box-shadow var(--duration-fast); }
+        #feedback-text:focus { outline: none; box-shadow: var(--shadow-focus); }
+        .fb-actions { display: flex; gap: var(--space-3); margin-top: var(--space-5); }
+        .fb-submit { flex: 1; background: var(--color-accent); color: var(--color-bg-card); border: none; padding: var(--space-4); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-base); font-weight: var(--weight-bold); cursor: pointer; transition: background var(--duration-normal); }
+        .fb-submit:hover { background: var(--color-accent-text); }
+        .fb-submit:disabled { background: var(--color-border); cursor: not-allowed; }
+        .fb-cancel { background: var(--color-bg); color: var(--color-text-muted); border: var(--border-thin); padding: var(--space-4) var(--space-6); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-base); cursor: pointer; transition: all var(--duration-normal); }
+        .fb-cancel:hover { background: var(--color-bg-secondary); color: var(--color-text); }
+        #feedback-success { display: none; text-align: center; padding: var(--space-5) 0 var(--space-2); }
+        #feedback-success .fb-ok { font-size: 2.4rem; margin-bottom: var(--space-4); }
+        #feedback-success h4 { font-family: var(--font-display); font-size: var(--text-md); font-weight: var(--weight-black); margin-bottom: var(--space-2); }
+        #feedback-success p { font-size: var(--text-sm); color: var(--color-text-muted); }
+
+        /* ── ADD EVENT MODAL ── */
+        .add-event-overlay { position: fixed; inset: 0; background: var(--color-overlay); z-index: 900; display: none; align-items: center; justify-content: center; padding: var(--space-7); }
+        .add-event-overlay.open { display: flex; }
+        .add-event-modal { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-heavy); box-shadow: var(--shadow-hard-accent); padding: 0; width: 100%; max-width: 460px; animation: feedbackIn var(--duration-normal) var(--ease-bounce); }
+        .add-event-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-6) var(--space-7); border-bottom: var(--border-thin); }
+        .add-event-header h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-black); margin: 0; }
+        .add-event-close { background: none; border: none; font-size: var(--text-xl); cursor: pointer; color: var(--color-text-muted); line-height: 1; padding: var(--space-2); }
+        .add-event-close:hover { color: var(--color-text); }
+        .add-event-body { padding: var(--space-7); display: flex; flex-direction: column; gap: var(--space-6); }
+        .add-event-field { display: flex; flex-direction: column; gap: var(--space-2); }
+        .add-event-field label { font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+        .add-event-input { padding: var(--space-3) var(--space-4); border: 2px solid var(--color-border-ink); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-base); background: var(--color-bg-card); transition: box-shadow var(--duration-fast); }
+        .add-event-input:focus { outline: none; box-shadow: var(--shadow-focus); }
+        .add-event-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+        .add-event-chip { padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); border: var(--border-thin); font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; transition: all var(--duration-fast); background: var(--color-bg); color: var(--color-text-muted); }
+        .add-event-chip.selected { border: 2px solid var(--color-border-ink); color: var(--color-bg-card); }
+        .add-event-footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-5) var(--space-7); border-top: var(--border-thin); }
+        .add-event-cancel { background: var(--color-bg); color: var(--color-text-muted); border: var(--border-thin); padding: var(--space-3) var(--space-6); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; transition: all var(--duration-fast); }
+        .add-event-cancel:hover { background: var(--color-bg-secondary); color: var(--color-text); }
+        .add-event-submit { background: var(--color-accent); color: var(--color-bg-card); border: var(--border-structural); padding: var(--space-3) var(--space-7); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; box-shadow: var(--shadow-press-rest); transition: transform var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-normal); }
+        .add-event-submit:hover { transform: var(--press-translate); box-shadow: var(--shadow-press-hover); background: var(--color-accent-text); }
 
         /* ── VIEW SWITCHER ── */
-        .view-switcher { display: flex; gap: 2px; background: #f0f0f0; border-radius: 10px; padding: 3px; }
-        .view-btn { background: none; border: none; padding: 5px 12px; border-radius: 8px; font-family: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; color: #888; transition: all 0.18s; white-space: nowrap; }
-        .view-btn.active { background: white; color: #e8522a; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
-        .view-btn:hover:not(.active) { color: #555; }
+        .view-switcher { display: flex; gap: 0; background: var(--color-bg); border: var(--border-structural); border-radius: var(--radius-md); padding: 4px; }
+        .view-btn { background: none; border: none; padding: var(--space-3) var(--space-6); border-radius: 9px; font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; color: var(--color-text-muted); transition: all var(--duration-normal) var(--ease-default); white-space: nowrap; }
+        .view-btn.active { background: var(--color-bg-card); color: var(--color-text); border: 2px solid var(--color-border-ink); box-shadow: var(--shadow-hard-sm); }
+        .view-btn:hover:not(.active) { color: var(--color-text-secondary); }
 
         /* ── TIMELINE VIEW ── */
-        #view-list { width: 100%; max-width: 1400px; }
+        #view-list { width: 100%; max-width: var(--max-width-wide); }
         #view-list.view-hidden { display: none; }
-        #view-timeline { display: none; width: 100%; max-width: 900px; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 24px 32px; }
+        #view-timeline { display: none; width: 100%; max-width: var(--max-width-wide); background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); padding: var(--space-7) var(--space-8); }
         #view-timeline.view-visible { display: block; }
-        .tl-month-header { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; padding: 20px 0 8px; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
+        .tl-month-header { font-family: var(--font-display); font-size: var(--text-xs); font-weight: var(--weight-black); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--color-text-muted); padding: var(--space-7) 0 var(--space-4); border-bottom: var(--border-thin); margin-bottom: var(--space-2); }
         .tl-month-header:first-child { padding-top: 0; }
-        .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 11px 10px; border-radius: 8px; margin-bottom: 2px; transition: background 0.15s; }
-        .tl-item:hover { background: #fafafa; }
-        .tl-date-col { min-width: 72px; text-align: right; font-size: 0.75rem; color: #888; line-height: 1.5; flex-shrink: 0; }
-        .tl-date-col strong { display: block; font-size: 0.82rem; color: #444; font-weight: 700; }
-        .tl-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .tl-item { display: flex; align-items: flex-start; gap: var(--space-6); padding: var(--space-5) var(--space-5); border-radius: var(--radius-sm); margin-bottom: var(--space-1); transition: background var(--duration-fast); cursor: pointer; }
+        .tl-item:hover { background: var(--color-bg-secondary); }
+        .tl-date-col { min-width: 72px; text-align: right; font-size: var(--text-xs); color: var(--color-text-muted); line-height: var(--leading-normal); flex-shrink: 0; }
+        .tl-date-col strong { display: block; font-size: var(--text-sm); color: var(--color-text-secondary); font-weight: var(--weight-bold); }
+        .tl-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; border: 1px solid var(--color-border-ink); }
         .tl-body { flex: 1; }
-        .tl-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 3px; }
-        .tl-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-        .tl-course-name { font-size: 0.7rem; color: #888; }
-        .tl-item.tl-past { opacity: 0.4; }
-        .tl-item.tl-urgent { background: #fff5f5; }
-        .tl-item.tl-soon { background: #fffbf0; }
-        .tl-days-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; white-space: nowrap; }
-        .tl-days-past  { background: #f0f0f0; color: #bbb; }
-        .tl-days-urgent { background: #ffebee; color: #c62828; }
-        .tl-days-soon  { background: #fff3e0; color: #e65100; }
-        .tl-days-ok    { background: #e8f5e9; color: #2e7d32; }
+        .tl-title { font-size: var(--text-base); font-weight: var(--weight-bold); margin-bottom: var(--space-1); }
+        .tl-meta { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+        .tl-course-name { font-size: var(--text-xs); color: var(--color-text-muted); }
+        .tl-item.tl-past { opacity: 0.35; }
+        .tl-item.tl-urgent { background: var(--color-error-soft); }
+        .tl-item.tl-soon { background: var(--color-warning-soft); }
+        .tl-days-badge { font-size: 0.65rem; font-weight: var(--weight-bold); padding: 2px 7px; border-radius: var(--radius-sm); white-space: nowrap; }
+        .tl-days-past  { background: var(--color-bg-secondary); color: var(--color-text-muted); }
+        .tl-days-urgent { background: var(--color-error-soft); color: var(--color-error); }
+        .tl-days-soon  { background: var(--color-warning-soft); color: var(--color-warning); }
+        .tl-days-ok    { background: var(--color-success-soft); color: var(--color-success); }
 
         /* ── WORKLOAD VIEW ── */
-        #view-workload { display: none; width: 100%; max-width: 1000px; }
+        #view-workload { display: none; width: 100%; max-width: var(--max-width-wide); }
         #view-workload.view-visible { display: block; }
-        .wl-card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 24px; }
-        .wl-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 14px; color: #333; }
+        .wl-card { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); padding: var(--space-7); }
+        .wl-title { font-family: var(--font-display); font-size: var(--text-md); font-weight: var(--weight-black); margin-bottom: var(--space-6); color: var(--color-text); }
         #workload-canvas { max-height: 380px; }
-        .wl-filter { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; direction: rtl; }
-        .wl-filter-label { font-size: 0.78rem; color: #999; font-weight: 700; white-space: nowrap; }
-        .wl-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; border: 1.5px solid #ddd; background: white; font-family: var(--sans); font-size: 0.73rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #999; }
-        .wl-pill.active { opacity: 1; }
+        .wl-filter { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-6); direction: rtl; }
+        .wl-filter-label { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: var(--weight-bold); white-space: nowrap; }
+        .wl-pill { display: inline-flex; align-items: center; gap: 5px; padding: var(--space-2) var(--space-5); border-radius: 20px; border: var(--border-thin); background: var(--color-bg-card); font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; transition: all var(--duration-fast); color: var(--color-text-muted); }
+        .wl-pill.active { border: var(--border-structural); box-shadow: var(--shadow-hard-sm); color: var(--color-text); opacity: 1; }
         .wl-pill:not(.active) { opacity: 0.45; filter: grayscale(0.4); }
         .wl-pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .wl-empty { text-align: center; color: #bbb; padding: 60px 20px; font-size: 0.88rem; }
+        .wl-empty { text-align: center; color: var(--color-text-muted); padding: var(--space-10) var(--space-7); font-size: var(--text-base); }
 
-        /* ═══════════ BRUTALIST LAYER ═══════════ */
-        .ob-card { border: 3px solid var(--text); border-radius: 18px; box-shadow: 12px 12px 0 #e8522a; }
-        .drop-zone { border: 2.5px dashed var(--text); border-radius: 12px; }
-        .drop-zone:hover, .drop-zone.drag-over { border-color: var(--syllabus); box-shadow: 5px 5px 0 rgba(39,174,96,0.35); }
-        #ob-review, #settings-panel { border: 3px solid var(--text); }
-        .rv-course-group { border: 2.5px solid var(--text); border-radius: 12px; box-shadow: 5px 5px 0 rgba(43,38,34,0.12); }
-        .rv-card { border: 2px solid var(--text); border-inline-start-width: 5px; border-radius: 10px; box-shadow: 4px 4px 0 rgba(43,38,34,0.10); }
-        .rv-compact-item { border: 1.5px solid var(--text); border-inline-start-width: 4px; border-radius: 8px; }
-        /* buttons: hard offset + press */
+        /* ── Integrated Brutalism (selective) ── */
+        .ob-card { border: var(--border-heavy); border-radius: var(--radius-lg); box-shadow: var(--shadow-hard-accent); }
+        .drop-zone { border: 2.5px dashed var(--color-border-ink); border-radius: var(--radius-md); }
+        .drop-zone:hover, .drop-zone.drag-over { border-color: var(--color-success); box-shadow: var(--shadow-hard-sm); }
+        #ob-review { border: var(--border-heavy); }
+        #settings-panel { border-inline-start: var(--border-heavy); }
+        .rv-course-group { border: var(--border-structural); border-radius: var(--radius-md); box-shadow: var(--shadow-hard-sm); }
+        .rv-card { border: var(--border-thin); border-inline-start-width: 4px; border-radius: 10px; }
+        .rv-compact-item { border: var(--border-thin); border-inline-start-width: 3px; border-radius: var(--radius-sm); }
+        /* buttons: press effect */
         .rv-btn-all, .rv-btn-confirmed, .rv-confirm-course, .sp-save-btn, .fb-submit, #feedback-btn, .ob-cta, .add-btn {
-            border: 2.5px solid var(--text); border-radius: 10px; box-shadow: 3px 3px 0 var(--text);
-            transition: transform 0.12s, box-shadow 0.12s;
+            border: var(--border-structural); border-radius: 10px; box-shadow: var(--shadow-press-rest);
+            transition: transform var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-normal);
         }
         .rv-btn-all:hover, .rv-btn-confirmed:hover, .rv-confirm-course:hover, .sp-save-btn:hover, .fb-submit:hover, #feedback-btn:hover, .ob-cta:hover, .add-btn:hover {
-            transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--text);
+            transform: var(--press-translate); box-shadow: var(--shadow-press-hover);
         }
-        #feedback-btn { box-shadow: 4px 4px 0 var(--text); }
+        #feedback-btn { box-shadow: var(--shadow-hard-md); }
         /* inputs */
         .file-course-input, .rv-desc-input, .rv-week-input, #feedback-text, .sp-date-input, .sp-semester-date, #sp-semester-date {
-            border: 2px solid var(--text) !important; border-radius: 8px;
+            border: 2px solid var(--color-border-ink) !important; border-radius: var(--radius-sm);
         }
-        /* loud badges */
-        .badge { border: 1.5px solid var(--text); font-weight: 800; border-radius: 6px; }
+        .file-course-input:focus, .rv-desc-input:focus, .rv-week-input:focus, #feedback-text:focus, .sp-date-input:focus, .sp-semester-date:focus, #sp-semester-date:focus {
+            box-shadow: var(--shadow-focus); outline: none;
+        }
+        /* badges */
+        .badge { border: var(--border-thin); font-weight: var(--weight-black); border-radius: var(--radius-sm); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .top-bar { padding: var(--space-4) var(--space-5); flex-wrap: wrap; gap: var(--space-3); }
+            .user-bar { gap: var(--space-2); }
+            .user-name { display: none; }
+            .container { padding: 0 var(--space-4); }
+            .focus-header { padding: var(--space-5); }
+            .focus-item { padding: var(--space-4) var(--space-5); }
+            .focus-add-row { padding: var(--space-3) var(--space-5); }
+            .focus-course-label { padding: var(--space-2) var(--space-5); }
+            #settings-panel { width: 100%; border-radius: 0; }
+            .add-event-modal { max-width: 100%; border-radius: var(--radius-md); margin: var(--space-4); }
+            #view-timeline { padding: var(--space-5); }
+            .wl-card { padding: var(--space-5); }
+            .wl-pill { padding: var(--space-2) var(--space-4); min-height: 44px; display: inline-flex; align-items: center; }
+        }
+        @media (max-width: 375px) {
+            .top-bar { padding: var(--space-3) var(--space-4); }
+            .view-switcher { width: 100%; justify-content: center; }
+            .view-btn { padding: var(--space-3) var(--space-4); font-size: var(--text-xs); }
+            .btn-sm { padding: var(--space-2) var(--space-3); font-size: var(--text-xs); }
+            .btn-add-event { display: none; }
+            .focus-header { font-size: var(--text-base); }
+            .focus-item { font-size: var(--text-xs); gap: var(--space-3); }
+            .add-event-overlay { padding: var(--space-3); }
+            .add-event-modal { margin: 0; border-radius: var(--radius-md); }
+            .add-event-body { padding: var(--space-5); gap: var(--space-4); }
+            #ob-review { border-radius: 0; }
+            .rv-header, .rv-body, .rv-footer { padding-left: var(--space-4); padding-right: var(--space-4); }
+            .tl-item { gap: var(--space-3); padding: var(--space-4) var(--space-3); }
+            .tl-date-col { min-width: 56px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 </head>
 <body>
@@ -393,10 +611,10 @@
 
 <!-- SETTINGS OVERLAY + PANEL -->
 <div id="settings-overlay" onclick="closeSettings()"></div>
-<div id="settings-panel">
+<div id="settings-panel" role="dialog" aria-labelledby="sp-title-id">
     <div class="sp-header">
-        <span class="sp-title">⚙️ הגדרות</span>
-        <button class="sp-close" onclick="closeSettings()">✕</button>
+        <span class="sp-title" id="sp-title-id">⚙️ הגדרות</span>
+        <button class="sp-close" onclick="closeSettings()" aria-label="Close settings">✕</button>
     </div>
     <div class="sp-body">
         <div class="sp-section">
@@ -427,10 +645,65 @@
             <div style="font-size:0.72rem;color:#888;margin-top:6px">הוסף ל-Google/Apple Calendar כדי לקבל עדכונים אוטומטית, כולל תזכורת יום לפני כל מבחן</div>
         </div>
         <div class="sp-divider"></div>
+        <div class="sp-section" id="sp-ical-section">
+            <div class="sp-section-title" style="display:flex;align-items:center;gap:8px">
+                סנכרון אוטומטי
+                <span id="sp-sync-badge" class="sync-badge"></span>
+            </div>
+            <p style="font-size:0.72rem;color:#888;margin:0 0 10px">חבר את יומני המוסד שלך כדי שהמשימות והבחינות יתעדכנו אוטומטית</p>
+            <div id="sp-ical-connected" style="display:none">
+                <div class="sp-ical-status" id="sp-ical-status-text"></div>
+                <button class="sp-save-btn" style="width:100%;margin-top:8px;background:#c0392b" onclick="disconnectIcal()">נתק סנכרון</button>
+            </div>
+            <div id="sp-ical-setup">
+                <button class="sp-save-btn" style="width:100%;background:#27ae60" onclick="openIcalOnboarding()">+ חבר יומנים</button>
+            </div>
+        </div>
+        <div class="sp-divider"></div>
         <div class="sp-section">
             <div class="sp-section-title">חשבון</div>
             <button class="sp-account-btn danger" onclick="deleteAccount()">🗑️ מחק חשבון</button>
         </div>
+    </div>
+</div>
+
+<!-- iCal Onboarding Modal -->
+<div id="ical-modal" style="display:none;position:fixed;inset:0;background:rgba(27,23,20,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;max-width:480px;width:90%;max-height:85vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+        <button onclick="closeIcalModal()" style="position:absolute;top:12px;left:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#666">✕</button>
+        <h2 style="margin:0 0 6px;font-family:var(--font-display);font-size:1.4rem">חיבור יומנים אוטומטי</h2>
+        <p style="color:#666;font-size:0.82rem;margin:0 0 20px">עקוב אחרי ההוראות כדי למצוא את כתובת ה-iCal שלך</p>
+
+        <!-- Step 1: Moodle -->
+        <div id="ical-step-moodle" class="ical-step">
+            <div style="background:#f0f7ff;border-radius:10px;padding:14px;margin-bottom:14px">
+                <div style="font-weight:600;margin-bottom:6px">Moodle — מטלות ודדליינים</div>
+                <ol style="font-size:0.8rem;color:#444;margin:0;padding-inline-start:18px;line-height:1.7">
+                    <li>היכנס ל-<strong>moodle.runi.ac.il</strong></li>
+                    <li>לחץ על <strong>לוח שנה</strong> (Calendar) בתפריט</li>
+                    <li>לחץ <strong>ייצוא לוח שנה</strong> (Export calendar)</li>
+                    <li>בחר "כל האירועים" ולחץ <strong>קבל כתובת URL</strong></li>
+                    <li>העתק את הכתובת שמתחילה ב-<code>https://moodle.runi.ac.il</code></li>
+                </ol>
+            </div>
+            <input type="url" id="ical-moodle-url" placeholder="https://moodle.runi.ac.il/2026/calendar/export.php?..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:12px;box-sizing:border-box">
+        </div>
+
+        <!-- Step 2: Yedion -->
+        <div id="ical-step-yedion" class="ical-step">
+            <div style="background:#f0fff4;border-radius:10px;padding:14px;margin-bottom:14px">
+                <div style="font-weight:600;margin-bottom:6px">Yedion — מערכת שעות ומבחנים</div>
+                <ol style="font-size:0.8rem;color:#444;margin:0;padding-inline-start:18px;line-height:1.7">
+                    <li>היכנס ל-<strong>yedion.runi.ac.il</strong></li>
+                    <li>בדף הבית, לחץ על <strong>הוסף ליומן Google</strong> או <strong>ייצוא iCal</strong></li>
+                    <li>העתק את כתובת ה-URL שמופיעה (מתחילה ב-<code>https://yedion.runi.ac.il</code>)</li>
+                </ol>
+            </div>
+            <input type="url" id="ical-yedion-url" placeholder="https://yedion.runi.ac.il/yedion/..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:12px;box-sizing:border-box">
+        </div>
+
+        <p style="font-size:0.72rem;color:#999;margin:0 0 16px">לא חובה למלא את שניהם — גם אחד עובד</p>
+        <button id="ical-save-btn" onclick="saveIcalCredentials()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">שמור וחבר</button>
     </div>
 </div>
 <div id="sp-color-picker"></div>
@@ -475,14 +748,18 @@
             <div class="ob-step-label" id="ob-semester-step-label">Setup · Semester dates</div>
             <h2 class="ob-title" id="ob-semester-title" style="font-size:1.4rem;margin-bottom:8px">מתי מתחיל הסמסטר שלך?</h2>
             <p class="ob-sub" id="ob-semester-sub" style="margin-bottom:24px">זה יעזור לנו לשייך את המשימות לשבועות הנכונים</p>
-            <input type="date" id="ob-semester-date" value="2026-03-15" style="width:100%;border:1.5px solid #e8e8e8;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:1rem;margin-bottom:20px;box-sizing:border-box;text-align:center">
+            <input type="date" id="ob-semester-date" value="2026-03-15" style="width:100%;border:1.5px solid #e8e8e8;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:1rem;margin-bottom:16px;box-sizing:border-box;text-align:center">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:#555;margin-bottom:20px;cursor:pointer;justify-content:center">
+                <input type="checkbox" id="ob-adhd-check" style="width:16px;height:16px;cursor:pointer">
+                <span>יש לי קשיי ריכוז / ADHD (זה יעזור לנו להתאים את החוויה)</span>
+            </label>
             <button id="ob-semester-btn" onclick="obSemesterNext()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">המשך</button>
         </div>
 
         <!-- Step 3: Analysis UI (progress + per-file status) -->
         <div id="ob-analysis">
             <div class="file-list" id="ob-file-list"></div>
-            <div class="progress-wrap" id="ob-progress-wrap">
+            <div class="progress-wrap" id="ob-progress-wrap" aria-live="polite">
                 <p class="ob-sequential-note" id="ob-sequential-note"></p>
                 <div class="ob-current-course" id="ob-current-course"></div>
                 <div class="progress-meta">
@@ -510,8 +787,7 @@
         <div class="rv-footer">
             <div class="rv-save-count" id="rv-counter"></div>
             <div class="rv-actions">
-                <button class="rv-btn-confirmed" id="rv-btn-confirmed" onclick="confirmReview('confirmed')">שמור תקינים בלבד</button>
-                <button class="rv-btn-all" id="rv-btn-all" onclick="confirmReview('all')">שמור הכל ✓</button>
+                <button class="rv-btn-all" id="rv-btn-all" onclick="confirmReview('all')" data-i18n="rvSaveAll">שמור הכל ✓</button>
             </div>
         </div>
     </div>
@@ -520,99 +796,111 @@
 <!-- DASHBOARD -->
 <div id="dashboard">
     <div class="top-bar">
-        <h1>My Academic Dashboard</h1>
-        <div class="view-switcher">
-            <button class="view-btn active" id="vb-list"     onclick="switchView('list')">📋 רשימה</button>
-            <button class="view-btn"        id="vb-timeline" onclick="switchView('timeline')">⏱️ ציר זמן</button>
-            <button class="view-btn"        id="vb-workload" onclick="switchView('workload')">📊 עומס</button>
+        <a href="index.html" class="top-bar-logo">Sylla<span>Bot</span></a>
+        <div class="view-switcher" role="tablist">
+            <button class="view-btn active" id="vb-list"     role="tab" aria-selected="true"  aria-controls="view-list"     onclick="switchView('list')" data-i18n="vbList">מיקוד</button>
+            <button class="view-btn"        id="vb-timeline" role="tab" aria-selected="false" aria-controls="view-timeline" onclick="switchView('timeline')" data-i18n="vbTimeline">ציר זמן</button>
+            <button class="view-btn"        id="vb-workload" role="tab" aria-selected="false" aria-controls="view-workload" onclick="switchView('workload')" data-i18n="vbWorkload">עומס</button>
         </div>
         <div id="date-display"></div>
         <div class="user-bar">
             <span class="sync-dot" id="sync-dot"></span>
             <span class="user-name" id="user-name">...</span>
+            <button class="btn-sm btn-add-event" onclick="openAddEvent()" data-i18n="addEventTitle">+ הוסף אירוע</button>
             <button class="btn-sm btn-add-course" onclick="showOnboarding()">+ Add course</button>
             <button class="btn-sm btn-settings" onclick="openSettings()">⚙️</button>
             <button class="btn-sm btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
-    <div class="container" id="view-list">
-        <div class="box">
-            <div class="header h-exams">Exams & Deadlines</div>
-            <div class="inputs">
-                <input type="text" id="exT" placeholder="Event name">
-                <input type="datetime-local" id="exD">
-                <select id="exTag" style="flex:0.6" onchange="onExTagChange()">
-                    <option value="מבחן">Exam</option>
-                    <option value="מועד-ב">Moed B</option>
-                    <option value="מטלה">Assignment</option>
-                    <option value="פרזנטציה">Presentation</option>
-                    <option value="__other__">אחר (הזן בעצמך)</option>
-                </select>
-                <input type="text" id="exCustomTag" placeholder="תג מותאם..." style="display:none;flex:0.5;min-width:80px">
-                <button class="btn-add" onclick="addEx()">+</button>
+    <div class="container" id="view-list" role="tabpanel" aria-labelledby="vb-list">
+        <!-- Upcoming Deadlines -->
+        <div class="focus-section" id="focus-deadlines">
+            <div class="focus-header">
+                <span data-i18n="focusDeadlines">דדליינים קרובים</span>
             </div>
             <div id="exList"></div>
-        </div>
-        <div class="box">
-            <div class="header h-tasks">Current Tasks</div>
-            <div class="inputs">
-                <input type="text" id="tkT" placeholder="New task...">
-                <button class="btn-add" onclick="addTask()">+</button>
+            <div class="focus-add-row" id="add-row-deadline" onclick="focusAddRowActivate(this, 'deadline')">
+                <span class="plus">+</span>
+                <span data-i18n="focusAddDeadline">הוסף אירוע</span>
             </div>
-            <div id="tkList"></div>
         </div>
-        <div class="box">
-            <div class="header h-syllabus">
-                <button class="nav-btn" onclick="changeWeek(-1)">›</button>
-                <span id="week-title">Week 1</span>
-                <div style="display:flex;align-items:center;gap:6px">
-                    <button class="syl-add-toggle" id="syl-add-toggle" onclick="toggleSylInputs()" title="הוסף פריט">+</button>
+        <!-- This Week -->
+        <div class="focus-section" id="focus-week">
+            <div class="focus-header">
+                <div class="focus-header-left">
+                    <button class="nav-btn" onclick="changeWeek(-1)">›</button>
+                    <span id="week-title">שבוע 1</span>
                     <button class="nav-btn" onclick="changeWeek(1)">‹</button>
                 </div>
-            </div>
-            <div class="syl-inputs" id="syl-inputs">
-                <div class="syl-row">
-                    <select id="sylCourse" style="flex:1.5"></select>
-                    <select id="sylType" style="flex:1" onchange="onSylTypeChange()">
-                        <option value="שיעור">שיעור</option>
-                        <option value="תרגול">תרגול</option>
-                        <option value="קריאה">קריאה</option>
-                        <option value="מטלה">מטלה</option>
-                        <option value="בוחן">בוחן</option>
-                        <option value="צפייה">צפייה</option>
-                        <option value="סרטון">סרטון</option>
-                        <option value="__other__" id="sylTypeOtherOpt">אחר...</option>
-                    </select>
+                <div class="focus-header-right">
+                    <span class="focus-progress" id="week-progress" aria-live="polite"></span>
                 </div>
-                <div class="syl-row">
-                    <input type="text" id="sylTxt" placeholder="תיאור...">
-                    <label id="sylWeekLabel" style="display:flex;align-items:center;gap:4px;font-size:0.8rem;color:#636e72;flex-shrink:0;white-space:nowrap">
-                        <span id="sylWeekLabelText">שבוע</span>
-                        <input type="number" id="sylWeek" min="1" style="width:48px;flex:none">
-                    </label>
-                </div>
-                <div class="syl-row" id="sylNewCourseRow" style="display:none">
-                    <input type="text" id="sylNewCourse" placeholder="שם קורס חדש...">
-                </div>
-                <div id="sylCustomTypeRow" style="display:none">
-                    <input type="text" id="sylCustomType" placeholder="סוג מותאם..." style="width:100%">
-                </div>
-                <button class="syl-add-btn" id="syl-add-btn" onclick="addSylItem()">+ הוסף</button>
             </div>
             <div id="syllabus-content"></div>
+            <div class="focus-add-row" id="add-row-syllabus" onclick="focusAddRowActivate(this, 'syllabus')">
+                <span class="plus">+</span>
+                <span data-i18n="focusAddItem">הוסף פריט</span>
+            </div>
+        </div>
+        <!-- Tasks -->
+        <div class="focus-section" id="focus-tasks">
+            <div class="focus-header">
+                <span data-i18n="focusTasks">משימות</span>
+            </div>
+            <div id="tkList"></div>
+            <div class="focus-add-row" id="add-row-task" onclick="focusAddRowActivate(this, 'task')">
+                <span class="plus">+</span>
+                <span data-i18n="focusAddTask">הוסף משימה</span>
+            </div>
         </div>
     </div>
 
     <!-- TIMELINE VIEW -->
-    <div id="view-timeline"></div>
+    <div id="view-timeline" role="tabpanel" aria-labelledby="vb-timeline"></div>
 
     <!-- WORKLOAD VIEW -->
-    <div id="view-workload">
+    <div id="view-workload" role="tabpanel" aria-labelledby="vb-workload">
         <div class="wl-card">
-            <div class="wl-title">📊 עומס לפי שבוע</div>
+            <div class="wl-title" data-i18n="wlTitle">עומס לפי שבוע</div>
             <div class="wl-filter" id="wl-filter"></div>
             <div id="wl-empty" class="wl-empty" style="display:none">אין נתונים להצגה. העלה סילבוס כדי לראות את עומס העבודה שלך.</div>
             <canvas id="workload-canvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div id="add-event-overlay" class="add-event-overlay" onclick="if(event.target===this)closeAddEvent()">
+    <div id="add-event-modal" class="add-event-modal" role="dialog" aria-labelledby="add-event-title">
+        <div class="add-event-header">
+            <h3 id="add-event-title" data-i18n="addEventTitle">הוסף אירוע</h3>
+            <button class="add-event-close" onclick="closeAddEvent()" aria-label="Close">×</button>
+        </div>
+        <div class="add-event-body">
+            <div class="add-event-field">
+                <label for="ae-desc" data-i18n="addEventDesc">תיאור</label>
+                <input type="text" id="ae-desc" class="add-event-input" data-i18n-ph="addEventDescPh">
+            </div>
+            <div class="add-event-field">
+                <label for="ae-course" data-i18n="addEventCourse">קורס</label>
+                <select id="ae-course" class="add-event-input"></select>
+            </div>
+            <div class="add-event-field">
+                <label data-i18n="addEventType">סוג</label>
+                <div class="add-event-chips" id="ae-type-chips"></div>
+            </div>
+            <div class="add-event-field">
+                <label for="ae-date" data-i18n="addEventDate">תאריך</label>
+                <input type="datetime-local" id="ae-date" class="add-event-input">
+            </div>
+            <div class="add-event-field">
+                <label for="ae-week" data-i18n="addEventWeek">שבוע</label>
+                <input type="number" id="ae-week" class="add-event-input" min="1" max="17" style="width:80px">
+            </div>
+        </div>
+        <div class="add-event-footer">
+            <button class="add-event-cancel" onclick="closeAddEvent()" data-i18n="addEventCancel">ביטול</button>
+            <button class="add-event-submit" onclick="submitAddEvent()" data-i18n="addEventSubmit">הוסף</button>
         </div>
     </div>
 </div>
@@ -633,7 +921,7 @@
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const COLOR_PALETTE = ['#27ae60','#2980b9','#8e44ad','#e67e22','#16a085','#3f51b5','#c0392b','#b8860b','#1abc9c','#d35400'];
+    const COLOR_PALETTE = ['#2d7d46','#2a6ca3','#7b3fa0','#c76b1e','#1a8a7a','#3f51b5','#b53a3a','#9e7c1a','#1a9e8a','#b54a1e'];
 
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let currentRev = 0, rowExists = false, icsToken = null;
@@ -695,6 +983,171 @@
         if (btn) { const o = btn.textContent; btn.textContent = '✓ הקישור הועתק'; setTimeout(() => btn.textContent = o, 1800); }
         track('calendar_subscribe_copy');
     }
+
+    // ── iCal AUTO-SYNC: connection, status badge, accuracy prompt ──
+    let icalCredentials = null;
+
+    async function loadIcalCredentials() {
+        if (!currentUser) return;
+        try {
+            const { data } = await sb.from('ical_credentials').select('*').eq('user_id', currentUser.id).maybeSingle();
+            icalCredentials = data;
+            updateIcalUI();
+        } catch (_) {}
+    }
+
+    function updateIcalUI() {
+        const connected = document.getElementById('sp-ical-connected');
+        const setup = document.getElementById('sp-ical-setup');
+        const badge = document.getElementById('sp-sync-badge');
+        const statusText = document.getElementById('sp-ical-status-text');
+        if (!connected || !setup) return;
+
+        if (icalCredentials && (icalCredentials.moodle_url || icalCredentials.yedion_url)) {
+            connected.style.display = 'block';
+            setup.style.display = 'none';
+
+            const status = icalCredentials.sync_status || 'pending';
+            const labels = { ok: 'מסונכרן', stale: 'לא עדכני', error: 'שגיאה', pending: 'ממתין' };
+            badge.className = 'sync-badge ' + status;
+            badge.textContent = labels[status] || status;
+
+            const sources = [];
+            if (icalCredentials.moodle_url) sources.push('Moodle');
+            if (icalCredentials.yedion_url) sources.push('Yedion');
+            let text = `מחובר: ${sources.join(' + ')}`;
+            if (icalCredentials.last_sync_at) {
+                const ago = Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000);
+                text += ` · עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`;
+            }
+            statusText.textContent = text;
+
+            // Show reconnect banner if error
+            if (status === 'error' && icalCredentials.consecutive_failures >= 3) {
+                statusText.textContent += ' — נא לבדוק שהכתובות תקינות';
+            }
+
+            // Track stale status
+            if (status === 'stale' || status === 'error') {
+                const hours = icalCredentials.last_sync_at
+                    ? Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000)
+                    : 999;
+                track('sync_stale', { hours_since_last_sync: hours });
+            }
+        } else {
+            connected.style.display = 'none';
+            setup.style.display = 'block';
+            badge.className = 'sync-badge';
+            badge.textContent = '';
+        }
+    }
+
+    function openIcalOnboarding() {
+        const modal = document.getElementById('ical-modal');
+        modal.style.display = 'flex';
+        // Pre-fill if already connected
+        if (icalCredentials) {
+            document.getElementById('ical-moodle-url').value = icalCredentials.moodle_url || '';
+            document.getElementById('ical-yedion-url').value = icalCredentials.yedion_url || '';
+        }
+    }
+
+    function closeIcalModal() {
+        document.getElementById('ical-modal').style.display = 'none';
+    }
+
+    async function saveIcalCredentials() {
+        const moodleUrl = document.getElementById('ical-moodle-url').value.trim();
+        const yedionUrl = document.getElementById('ical-yedion-url').value.trim();
+
+        if (!moodleUrl && !yedionUrl) {
+            alert('נא להזין לפחות כתובת אחת');
+            return;
+        }
+
+        // Basic URL validation
+        const urlPattern = /^https?:\/\/.+/;
+        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה'); return; }
+        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה'); return; }
+
+        const btn = document.getElementById('ical-save-btn');
+        btn.disabled = true; btn.textContent = 'שומר...';
+
+        try {
+            const payload = {
+                user_id: currentUser.id,
+                moodle_url: moodleUrl || null,
+                yedion_url: yedionUrl || null,
+                sync_status: 'pending',
+                consecutive_failures: 0,
+                updated_at: new Date().toISOString(),
+            };
+
+            if (icalCredentials) {
+                await sb.from('ical_credentials').update(payload).eq('user_id', currentUser.id);
+            } else {
+                await sb.from('ical_credentials').insert(payload);
+            }
+
+            track('calendar_connected', { sources_count: (moodleUrl ? 1 : 0) + (yedionUrl ? 1 : 0) });
+            await loadIcalCredentials();
+            closeIcalModal();
+        } catch (e) {
+            alert('שגיאה בשמירה: ' + (e.message || e));
+        } finally {
+            btn.disabled = false; btn.textContent = 'שמור וחבר';
+        }
+    }
+
+    async function disconnectIcal() {
+        if (!confirm('בטוח שאתה רוצה לנתק את הסנכרון האוטומטי?')) return;
+        await sb.from('ical_credentials').delete().eq('user_id', currentUser.id);
+        icalCredentials = null;
+        updateIcalUI();
+    }
+
+    // ── ACCURACY PROMPT: weekly check shown on dashboard load ──
+    function maybeShowAccuracyPrompt() {
+        if (!currentUser || !icalCredentials) return;
+        const key = `accuracy_check_${currentUser.id}`;
+        const lastShown = localStorage.getItem(key);
+        const weekMs = 7 * 24 * 60 * 60 * 1000;
+        if (lastShown && (Date.now() - parseInt(lastShown)) < weekMs) return;
+
+        // Calculate week number
+        const semStart = new Date(semesterStart);
+        const weekNum = Math.max(1, Math.ceil((Date.now() - semStart.getTime()) / weekMs));
+        if (weekNum < 2) return; // Don't show in week 1
+
+        track('accuracy_check_shown', { week_number: weekNum });
+
+        const banner = document.createElement('div');
+        banner.id = 'accuracy-banner';
+        banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid #27ae60;border-radius:14px;padding:14px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:800;display:flex;align-items:center;gap:12px;max-width:420px;width:90%';
+        banner.innerHTML = `
+            <div style="flex:1">
+                <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px">המערכת מדויקת?</div>
+                <div style="font-size:0.78rem;color:#666">האם המשימות והמבחנים שמופיעים כאן תואמים למציאות?</div>
+            </div>
+            <button onclick="answerAccuracy(true)" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:0.8rem">כן ✓</button>
+            <button onclick="answerAccuracy(false)" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:0.8rem">לא ✗</button>
+            <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#999;font-size:1.1rem">✕</button>
+        `;
+        document.body.appendChild(banner);
+        localStorage.setItem(key, String(Date.now()));
+    }
+
+    function answerAccuracy(accurate) {
+        const semStart = new Date(semesterStart);
+        const weekNum = Math.max(1, Math.ceil((Date.now() - semStart.getTime()) / (7*24*60*60*1000)));
+        track('accuracy_check_answered', { accurate, week_number: weekNum });
+        const banner = document.getElementById('accuracy-banner');
+        if (banner) {
+            banner.innerHTML = `<div style="flex:1;text-align:center;font-size:0.85rem;font-weight:500">${accurate ? 'תודה! 🎯' : 'תודה — נבדוק את הסנכרון'}</div>`;
+            setTimeout(() => banner.remove(), 2000);
+        }
+    }
+
     let workloadChart = null;
     let wlDeselectedCourses = new Set();
     let preferredView = 'list';
@@ -833,6 +1286,7 @@
                 }
                 maybeOfferLocalRestore(data);
                 setSyncStatus('synced');
+                loadIcalCredentials().then(() => maybeShowAccuracyPrompt());
                 showDashboard();
             } else {
                 setSyncStatus('synced');
@@ -940,9 +1394,27 @@
             obSemesterTitle: 'מתי מתחיל הסמסטר שלך?',
             obSemesterSub:   'זה יעזור לנו לשייך את המשימות לשבועות הנכונים',
             obSemesterBtn:   'המשך',
-            vbList:          '📋 רשימה',
-            vbTimeline:      '⏱️ ציר זמן',
-            vbWorkload:      '📊 עומס',
+            vbList:          'מיקוד',
+            vbTimeline:      'ציר זמן',
+            vbWorkload:      'עומס',
+            focusDeadlines:  'דדליינים קרובים',
+            focusTasks:      'משימות',
+            focusAddDeadline:'הוסף אירוע',
+            focusAddItem:    'הוסף פריט',
+            focusAddTask:    'הוסף משימה',
+            focusAddPh:      'הקלד ולחץ Enter...',
+            wlTitle:         'עומס לפי שבוע',
+            wlEmpty:         'אין נתונים להצגה. העלה סילבוס כדי לראות את עומס העבודה שלך.',
+            weekProgress:    (done, total) => `${done}/${total}`,
+            addEventTitle:   'הוסף אירוע',
+            addEventDesc:    'תיאור',
+            addEventDescPh:  'שם האירוע...',
+            addEventCourse:  'קורס',
+            addEventType:    'סוג',
+            addEventDate:    'תאריך',
+            addEventWeek:    'שבוע',
+            addEventCancel:  'ביטול',
+            addEventSubmit:  'הוסף',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -1042,9 +1514,27 @@
             obSemesterTitle: 'When does your semester start?',
             obSemesterSub:   'This helps us assign tasks to the correct weeks',
             obSemesterBtn:   'Continue',
-            vbList:          '📋 List',
-            vbTimeline:      '⏱️ Timeline',
-            vbWorkload:      '📊 Workload',
+            vbList:          'Focus',
+            vbTimeline:      'Timeline',
+            vbWorkload:      'Workload',
+            focusDeadlines:  'Upcoming Deadlines',
+            focusTasks:      'Tasks',
+            focusAddDeadline:'Add event',
+            focusAddItem:    'Add item',
+            focusAddTask:    'Add task',
+            focusAddPh:      'Type and press Enter...',
+            wlTitle:         'Workload by Week',
+            wlEmpty:         'No data to display. Upload a syllabus to see your workload.',
+            weekProgress:    (done, total) => `${done}/${total}`,
+            addEventTitle:   'Add Event',
+            addEventDesc:    'Description',
+            addEventDescPh:  'Event name...',
+            addEventCourse:  'Course',
+            addEventType:    'Type',
+            addEventDate:    'Date',
+            addEventWeek:    'Week',
+            addEventCancel:  'Cancel',
+            addEventSubmit:  'Add',
         },
     };
 
@@ -1063,47 +1553,13 @@
         // Dashboard top bar
         const addBtn = document.querySelector('.btn-add-course');
         if (addBtn) addBtn.textContent = s.addCourse;
-        const h1 = document.querySelector('#dashboard .top-bar h1');
-        if (h1) h1.textContent = s.dashTitle;
         const logoutBtn = document.querySelector('.btn-logout');
         if (logoutBtn) logoutBtn.textContent = s.logout;
-        // Box headers
-        const hdrExams = document.querySelector('.h-exams');
-        if (hdrExams) hdrExams.textContent = s.hdrExams;
-        const hdrTasks = document.querySelector('.h-tasks');
-        if (hdrTasks) hdrTasks.textContent = s.hdrTasks;
-        // Input placeholders
-        const exT = document.getElementById('exT');
-        if (exT) exT.placeholder = s.exPlaceholder;
-        const tkT = document.getElementById('tkT');
-        if (tkT) tkT.placeholder = s.tkPlaceholder;
-        // Exam tag select options
-        const exTag = document.getElementById('exTag');
-        if (exTag) {
-            const opts = exTag.options;
-            if (opts[0]) opts[0].text = s.exOptExam;
-            if (opts[1]) opts[1].text = s.exOptMoedB;
-            if (opts[2]) opts[2].text = s.exOptTask;
-            if (opts[3]) opts[3].text = s.exOptPres;
-            if (opts[4]) opts[4].text = s.exOtherOpt;
-        }
-        const exCustomTag = document.getElementById('exCustomTag');
-        if (exCustomTag) exCustomTag.placeholder = s.exCustomPh;
-        // Syllabus add panel
-        const sylAddBtn = document.getElementById('syl-add-btn');
-        if (sylAddBtn) sylAddBtn.textContent = s.sylAddBtn;
-        const sylTxt = document.getElementById('sylTxt');
-        if (sylTxt) sylTxt.placeholder = s.sylTxtPh;
-        const sylWeekLabelText = document.getElementById('sylWeekLabelText');
-        if (sylWeekLabelText) sylWeekLabelText.textContent = s.sylWeekLbl;
-        const sylNewCourse = document.getElementById('sylNewCourse');
-        if (sylNewCourse) sylNewCourse.placeholder = s.sylNewCoursePh;
-        const sylToggle = document.getElementById('syl-add-toggle');
-        if (sylToggle) sylToggle.title = s.sylToggleTip;
-        const sylTypeOtherOpt = document.getElementById('sylTypeOtherOpt');
-        if (sylTypeOtherOpt) sylTypeOtherOpt.textContent = s.sylOtherOpt;
-        const sylCustomType = document.getElementById('sylCustomType');
-        if (sylCustomType) sylCustomType.placeholder = s.sylCustomTypePh;
+        // data-i18n attribute updates
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.dataset.i18n;
+            if (s[key] && typeof s[key] === 'string') el.textContent = s[key];
+        });
         // Document direction
         const isEn = lang === 'en';
         document.documentElement.lang = lang;
@@ -1721,6 +2177,9 @@
             weekRanges.splice(0, weekRanges.length, ...newRanges);
             document.getElementById('sp-semester-date').value = val;
         }
+        // ADHD self-report (funnel event)
+        const hasAdhd = document.getElementById('ob-adhd-check')?.checked || false;
+        track('adhd_self_report', { has_adhd: hasAdhd });
         document.getElementById('ob-semester-step').style.display = 'none';
         wzStartAnalysis();
     };
@@ -1946,7 +2405,7 @@ function addCourseChip(course) {
         const _s = STRINGS[currentLang] || STRINGS.he;
         return `<div class="rv-section">
             <div class="rv-section-header" onclick="toggleRvSection('rvs-uncertain','rvst-uncertain')">
-                <span class="rv-section-label" style="color:#e65100">${_s.rvSecUncertain}</span>
+                <span class="rv-section-label" style="color:var(--color-warning)">${_s.rvSecUncertain}</span>
                 <span class="rv-section-count">${items.length}</span>
                 <span class="rv-section-toggle" id="rvst-uncertain">▾</span>
             </div>
@@ -1959,7 +2418,7 @@ function addCourseChip(course) {
         const _s = STRINGS[currentLang] || STRINGS.he;
         return `<div class="rv-section">
             <div class="rv-section-header" onclick="toggleRvSection('rvs-confirmed','rvst-confirmed')">
-                <span class="rv-section-label" style="color:#27ae60">${_s.rvSecConfirmed(items.length)}</span>
+                <span class="rv-section-label" style="color:var(--color-success)">${_s.rvSecConfirmed(items.length)}</span>
                 <span class="rv-section-toggle" id="rvst-confirmed">▸</span>
             </div>
             <div class="rv-compact-list rv-cards collapsed" id="rvs-confirmed">${items.map(rvCompactHtml).join('')}</div>
@@ -2014,7 +2473,7 @@ function addCourseChip(course) {
         return `<div class="rv-compact-item">
             <span class="rv-card-dot" style="background:${courseColor}"></span>
             <span class="badge ${typeClass}">${typeLabel || '?'}</span>
-            <span style="font-size:0.72rem;color:#aaa;flex-shrink:0">${weekOrDate}</span>
+            <span style="font-size:0.72rem;color:var(--color-text-muted);flex-shrink:0">${weekOrDate}</span>
             <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${desc}</span>
         </div>`;
     }
@@ -2065,12 +2524,10 @@ function addCourseChip(course) {
 
     async function confirmReview(mode) {
         const btn = document.querySelector('.rv-btn-all');
-        const btn2 = document.querySelector('.rv-btn-confirmed');
-        btn.disabled = btn2.disabled = true;
+        btn.disabled = true;
         btn.textContent = 'שומר...';
 
         let toSave = reviewItems.filter(i => !i.deleted);
-        if (mode === 'confirmed') toSave = toSave.filter(i => i.confidence >= 80 || i.userConfirmed);
 
         const syllabus = toSave.filter(i => i.source === 'syllabus').map(i => ({
             w: i.w, c: i.c, t: i.t, txt: i.txt
@@ -2234,56 +2691,242 @@ function addCourseChip(course) {
         const now = new Date();
         document.getElementById('date-display').innerText = now.toLocaleDateString('he-IL') + ' | ' + now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
 
-        // Exams
+        // ── Upcoming Deadlines ──
         const eL = document.getElementById('exList'); eL.innerHTML = '';
         const sorted = [...userExams].sort((a,b) => new Date(a.d)-new Date(b.d));
         if (!sorted.length) { eL.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div>${s.emptyExams}</div>`; }
         else sorted.forEach(x => {
             const diff = new Date(x.d)-now, days = Math.floor(diff/86400000);
-            const sc = diff<0?'bg-passed':days<=7?'bg-red':'bg-green';
+            const isPast = diff < 0;
+            const urgency = isPast ? 'urgency-past' : days <= 3 ? 'urgency-critical' : days <= 7 ? 'urgency-soon' : 'urgency-ok';
+            const timerCls = isPast ? 'bg-passed' : days <= 3 ? 'bg-red' : days <= 7 ? 'bg-red' : 'bg-green';
             const oi = userExams.indexOf(x);
             const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה'];
             const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
             const safeTag = DOMPurify.sanitize(x.tag, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
             const safeT   = DOMPurify.sanitize(x.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
             const safeC   = x.c ? DOMPurify.sanitize(x.c, {ALLOWED_TAGS: [], ALLOWED_ATTR: []}) : '';
-            const dotStyle = `width:8px;height:8px;border-radius:50%;background:${getCourseColor(x.c||'')};flex-shrink:0`;
-            const examLabel = safeC
-                ? `<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap"><span style="${dotStyle}"></span><strong>${safeC}</strong><span style="color:#ccc">—</span><span>${safeT}</span></span>`
-                : `<strong>${safeT}</strong>`;
-            eL.innerHTML += `<div class="item-row"><div class="row-right"><span class="badge ${tagCls}">${safeTag}</span>${examLabel}</div><div style="display:flex;align-items:center;gap:6px"><span class="timer ${sc}">${diff<0?s.passed:days+'d'}</span><button onclick="userExams.splice(${oi},1);render();" class="del-btn">×</button></div></div>`;
+            const courseColor = getCourseColor(x.c||'');
+            const courseInfo = safeC
+                ? `<span class="focus-course-dot" style="background:${courseColor}"></span><strong>${safeC}</strong><span style="color:var(--color-text-muted)">—</span>`
+                : '';
+            eL.innerHTML += `<div class="focus-item focus-item-urgency ${urgency}">
+                <div class="focus-item-text">
+                    <span class="badge ${tagCls}">${safeTag}</span>
+                    ${courseInfo}<span>${safeT}</span>
+                </div>
+                <div class="focus-item-actions">
+                    <span class="timer ${timerCls}">${isPast ? s.passed : days + 'd'}</span>
+                    <button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>
+                </div>
+            </div>`;
         });
 
-        // Tasks
+        // ── Tasks ──
         const tL = document.getElementById('tkList'); tL.innerHTML = '';
         if (!userTasks.length) { tL.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div>${s.emptyTasks}</div>`; }
         else userTasks.forEach((x,i) => {
             const safeTaskT = DOMPurify.sanitize(x.t, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
-            tL.innerHTML += `<div class="item-row ${x.f?'done':''}"><div class="row-right"><span onclick="userTasks[${i}].f=!userTasks[${i}].f;render();" style="cursor:pointer">${safeTaskT}</span></div><button onclick="userTasks.splice(${i},1);render();" class="del-btn">×</button></div>`;
+            const checkSvg = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"></polyline></svg>';
+            tL.innerHTML += `<div class="focus-item ${x.f?'is-done':''}">
+                <div class="focus-checkbox ${x.f?'checked':''}" onclick="toggleTask(${i})" role="checkbox" aria-checked="${x.f}" tabindex="0">${checkSvg}</div>
+                <div class="focus-item-text"><span>${safeTaskT}</span></div>
+                <div class="focus-item-actions">
+                    <button onclick="userTasks.splice(${i},1);render();save();" class="del-btn">×</button>
+                </div>
+            </div>`;
         });
 
-        // Syllabus
+        // ── This Week (Syllabus) ──
         document.getElementById('week-title').innerText = s.weekLabel(currentWeekIdx+1, weekRanges[currentWeekIdx]||'');
         const sC = document.getElementById('syllabus-content'); sC.innerHTML = '';
         const weekItems = userSyllabus.filter(it => (it.w||0) === currentWeekIdx);
+        let weekDone = 0, weekTotal = weekItems.length;
+        weekItems.forEach(item => { const gi = userSyllabus.indexOf(item); if (doneMap[`syl_${gi}`]) weekDone++; });
+        const progressEl = document.getElementById('week-progress');
+        if (progressEl) {
+            progressEl.innerHTML = weekTotal ? `<span class="done-count">${weekDone}</span>/${weekTotal}` : '';
+        }
         if (!weekItems.length) { sC.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>${s.emptyWeek}</div>`; }
         else {
             const byCourse = {};
             weekItems.forEach(item => { if (!byCourse[item.c]) byCourse[item.c]=[]; byCourse[item.c].push(item); });
             Object.entries(byCourse).forEach(([course, items]) => {
-                sC.innerHTML += DOMPurify.sanitize(`<div class="course-label" style="background:${getCourseColor(course)}">${course}</div>`);
+                const courseColor = getCourseColor(course);
+                const safeCourse = DOMPurify.sanitize(course, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+                sC.innerHTML += `<div class="focus-course-group">
+                    <div class="focus-course-label"><span class="focus-course-dot" style="background:${courseColor}"></span>${safeCourse}</div>`;
                 items.forEach(item => {
                     const gi = userSyllabus.indexOf(item), key = `syl_${gi}`, isDone = doneMap[key];
                     const knownSylTypes = ['שיעור','תרגול','קריאה','מטלה','בוחן','צפייה','סרטון'];
                     const sylTagCls = knownSylTypes.includes(item.t) ? `tag-${item.t}` : 'tag-default';
                     const safeItemT   = DOMPurify.sanitize(item.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
                     const safeItemTxt = DOMPurify.sanitize(item.txt, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
-                    sC.innerHTML += `<div class="item-row ${isDone?'done':''}" onclick="doneMap['${key}']=!doneMap['${key}'];render();"><div class="row-right"><span class="badge ${sylTagCls}">${safeItemT}</span><span>${safeItemTxt}</span></div><div style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${isDone?'checked':''} onclick="event.stopPropagation()"><button onclick="event.stopPropagation();userSyllabus.splice(${gi},1);render();" class="del-btn">×</button></div></div>`;
+                    const checkSvg = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"></polyline></svg>';
+                    sC.innerHTML += `<div class="focus-item ${isDone?'is-done':''}" style="border-inline-start: 4px solid ${courseColor}">
+                        <div class="focus-checkbox ${isDone?'checked':''}" onclick="toggleSylItem('${key}')" role="checkbox" aria-checked="${isDone||false}" tabindex="0">${checkSvg}</div>
+                        <div class="focus-item-text">
+                            <span class="badge ${sylTagCls}">${safeItemT}</span>
+                            <span>${safeItemTxt}</span>
+                        </div>
+                        <div class="focus-item-actions">
+                            <button onclick="event.stopPropagation();userSyllabus.splice(${gi},1);render();save();" class="del-btn">×</button>
+                        </div>
+                    </div>`;
                 });
+                sC.innerHTML += `</div>`;
             });
         }
         save();
     }
+
+    function toggleTask(i) {
+        userTasks[i].f = !userTasks[i].f;
+        const items = document.querySelectorAll('#tkList .focus-checkbox');
+        if (items[i]) { items[i].classList.add('completing'); setTimeout(() => items[i].classList.remove('completing'), 300); }
+        render();
+    }
+
+    function toggleSylItem(key) {
+        doneMap[key] = !doneMap[key];
+        render();
+    }
+
+    // Keyboard support for focus checkboxes
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('focus-checkbox')) {
+            e.preventDefault();
+            e.target.click();
+        }
+    });
+
+    function focusAddRowActivate(row, type) {
+        if (row.querySelector('.focus-add-input')) return;
+        const s = STRINGS[currentLang] || STRINGS.he;
+        row.classList.add('focus-add-active');
+        const label = row.querySelector('span:last-child');
+        const plus = row.querySelector('.plus');
+        if (label) label.style.display = 'none';
+        if (plus) plus.style.display = 'none';
+        const input = document.createElement('input');
+        input.className = 'focus-add-input';
+        input.placeholder = s.focusAddPh;
+        input.dir = currentLang === 'en' ? 'ltr' : 'rtl';
+        row.appendChild(input);
+        input.focus();
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const val = sanitize(input.value);
+                if (type === 'task') {
+                    userTasks.push({ t: val, f: false });
+                } else if (type === 'deadline') {
+                    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+                    userExams.push({ t: val, d: tomorrow.toISOString().slice(0,16), tag: 'מטלה' });
+                } else if (type === 'syllabus') {
+                    const courses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
+                    userSyllabus.push({ w: currentWeekIdx, c: courses[0] || '', t: 'קריאה', txt: val });
+                }
+                focusAddRowReset(row, label, plus, input);
+                render(); save();
+            } else if (e.key === 'Escape') {
+                focusAddRowReset(row, label, plus, input);
+            }
+        });
+        input.addEventListener('blur', () => {
+            setTimeout(() => focusAddRowReset(row, label, plus, input), 150);
+        });
+    }
+
+    function focusAddRowReset(row, label, plus, input) {
+        row.classList.remove('focus-add-active');
+        if (label) label.style.display = '';
+        if (plus) plus.style.display = '';
+        if (input && input.parentNode) input.remove();
+    }
+
+    // ── ADD EVENT MODAL ──
+    let aeSelectedType = 'מטלה';
+    const AE_TYPES = [
+        { val: 'מבחן', he: 'מבחן', en: 'Exam', color: 'var(--color-type-exam)' },
+        { val: 'מטלה', he: 'מטלה', en: 'Assignment', color: 'var(--color-type-task)' },
+        { val: 'קריאה', he: 'קריאה', en: 'Reading', color: 'var(--color-type-reading)' },
+        { val: 'שיעור', he: 'שיעור', en: 'Lecture', color: 'var(--color-type-lecture)' },
+        { val: 'תרגול', he: 'תרגול', en: 'Practice', color: 'var(--color-type-practice)' },
+        { val: 'בוחן', he: 'בוחן', en: 'Quiz', color: 'var(--color-type-quiz)' },
+        { val: 'צפייה', he: 'צפייה', en: 'Video', color: 'var(--color-type-video)' },
+        { val: 'פרזנטציה', he: 'פרזנטציה', en: 'Presentation', color: 'var(--color-type-presentation)' },
+    ];
+
+    function openAddEvent() {
+        const s = STRINGS[currentLang] || STRINGS.he;
+        // Populate course dropdown
+        const courseSel = document.getElementById('ae-course');
+        const courses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
+        courseSel.innerHTML = courses.map(c => `<option value="${DOMPurify.sanitize(c, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}">${DOMPurify.sanitize(c, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}</option>`).join('');
+        // Populate type chips
+        const chipsEl = document.getElementById('ae-type-chips');
+        chipsEl.innerHTML = '';
+        AE_TYPES.forEach(t => {
+            const chip = document.createElement('span');
+            chip.className = 'add-event-chip' + (t.val === aeSelectedType ? ' selected' : '');
+            chip.textContent = currentLang === 'en' ? t.en : t.he;
+            chip.style.cssText = t.val === aeSelectedType ? `background:${t.color};border-color:${t.color}` : '';
+            chip.onclick = () => {
+                aeSelectedType = t.val;
+                chipsEl.querySelectorAll('.add-event-chip').forEach((c, i) => {
+                    const isSelected = AE_TYPES[i].val === aeSelectedType;
+                    c.classList.toggle('selected', isSelected);
+                    c.style.cssText = isSelected ? `background:${AE_TYPES[i].color};border-color:${AE_TYPES[i].color}` : '';
+                });
+            };
+            chipsEl.appendChild(chip);
+        });
+        // Set defaults
+        document.getElementById('ae-desc').value = '';
+        const now = new Date(); now.setDate(now.getDate() + 1);
+        document.getElementById('ae-date').value = now.toISOString().slice(0, 16);
+        document.getElementById('ae-week').value = currentWeekIdx + 1;
+        // Auto-calc week from date change
+        document.getElementById('ae-date').onchange = () => {
+            const d = new Date(document.getElementById('ae-date').value);
+            const semStart = new Date(semesterStart);
+            const diffDays = Math.floor((d - semStart) / 86400000);
+            if (diffDays >= 0) document.getElementById('ae-week').value = Math.min(17, Math.floor(diffDays / 7) + 1);
+        };
+        document.getElementById('add-event-overlay').classList.add('open');
+        document.getElementById('ae-desc').focus();
+    }
+
+    function closeAddEvent() {
+        document.getElementById('add-event-overlay').classList.remove('open');
+    }
+
+    function submitAddEvent() {
+        const desc = sanitize(document.getElementById('ae-desc').value);
+        const course = document.getElementById('ae-course').value;
+        const date = document.getElementById('ae-date').value;
+        const weekNum = parseInt(document.getElementById('ae-week').value, 10);
+        if (!desc) return;
+        const isExamType = ['מבחן','מועד-ב','בוחן'].includes(aeSelectedType);
+        if (isExamType || date) {
+            userExams.push({ t: desc, d: date, tag: aeSelectedType, c: course });
+        } else {
+            const w = isNaN(weekNum) ? currentWeekIdx : Math.max(0, weekNum - 1);
+            userSyllabus.push({ w, c: course, t: aeSelectedType, txt: desc });
+        }
+        closeAddEvent();
+        render(); save();
+    }
+
+    // Escape key closes modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const fbOverlay = document.getElementById('feedback-overlay');
+            if (fbOverlay && fbOverlay.classList.contains('open')) { closeFeedback(); return; }
+            const aeOverlay = document.getElementById('add-event-overlay');
+            if (aeOverlay && aeOverlay.classList.contains('open')) { closeAddEvent(); return; }
+        }
+    });
 
     function startApp() {
         const diffDays = Math.floor((new Date() - new Date(semesterStart)) / 86400000);
@@ -2330,7 +2973,7 @@ function addCourseChip(course) {
         _spCourses = [...new Set(userSyllabus.map(i => i.c).filter(Boolean))];
         const list = document.getElementById('sp-course-list');
         if (!_spCourses.length) {
-            list.innerHTML = '<div style="font-size:0.8rem;color:#aaa;padding:4px 0">אין קורסים עדיין</div>';
+            list.innerHTML = '<div style="font-size:0.8rem;color:var(--color-text-muted);padding:4px 0">אין קורסים עדיין</div>';
             return;
         }
         list.innerHTML = _spCourses.map((c, idx) => {
@@ -2438,7 +3081,7 @@ function addCourseChip(course) {
         const origText = (STRINGS[currentLang] || STRINGS.he).spSave;
         btn.dataset.saving = '1';
         btn.textContent = '✓';
-        btn.style.background = '#27ae60';
+        btn.style.background = 'var(--color-success)';
         setTimeout(() => { btn.textContent = origText; btn.style.background = ''; delete btn.dataset.saving; }, 1500);
     }
 
@@ -2489,7 +3132,10 @@ function addCourseChip(course) {
         const views = ['list', 'timeline', 'workload'];
         views.forEach(name => {
             const btn = document.getElementById(`vb-${name}`);
-            if (btn) btn.classList.toggle('active', name === v);
+            if (btn) {
+                btn.classList.toggle('active', name === v);
+                btn.setAttribute('aria-selected', name === v ? 'true' : 'false');
+            }
         });
         const listEl = document.getElementById('view-list');
         if (listEl) listEl.classList.toggle('view-hidden', v !== 'list');
@@ -2593,8 +3239,9 @@ function addCourseChip(course) {
         'קריאה': '#27ae60',
         'מטלה':  '#e67e22',
         'בוחן':  '#c0392b',
-        'צפייה': '#f39c12',
+        'צפייה': '#2980b9',
         'סרטון': '#2980b9',
+        'פרזנטציה': '#d35400',
     };
     const WL_DEFAULT_COLOR = '#95a5a6';
 
@@ -2772,7 +3419,10 @@ function addCourseChip(course) {
         if (picker && !picker.contains(e.target)) hideColorPicker();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeSettings();
+        if (e.key === 'Escape') {
+            const sp = document.getElementById('settings-panel');
+            if (sp && sp.classList.contains('open')) { closeSettings(); return; }
+        }
     });
 
     initAuth();
@@ -2851,9 +3501,9 @@ function addCourseChip(course) {
 <button id="feedback-btn" onclick="openFeedback()">💬 פידבק</button>
 
 <div id="feedback-overlay">
-    <div id="feedback-modal">
+    <div id="feedback-modal" role="dialog" aria-labelledby="fb-modal-title">
         <div id="feedback-form-body">
-            <h3>ספר לנו מה אתה חושב</h3>
+            <h3 id="fb-modal-title">ספר לנו מה אתה חושב</h3>
             <p class="fb-sub">הפידבק שלך עוזר לנו לשפר את המוצר</p>
             <div class="fb-stars" onmouseleave="unhoverStars()">
                 <span class="fb-star" onmouseenter="hoverStar(1)" onclick="setFbStar(1)">☆</span>

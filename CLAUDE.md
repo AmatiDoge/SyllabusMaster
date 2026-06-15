@@ -19,7 +19,7 @@ SyllaBot is an AI-powered academic dashboard for students. It parses course syll
 
 ## Supabase
 - **Project ref:** `uukpuvizkjgcssmlqltk`
-- Edge functions live locally at `~/syllabus-functions/`
+- Edge functions live locally at `~/Developer/Syllabot/syllabus-functions/`
 
 | Function | Purpose |
 |----------|---------|
