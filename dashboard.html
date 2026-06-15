@@ -463,6 +463,29 @@
         .sp-btn-outline { width: 100%; padding: var(--space-3) var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--color-text); font-family: inherit; cursor: pointer; transition: all var(--duration-fast); }
         .sp-btn-outline:hover { border-color: var(--color-border-ink); background: var(--color-bg-secondary); }
         .sp-btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* Layer 3: Onboarding choice, welcome banner, empty CTAs */
+        .ob-choices { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-5); }
+        .ob-choice-card { background: var(--color-bg); border: 2px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px 20px; text-align: center; cursor: pointer; transition: all var(--duration-fast); position: relative; }
+        .ob-choice-card:hover { border-color: var(--color-border-ink); background: var(--color-bg-secondary); transform: translateY(-2px); }
+        .ob-choice-icon { font-size: 2rem; margin-bottom: var(--space-3); }
+        .ob-choice-title { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--color-text); margin-bottom: var(--space-2); }
+        .ob-choice-desc { font-size: var(--text-xs); color: var(--color-text-muted); line-height: var(--leading-relaxed); }
+        .ob-choice-badge { position: absolute; top: -8px; right: 12px; background: var(--color-success); color: #fff; font-size: 0.65rem; font-weight: var(--weight-bold); padding: 2px 8px; border-radius: var(--radius-pill); }
+        .ob-back-link { display: inline-block; font-size: var(--text-xs); color: var(--color-text-muted); cursor: pointer; margin-top: var(--space-4); transition: color var(--duration-fast); }
+        .ob-back-link:hover { color: var(--color-text); }
+        .ob-complete-check { font-size: 3rem; margin-bottom: var(--space-4); }
+        .ob-complete-info { background: var(--color-bg-secondary); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); margin: var(--space-5) 0; text-align: right; font-size: var(--text-sm); line-height: 1.8; color: var(--color-text-muted); }
+        .ob-complete-info strong { color: var(--color-text); }
+        .welcome-banner { background: linear-gradient(135deg, #f0fff4, #e6f9ee); border: 2px solid #c8e6c9; border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); margin: var(--space-4) auto var(--space-5); max-width: 800px; position: relative; animation: fadeUp 0.5s var(--ease-out); }
+        .welcome-banner .welcome-close { position: absolute; top: 10px; left: 10px; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--color-text-muted); }
+        .welcome-banner .welcome-title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-bold); margin-bottom: var(--space-2); }
+        .welcome-banner .welcome-text { font-size: var(--text-sm); color: var(--color-text-muted); line-height: var(--leading-relaxed); margin-bottom: var(--space-4); }
+        .welcome-banner .welcome-settings-btn { background: var(--color-border-ink); color: var(--color-text-inverse); border: none; padding: var(--space-2) var(--space-5); border-radius: var(--radius-md); font-size: var(--text-xs); font-weight: var(--weight-bold); font-family: inherit; cursor: pointer; transition: background var(--duration-fast); }
+        .welcome-banner .welcome-settings-btn:hover { background: var(--color-accent); }
+        .empty-cta { display: flex; gap: var(--space-3); justify-content: center; margin-top: var(--space-4); }
+        .empty-btn { background: var(--color-bg); border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); font-size: var(--text-xs); font-weight: var(--weight-bold); font-family: inherit; cursor: pointer; transition: all var(--duration-fast); color: var(--color-text); }
+        .empty-btn:hover { border-color: var(--color-border-ink); background: var(--color-bg-secondary); }
+        @media (max-width: 480px) { .ob-choices { grid-template-columns: 1fr; } }
 
         /* ── FEEDBACK ── */
         #feedback-btn { position: fixed; bottom: 24px; left: 24px; z-index: 800; background: var(--color-accent); color: var(--color-bg-card); border: none; border-radius: var(--radius-full); padding: var(--space-4) var(--space-6); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; transition: background var(--duration-normal), transform var(--duration-fast); display: flex; align-items: center; gap: var(--space-3); }
@@ -788,8 +811,68 @@
     <div class="ob-card">
         <span class="ob-logo">Sylla<span>Bot</span></span>
 
-        <!-- Step 1: Drop zone -->
-        <div id="ob-drop-section">
+        <!-- Step 0: Choose path -->
+        <div id="ob-choice-section">
+            <div class="ob-step-label" id="ob-choice-step-label">Setup · Get Started</div>
+            <h1 class="ob-title" id="ob-choice-title">איך תרצה להתחיל?</h1>
+            <p class="ob-sub" id="ob-choice-sub">בחר את הדרך הנוחה לך. שתי האפשרויות יבנו לך לוח אקדמי מלא עם תזכורות אוטומטיות.</p>
+            <div class="ob-choices">
+                <button class="ob-choice-card" onclick="obChooseIcal()">
+                    <div class="ob-choice-icon">🔗</div>
+                    <div class="ob-choice-title" id="ob-ical-choice-title">חבר יומן Moodle</div>
+                    <div class="ob-choice-desc" id="ob-ical-choice-desc">הדרך המהירה — הכל מתעדכן אוטומטית</div>
+                    <span class="ob-choice-badge" id="ob-ical-choice-badge">מומלץ</span>
+                </button>
+                <button class="ob-choice-card" onclick="obChoosePdf()">
+                    <div class="ob-choice-icon">📄</div>
+                    <div class="ob-choice-title" id="ob-pdf-choice-title">העלה סילבוסים</div>
+                    <div class="ob-choice-desc" id="ob-pdf-choice-desc">AI ינתח את ה-PDF ויחלץ את כל התאריכים</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 0b: iCal inline form -->
+        <div id="ob-ical-step" style="display:none">
+            <div class="ob-step-label">Setup · Connect Calendar</div>
+            <h2 class="ob-title" style="font-size:1.3rem" id="ob-ical-title">חבר את יומני המוסד שלך</h2>
+            <p class="ob-sub" style="margin-bottom:20px" id="ob-ical-sub">הכנס את כתובות ה-iCal מ-Moodle ו/או Yedion. לא חובה את שניהם.</p>
+            <div style="background:#f0f7ff;border-radius:10px;padding:14px;margin-bottom:14px">
+                <div style="font-weight:600;margin-bottom:6px">Moodle — מטלות ודדליינים</div>
+                <ol style="font-size:0.8rem;color:#444;margin:0;padding-inline-start:18px;line-height:1.7">
+                    <li>היכנס ל-<strong>moodle.runi.ac.il</strong></li>
+                    <li>לחץ על <strong>לוח שנה</strong> (Calendar) בתפריט</li>
+                    <li>לחץ <strong>ייצוא לוח שנה</strong> (Export calendar)</li>
+                    <li>בחר "כל האירועים" ולחץ <strong>קבל כתובת URL</strong></li>
+                </ol>
+            </div>
+            <input type="url" id="ob-ical-moodle" placeholder="https://moodle.runi.ac.il/..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:14px;box-sizing:border-box">
+            <div style="background:#f0fff4;border-radius:10px;padding:14px;margin-bottom:14px">
+                <div style="font-weight:600;margin-bottom:6px">Yedion — מערכת שעות ומבחנים</div>
+                <ol style="font-size:0.8rem;color:#444;margin:0;padding-inline-start:18px;line-height:1.7">
+                    <li>היכנס ל-<strong>yedion.runi.ac.il</strong></li>
+                    <li>לחץ על <strong>הוסף ליומן Google</strong> או <strong>ייצוא iCal</strong></li>
+                </ol>
+            </div>
+            <input type="url" id="ob-ical-yedion" placeholder="https://yedion.runi.ac.il/..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:16px;box-sizing:border-box">
+            <button id="ob-ical-save-btn" onclick="obSaveIcal()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">המשך</button>
+            <div class="ob-back-link" onclick="obBackToChoice()">← חזור לבחירה</div>
+        </div>
+
+        <!-- Step 0c: Onboarding complete (iCal path) -->
+        <div id="ob-complete-section" style="display:none;text-align:center">
+            <div class="ob-complete-check">✅</div>
+            <h2 class="ob-title" style="font-size:1.3rem" id="ob-complete-title">הכל מוכן!</h2>
+            <p class="ob-sub" id="ob-complete-sub">היומנים שלך מחוברים. SyllaBot ידאג לשאר.</p>
+            <div class="ob-complete-info" id="ob-complete-info">
+                📧 <strong>סיכום שבועי</strong> — כל יום <span id="ob-complete-day">ראשון</span> בבוקר<br>
+                🔔 <strong>תזכורת לפני דדליין</strong> — יום לפני + שבוע לפני<br>
+                ⚙️ אפשר לשנות בהגדרות בכל רגע
+            </div>
+            <button onclick="obFinishIcal()" style="width:100%;padding:14px;background:#27ae60;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#1a7a42'" onmouseout="this.style.background='#27ae60'" id="ob-complete-btn">פתח את לוח הבקרה</button>
+        </div>
+
+        <!-- Step 1: Drop zone (PDF path) -->
+        <div id="ob-drop-section" style="display:none">
             <div class="ob-step-label">Setup · Upload your syllabuses</div>
             <h1 class="ob-title">Let's build your dashboard</h1>
             <p class="ob-sub">Upload all your course PDFs at once. Our AI will automatically detect each course name, extract all important dates, tasks, readings and exams — and build your personal academic dashboard.</p>
@@ -886,6 +969,13 @@
             <button class="btn-sm btn-settings" onclick="openSettings()">⚙️</button>
             <button class="btn-sm btn-logout" onclick="logout()">Logout</button>
         </div>
+    </div>
+    <!-- Welcome banner (shown once after onboarding) -->
+    <div id="welcome-banner" style="display:none" class="welcome-banner">
+        <button onclick="dismissWelcomeBanner()" class="welcome-close">✕</button>
+        <div class="welcome-title" id="welcome-title">🎉 הכל מוכן!</div>
+        <div class="welcome-text" id="welcome-text">התזכורות שלך הוגדרו. תקבל סיכום שבועי כל יום ראשון בבוקר, ותזכורות לפני כל מבחן ומטלה. אפשר לשנות בכל רגע בהגדרות.</div>
+        <button onclick="openSettings();dismissWelcomeBanner()" class="welcome-settings-btn" id="welcome-settings-btn">⚙️ הגדרות תזכורות</button>
     </div>
     <div class="container" id="view-list" role="tabpanel" aria-labelledby="vb-list">
         <!-- Upcoming Deadlines -->
@@ -1095,7 +1185,14 @@
                 const ago = Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000);
                 text += ` · עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`;
             }
+            if (icalCredentials.event_count) {
+                text += ` · ${icalCredentials.event_count} אירועים`;
+            }
             statusText.textContent = text;
+            // Next sync indicator
+            if (status === 'ok' || status === 'pending') {
+                statusText.textContent += currentLang === 'en' ? ' · Syncs daily' : ' · מסתנכרן יומית';
+            }
 
             // Show reconnect banner if error
             if (status === 'error' && icalCredentials.consecutive_failures >= 3) {
@@ -1392,8 +1489,12 @@
             exOptTask:     'מטלה',
             exOptPres:     'מצגת',
             emptyExams:    'אין בחינות עדיין',
+            emptyExamsCta: 'חבר יומן או העלה סילבוס כדי לראות דדליינים',
             emptyTasks:    'אין משימות עדיין',
             emptyWeek:     'אין כלום השבוע',
+            emptyWeekCta:  'העלה סילבוסים כדי לבנות מערכת שבועית',
+            connectCal:    '🔗 חבר יומן',
+            uploadSyl:     '📄 העלה סילבוס',
             weekLabel:     (n, r) => `שבוע ${n} (${r})`,
             passed:        'עבר',
             logout:        'יציאה',
@@ -1513,8 +1614,12 @@
             exOptTask:     'Assignment',
             exOptPres:     'Presentation',
             emptyExams:    'No exams yet',
+            emptyExamsCta: 'Connect your calendar or upload a syllabus to see deadlines',
             emptyTasks:    'No tasks yet',
             emptyWeek:     'Nothing this week',
+            emptyWeekCta:  'Upload syllabi to build your weekly schedule',
+            connectCal:    '🔗 Connect calendar',
+            uploadSyl:     '📄 Upload syllabus',
             weekLabel:     (n, r) => `Week ${n} (${r})`,
             passed:        'Passed',
             logout:        'Logout',
@@ -1757,6 +1862,35 @@
         const vbWorkload = document.getElementById('vb-workload');
         if (vbWorkload) vbWorkload.textContent = s.vbWorkload;
 
+        // Layer 3: Onboarding choice + welcome banner translations
+        const isEn2 = lang === 'en';
+        const _obChoiceTitle = document.getElementById('ob-choice-title');
+        if (_obChoiceTitle) _obChoiceTitle.textContent = isEn2 ? 'How would you like to start?' : 'איך תרצה להתחיל?';
+        const _obChoiceSub = document.getElementById('ob-choice-sub');
+        if (_obChoiceSub) _obChoiceSub.textContent = isEn2 ? 'Both options build your full academic dashboard with automatic reminders.' : 'בחר את הדרך הנוחה לך. שתי האפשרויות יבנו לך לוח אקדמי מלא עם תזכורות אוטומטיות.';
+        const _icalCT = document.getElementById('ob-ical-choice-title');
+        if (_icalCT) _icalCT.textContent = isEn2 ? 'Connect Moodle Calendar' : 'חבר יומן Moodle';
+        const _icalCD = document.getElementById('ob-ical-choice-desc');
+        if (_icalCD) _icalCD.textContent = isEn2 ? 'The fastest way — everything syncs automatically' : 'הדרך המהירה — הכל מתעדכן אוטומטית';
+        const _icalCB = document.getElementById('ob-ical-choice-badge');
+        if (_icalCB) _icalCB.textContent = isEn2 ? 'Recommended' : 'מומלץ';
+        const _pdfCT = document.getElementById('ob-pdf-choice-title');
+        if (_pdfCT) _pdfCT.textContent = isEn2 ? 'Upload Syllabi' : 'העלה סילבוסים';
+        const _pdfCD = document.getElementById('ob-pdf-choice-desc');
+        if (_pdfCD) _pdfCD.textContent = isEn2 ? 'AI will analyze PDFs and extract all dates' : 'AI ינתח את ה-PDF ויחלץ את כל התאריכים';
+        const _obCompTitle = document.getElementById('ob-complete-title');
+        if (_obCompTitle) _obCompTitle.textContent = isEn2 ? "You're all set!" : 'הכל מוכן!';
+        const _obCompSub = document.getElementById('ob-complete-sub');
+        if (_obCompSub) _obCompSub.textContent = isEn2 ? "Your calendars are connected. SyllaBot will handle the rest." : 'היומנים שלך מחוברים. SyllaBot ידאג לשאר.';
+        const _obCompBtn = document.getElementById('ob-complete-btn');
+        if (_obCompBtn) _obCompBtn.textContent = isEn2 ? 'Open Dashboard' : 'פתח את לוח הבקרה';
+        const _welTitle = document.getElementById('welcome-title');
+        if (_welTitle) _welTitle.textContent = isEn2 ? "🎉 You're all set!" : '🎉 הכל מוכן!';
+        const _welText = document.getElementById('welcome-text');
+        if (_welText) _welText.textContent = isEn2 ? "Your reminders are set. You'll get a weekly digest every Sunday morning, plus reminders before each exam and assignment. Change anytime in settings." : 'התזכורות שלך הוגדרו. תקבל סיכום שבועי כל יום ראשון בבוקר, ותזכורות לפני כל מבחן ומטלה. אפשר לשנות בכל רגע בהגדרות.';
+        const _welBtn = document.getElementById('welcome-settings-btn');
+        if (_welBtn) _welBtn.textContent = isEn2 ? '⚙️ Reminder settings' : '⚙️ הגדרות תזכורות';
+
         // Semester step (if visible)
         if (document.getElementById('ob-semester-step')?.style.display !== 'none') {
             document.getElementById('ob-semester-title').textContent = s.obSemesterTitle;
@@ -1863,8 +1997,21 @@
         document.getElementById('onboarding').classList.remove('visible');
         document.getElementById('dashboard').classList.add('visible');
         track('schedule_viewed');
+        // Show welcome banner on first visit after onboarding
+        if (currentUser) {
+            const wKey = `welcome_${currentUser.id}`;
+            if (localStorage.getItem(wKey) === 'show') {
+                document.getElementById('welcome-banner').style.display = '';
+                localStorage.setItem(wKey, 'shown');
+            }
+        }
         startApp();
     }
+
+    window.dismissWelcomeBanner = function() {
+        document.getElementById('welcome-banner').style.display = 'none';
+        if (currentUser) localStorage.setItem(`welcome_${currentUser.id}`, 'dismissed');
+    };
 
     function showOnboarding() {
         document.getElementById('dashboard').classList.remove('visible');
@@ -1873,7 +2020,10 @@
     }
 
     // ── ONBOARDING ──
+    let _obPath = 'choice'; // 'choice' | 'pdf' | 'ical'
+
     function resetOnboarding() {
+        _obPath = 'choice';
         obFiles = []; obResults = []; reviewItems = [];
         obCourseNames = {}; obWizardIdx = 0;
         document.getElementById('ob-file-list').innerHTML = '';
@@ -1883,11 +2033,85 @@
         document.getElementById('ob-progress-fill').style.width = '0%';
         document.getElementById('ob-review').classList.remove('visible');
         document.querySelector('.ob-card').style.display = '';
-        document.getElementById('ob-drop-section').style.display = '';
+        document.getElementById('ob-choice-section').style.display = '';
+        document.getElementById('ob-ical-step').style.display = 'none';
+        document.getElementById('ob-complete-section').style.display = 'none';
+        document.getElementById('ob-drop-section').style.display = 'none';
         document.getElementById('ob-wizard').style.display = 'none';
         document.getElementById('ob-semester-step').style.display = 'none';
         document.getElementById('ob-analysis').style.display = 'none';
     }
+
+    window.obChooseIcal = function() {
+        _obPath = 'ical';
+        document.getElementById('ob-choice-section').style.display = 'none';
+        document.getElementById('ob-ical-step').style.display = '';
+        // Pre-fill if already connected
+        if (icalCredentials) {
+            document.getElementById('ob-ical-moodle').value = icalCredentials.moodle_url || '';
+            document.getElementById('ob-ical-yedion').value = icalCredentials.yedion_url || '';
+        }
+    };
+
+    window.obChoosePdf = function() {
+        _obPath = 'pdf';
+        document.getElementById('ob-choice-section').style.display = 'none';
+        document.getElementById('ob-drop-section').style.display = '';
+    };
+
+    window.obBackToChoice = function() {
+        _obPath = 'choice';
+        document.getElementById('ob-ical-step').style.display = 'none';
+        document.getElementById('ob-drop-section').style.display = 'none';
+        document.getElementById('ob-choice-section').style.display = '';
+    };
+
+    window.obSaveIcal = async function() {
+        const moodleUrl = document.getElementById('ob-ical-moodle').value.trim();
+        const yedionUrl = document.getElementById('ob-ical-yedion').value.trim();
+        if (!moodleUrl && !yedionUrl) { alert('נא להזין לפחות כתובת אחת'); return; }
+        const urlPattern = /^https:\/\/.+/;
+        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה — חייבת להתחיל ב-https://'); return; }
+        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה — חייבת להתחיל ב-https://'); return; }
+
+        const btn = document.getElementById('ob-ical-save-btn');
+        btn.disabled = true; btn.textContent = 'שומר...';
+        try {
+            const payload = {
+                user_id: currentUser.id,
+                moodle_url: moodleUrl || null,
+                yedion_url: yedionUrl || null,
+                sync_status: 'pending',
+                consecutive_failures: 0,
+                updated_at: new Date().toISOString(),
+            };
+            if (icalCredentials) {
+                await sb.from('ical_credentials').update(payload).eq('user_id', currentUser.id);
+            } else {
+                await sb.from('ical_credentials').insert(payload);
+            }
+            track('calendar_connected', { sources_count: (moodleUrl ? 1 : 0) + (yedionUrl ? 1 : 0), path: 'onboarding' });
+            await loadIcalCredentials();
+            // Proceed to semester step
+            document.getElementById('ob-ical-step').style.display = 'none';
+            const _s = STRINGS[currentLang] || STRINGS.he;
+            document.getElementById('ob-semester-step').style.display = '';
+            document.getElementById('ob-semester-title').textContent = _s.obSemesterTitle;
+            document.getElementById('ob-semester-sub').textContent = _s.obSemesterSub;
+            document.getElementById('ob-semester-btn').textContent = _s.obSemesterBtn;
+            document.getElementById('ob-semester-date').value = semesterStart;
+        } catch (e) {
+            alert('שגיאה בשמירה: ' + (e.message || e));
+        } finally {
+            btn.disabled = false; btn.textContent = 'המשך';
+        }
+    };
+
+    window.obFinishIcal = async function() {
+        await saveToSupabase(true);
+        localStorage.setItem(`welcome_${currentUser.id}`, 'show');
+        showDashboard();
+    };
 
     function obDrop(e) {
         e.preventDefault();
@@ -2280,6 +2504,16 @@
         const hasAdhd = document.getElementById('ob-adhd-check')?.checked || false;
         track('adhd_self_report', { has_adhd: hasAdhd });
         document.getElementById('ob-semester-step').style.display = 'none';
+
+        // iCal path: skip PDF analysis, show completion step
+        if (_obPath === 'ical') {
+            const dayNames = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+            const dd = document.getElementById('ob-complete-day');
+            if (dd) dd.textContent = dayNames[_reminderPrefs.digest_day || 0];
+            document.getElementById('ob-complete-section').style.display = '';
+            return;
+        }
+
         wzStartAnalysis();
     };
 
@@ -2793,7 +3027,7 @@ function addCourseChip(course) {
         // ── Upcoming Deadlines ──
         const eL = document.getElementById('exList'); eL.innerHTML = '';
         const sorted = [...userExams].sort((a,b) => new Date(a.d)-new Date(b.d));
-        if (!sorted.length) { eL.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div>${s.emptyExams}</div>`; }
+        if (!sorted.length) { eL.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div>${s.emptyExams}<div style="font-size:var(--text-xs);margin-top:var(--space-2)">${s.emptyExamsCta}</div><div class="empty-cta"><button class="empty-btn" onclick="openIcalOnboarding()">${s.connectCal}</button><button class="empty-btn" onclick="showOnboarding()">${s.uploadSyl}</button></div></div>`; }
         else sorted.forEach(x => {
             const diff = new Date(x.d)-now, days = Math.floor(diff/86400000);
             const isPast = diff < 0;
@@ -2846,7 +3080,7 @@ function addCourseChip(course) {
         if (progressEl) {
             progressEl.innerHTML = weekTotal ? `<span class="done-count">${weekDone}</span>/${weekTotal}` : '';
         }
-        if (!weekItems.length) { sC.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>${s.emptyWeek}</div>`; }
+        if (!weekItems.length) { sC.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>${s.emptyWeek}<div style="font-size:var(--text-xs);margin-top:var(--space-2)">${s.emptyWeekCta}</div><div class="empty-cta"><button class="empty-btn" onclick="showOnboarding()">${s.uploadSyl}</button></div></div>`; }
         else {
             const byCourse = {};
             weekItems.forEach(item => { if (!byCourse[item.c]) byCourse[item.c]=[]; byCourse[item.c].push(item); });
