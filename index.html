@@ -472,7 +472,11 @@
     font-size: 1.1rem;
     cursor: pointer;
     line-height: 1;
-    padding: var(--space-2) var(--space-4);
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: color var(--duration-fast);
   }
   #pilot-banner-dismiss:hover { color: white; }
