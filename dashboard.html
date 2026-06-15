@@ -443,6 +443,21 @@
         .sp-account-btn.danger:hover { background: var(--color-error); color: var(--color-bg-card); border-color: var(--color-error); }
         .btn-settings { background: var(--color-bg); color: var(--color-text-muted); border: var(--border-thin); }
         .btn-settings:hover { background: var(--color-bg-secondary); color: var(--color-text); }
+        /* Toggle switch */
+        .sp-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) 0; }
+        .sp-toggle-label { font-size: var(--text-sm); color: var(--color-text); font-weight: var(--weight-medium); }
+        .sp-toggle-sub { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 1px; }
+        .sp-toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .sp-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .sp-toggle-track { position: absolute; inset: 0; background: var(--color-border-strong); border-radius: 12px; cursor: pointer; transition: background var(--duration-normal); }
+        .sp-toggle-track::after { content: ''; position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform var(--duration-normal); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .sp-toggle input:checked + .sp-toggle-track { background: var(--color-success); }
+        .sp-toggle input:checked + .sp-toggle-track::after { transform: translateX(-20px); }
+        /* Lead days chips */
+        .sp-chip-group { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+        .sp-chip { padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); border: 2px solid var(--color-border); background: var(--color-bg); font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; transition: all var(--duration-fast); user-select: none; }
+        .sp-chip.active { background: var(--color-border-ink); color: var(--color-text-inverse); border-color: var(--color-border-ink); }
+        .sp-chip:hover:not(.active) { border-color: var(--color-border-strong); background: var(--color-bg-secondary); }
 
         /* ── FEEDBACK ── */
         #feedback-btn { position: fixed; bottom: 24px; left: 24px; z-index: 800; background: var(--color-accent); color: var(--color-bg-card); border: none; border-radius: var(--radius-full); padding: var(--space-4) var(--space-6); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; transition: background var(--duration-normal), transform var(--duration-fast); display: flex; align-items: center; gap: var(--space-3); }
@@ -643,6 +658,38 @@
             <button class="sp-save-btn" style="width:100%;margin-bottom:8px" onclick="downloadICS()">⬇️ הורד קובץ יומן (.ics)</button>
             <button class="sp-save-btn" style="width:100%;background:#2980b9" onclick="copyCalendarFeed(this)">🔗 העתק קישור להרשמה ליומן</button>
             <div style="font-size:0.72rem;color:#888;margin-top:6px">הוסף ל-Google/Apple Calendar כדי לקבל עדכונים אוטומטית, כולל תזכורת יום לפני כל מבחן</div>
+        </div>
+        <div class="sp-divider"></div>
+        <div class="sp-section" id="sp-reminders-section">
+            <div class="sp-section-title">תזכורות במייל</div>
+            <div class="sp-toggle-row">
+                <div>
+                    <div class="sp-toggle-label">סיכום שבועי</div>
+                    <div class="sp-toggle-sub">כל יום ראשון בבוקר — מה מחכה לך השבוע</div>
+                </div>
+                <label class="sp-toggle">
+                    <input type="checkbox" id="sp-weekly-toggle" checked onchange="saveReminderPrefs()">
+                    <span class="sp-toggle-track"></span>
+                </label>
+            </div>
+            <div class="sp-toggle-row" style="margin-top:var(--space-3)">
+                <div>
+                    <div class="sp-toggle-label">תזכורות לפני דדליין</div>
+                    <div class="sp-toggle-sub">מייל לפני כל מבחן או מטלה</div>
+                </div>
+                <label class="sp-toggle">
+                    <input type="checkbox" id="sp-daily-toggle" checked onchange="saveReminderPrefs()">
+                    <span class="sp-toggle-track"></span>
+                </label>
+            </div>
+            <div id="sp-lead-days-wrap" style="margin-top:var(--space-4)">
+                <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2)">מתי להזכיר?</div>
+                <div class="sp-chip-group">
+                    <button class="sp-chip active" data-days="1" onclick="toggleLeadDay(this)">יום לפני</button>
+                    <button class="sp-chip" data-days="3" onclick="toggleLeadDay(this)">3 ימים</button>
+                    <button class="sp-chip active" data-days="7" onclick="toggleLeadDay(this)">שבוע לפני</button>
+                </div>
+            </div>
         </div>
         <div class="sp-divider"></div>
         <div class="sp-section" id="sp-ical-section">
@@ -1279,6 +1326,7 @@
                 doneMap      = data.done_map     || {};
                 courseColors = data.course_colors || {};
                 preferredView = data.preferred_view || 'list';
+                _reminderPrefs = data.reminder_prefs || { email_enabled: true, weekly_enabled: true, daily_enabled: true, lead_days: [1, 7] };
                 if (data.semester_start) {
                     semesterStart = data.semester_start;
                     const newRanges = buildWeekRanges(semesterStart);
@@ -1391,6 +1439,7 @@
             spDeleteAcct:    '🗑️ מחק חשבון',
             spCoursePh:      'שם הקורס...',
             spDeleteConfirm: 'האם אתה בטוח?\nפעולה זו תמחק את כל הנתונים שלך לצמיתות.',
+            spReminders:     'תזכורות במייל',
             obSemesterTitle: 'מתי מתחיל הסמסטר שלך?',
             obSemesterSub:   'זה יעזור לנו לשייך את המשימות לשבועות הנכונים',
             obSemesterBtn:   'המשך',
@@ -1511,6 +1560,7 @@
             spDeleteAcct:    '🗑️ Delete Account',
             spCoursePh:      'Course name...',
             spDeleteConfirm: 'Are you sure?\nThis will permanently delete all your data.',
+            spReminders:     'Email Reminders',
             obSemesterTitle: 'When does your semester start?',
             obSemesterSub:   'This helps us assign tasks to the correct weeks',
             obSemesterBtn:   'Continue',
@@ -1640,11 +1690,17 @@
         const spTitleEl = document.querySelector('.sp-title');
         if (spTitleEl) spTitleEl.textContent = s.spTitle;
         const spSections = document.querySelectorAll('.sp-section-title');
-        // 0=courses, 1=semester, 2=lang, 3=account
+        // Sections: courses, semester, lang, calendar, reminders, auto-sync, account
         if (spSections[0]) spSections[0].textContent = s.spCourses;
         if (spSections[1]) spSections[1].textContent = s.spSemester;
         if (spSections[2]) spSections[2].textContent = s.spLang;
-        if (spSections[3]) spSections[3].textContent = s.spAccount;
+        // Reminder section translations
+        const remSec = document.querySelector('#sp-reminders-section .sp-section-title');
+        if (remSec) remSec.textContent = s.spReminders || (lang === 'en' ? 'Email Reminders' : 'תזכורות במייל');
+        // Account is now the last sp-section-title
+        const acctSections = document.querySelectorAll('.sp-section-title');
+        const lastSection = acctSections[acctSections.length - 1];
+        if (lastSection) lastSection.textContent = s.spAccount;
         const spSaveDateBtn = document.getElementById('sp-save-date-btn');
         if (spSaveDateBtn && !spSaveDateBtn.dataset.saving) spSaveDateBtn.textContent = s.spSave;
         const spDeleteBtn = document.querySelector('.sp-account-btn.danger');
@@ -2951,12 +3007,53 @@ function addCourseChip(course) {
         return ranges;
     }
 
+    // ── Reminder Preferences ──
+    let _reminderPrefs = { email_enabled: true, weekly_enabled: true, daily_enabled: true, lead_days: [1, 7] };
+
+    function loadReminderPrefsUI() {
+        const p = _reminderPrefs;
+        const wt = document.getElementById('sp-weekly-toggle');
+        const dt = document.getElementById('sp-daily-toggle');
+        if (wt) wt.checked = p.weekly_enabled !== false;
+        if (dt) dt.checked = p.daily_enabled !== false;
+        // Lead days chips
+        document.querySelectorAll('#sp-lead-days-wrap .sp-chip').forEach(chip => {
+            const d = Number(chip.dataset.days);
+            chip.classList.toggle('active', (p.lead_days || [1, 7]).includes(d));
+        });
+        // Show/hide lead days based on daily toggle
+        const wrap = document.getElementById('sp-lead-days-wrap');
+        if (wrap) wrap.style.display = (p.daily_enabled !== false) ? '' : 'none';
+    }
+
+    function toggleLeadDay(chip) {
+        chip.classList.toggle('active');
+        saveReminderPrefs();
+    }
+
+    async function saveReminderPrefs() {
+        const weekly = document.getElementById('sp-weekly-toggle')?.checked ?? true;
+        const daily = document.getElementById('sp-daily-toggle')?.checked ?? true;
+        const leadDays = [];
+        document.querySelectorAll('#sp-lead-days-wrap .sp-chip.active').forEach(c => {
+            leadDays.push(Number(c.dataset.days));
+        });
+        // Show/hide lead days based on daily toggle
+        const wrap = document.getElementById('sp-lead-days-wrap');
+        if (wrap) wrap.style.display = daily ? '' : 'none';
+
+        _reminderPrefs = { email_enabled: true, weekly_enabled: weekly, daily_enabled: daily, lead_days: leadDays };
+        if (!currentUser) return;
+        await sb.from('user_data').update({ reminder_prefs: _reminderPrefs }).eq('user_id', currentUser.id);
+    }
+
     function openSettings() {
         renderSpCourseList();
         document.getElementById('sp-semester-date').value = semesterStart;
         const lang = currentUser?.user_metadata?.lang || 'he';
         document.getElementById('sp-lang-he').classList.toggle('active', lang === 'he');
         document.getElementById('sp-lang-en').classList.toggle('active', lang === 'en');
+        loadReminderPrefsUI();
         document.getElementById('settings-overlay').classList.add('open');
         document.getElementById('settings-panel').classList.add('open');
     }
