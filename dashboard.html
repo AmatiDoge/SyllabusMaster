@@ -2701,9 +2701,9 @@ function addCourseChip(course) {
             const urgency = isPast ? 'urgency-past' : days <= 3 ? 'urgency-critical' : days <= 7 ? 'urgency-soon' : 'urgency-ok';
             const timerCls = isPast ? 'bg-passed' : days <= 3 ? 'bg-red' : days <= 7 ? 'bg-red' : 'bg-green';
             const oi = userExams.indexOf(x);
-            const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה'];
+            const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
             const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
-            const safeTag = DOMPurify.sanitize(x.tag, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+            const safeTag = DOMPurify.sanitize(x.tag || '', {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
             const safeT   = DOMPurify.sanitize(x.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
             const safeC   = x.c ? DOMPurify.sanitize(x.c, {ALLOWED_TAGS: [], ALLOWED_ATTR: []}) : '';
             const courseColor = getCourseColor(x.c||'');
