@@ -1065,10 +1065,10 @@
             return;
         }
 
-        // Basic URL validation
-        const urlPattern = /^https?:\/\/.+/;
-        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה'); return; }
-        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה'); return; }
+        // Basic URL validation (HTTPS required — DB enforces this too)
+        const urlPattern = /^https:\/\/.+/;
+        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה — חייבת להתחיל ב-https://'); return; }
+        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה — חייבת להתחיל ב-https://'); return; }
 
         const btn = document.getElementById('ical-save-btn');
         btn.disabled = true; btn.textContent = 'שומר...';
