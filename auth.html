@@ -473,6 +473,9 @@
     .logo { font-size: 1.6rem; }
   }
 
+  .skip-link { position: absolute; top: -100px; left: 0; background: var(--color-bg-card); color: var(--color-text); padding: var(--space-4) var(--space-6); z-index: 10000; font-family: var(--font-body); border: var(--border-structural); }
+  .skip-link:focus { top: 0; }
+
   /* ── Reduced Motion ── */
   @media (prefers-reduced-motion: reduce) {
     .container { animation: none; }
@@ -482,6 +485,7 @@
 </style>
 </head>
 <body>
+<a href="#auth-section" class="skip-link">Skip to content</a>
 
 <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
 
