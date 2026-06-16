@@ -540,21 +540,7 @@
         #view-list.view-hidden { display: none; }
         #view-timeline { display: none; width: 100%; max-width: var(--max-width-wide); }
         #view-timeline.view-visible { display: block; }
-        #schedule-timeline { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); padding: var(--space-7) var(--space-8); }
-        .tl-month-header { font-family: var(--font-display); font-size: var(--text-xs); font-weight: var(--weight-black); letter-spacing: var(--tracking-wider); text-transform: uppercase; color: var(--color-text-muted); padding: var(--space-7) 0 var(--space-4); border-bottom: var(--border-thin); margin-bottom: var(--space-2); }
-        .tl-month-header:first-child { padding-top: 0; }
-        .tl-item { display: flex; align-items: flex-start; gap: var(--space-6); padding: var(--space-5) var(--space-5); border-radius: var(--radius-sm); margin-bottom: var(--space-1); transition: background var(--duration-fast); cursor: pointer; }
-        .tl-item:hover { background: var(--color-bg-secondary); }
-        .tl-date-col { min-width: 72px; text-align: right; font-size: var(--text-xs); color: var(--color-text-muted); line-height: var(--leading-normal); flex-shrink: 0; }
-        .tl-date-col strong { display: block; font-size: var(--text-sm); color: var(--color-text-secondary); font-weight: var(--weight-bold); }
-        .tl-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; border: 1px solid var(--color-border-ink); }
-        .tl-body { flex: 1; }
-        .tl-title { font-size: var(--text-base); font-weight: var(--weight-bold); margin-bottom: var(--space-1); }
-        .tl-meta { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
-        .tl-course-name { font-size: var(--text-xs); color: var(--color-text-muted); }
-        .tl-item.tl-past { opacity: 0.35; }
-        .tl-item.tl-urgent { background: var(--color-error-soft); }
-        .tl-item.tl-soon { background: var(--color-warning-soft); }
+        /* ── DAYS BADGES (shared) ── */
         .tl-days-badge { font-size: 0.65rem; font-weight: var(--weight-bold); padding: 2px 7px; border-radius: var(--radius-sm); white-space: nowrap; }
         .tl-days-past  { background: var(--color-bg-secondary); color: var(--color-text-muted); }
         .tl-days-urgent { background: var(--color-error-soft); color: var(--color-error); }
@@ -592,6 +578,27 @@
 
         /* ── SCHEDULE VIEW WEEK SECTION ── */
         .schedule-week-section { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-sm); padding: var(--space-6) var(--space-7); margin-bottom: var(--space-6); }
+
+        /* ── CALENDAR VIEW ── */
+        #view-calendar { display: none; width: 100%; max-width: var(--max-width-wide); }
+        #view-calendar.view-visible { display: block; }
+        .cal-card { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); padding: var(--space-6) var(--space-7); }
+        .cal-header { display: flex; align-items: center; justify-content: center; gap: var(--space-6); margin-bottom: var(--space-6); }
+        .cal-header-title { font-family: var(--font-display); font-size: var(--text-md); font-weight: var(--weight-black); min-width: 140px; text-align: center; }
+        .cal-nav { background: none; border: var(--border-thin); border-radius: var(--radius-sm); width: 32px; height: 32px; cursor: pointer; font-size: var(--text-md); display: flex; align-items: center; justify-content: center; transition: background var(--duration-fast); }
+        .cal-nav:hover { background: var(--color-bg-secondary); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+        .cal-day-header { background: var(--color-bg-secondary); padding: var(--space-3); text-align: center; font-size: var(--text-xs); font-weight: var(--weight-black); color: var(--color-text-muted); }
+        .cal-day { background: var(--color-bg-card); min-height: 72px; padding: var(--space-2); cursor: pointer; transition: background var(--duration-fast); position: relative; }
+        .cal-day:hover { background: var(--color-bg-secondary); }
+        .cal-day.cal-other { opacity: 0.35; }
+        .cal-day.cal-today { background: var(--color-accent-soft); font-weight: var(--weight-black); }
+        .cal-day-num { font-size: var(--text-xs); font-weight: var(--weight-bold); margin-bottom: var(--space-1); color: var(--color-text-secondary); }
+        .cal-day.cal-today .cal-day-num { color: var(--color-accent); }
+        .cal-dots { display: flex; flex-wrap: wrap; gap: 3px; }
+        .cal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .cal-day-detail { background: var(--color-bg-card); border-radius: var(--radius-md); border: var(--border-structural); box-shadow: var(--shadow-hard-sm); margin-top: var(--space-5); padding: var(--space-5) var(--space-6); }
+        .cal-day-detail-title { font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-black); margin-bottom: var(--space-4); }
 
         /* ── Integrated Brutalism (selective) ── */
         .ob-card { border: var(--border-heavy); border-radius: var(--radius-lg); box-shadow: var(--shadow-hard-accent); }
@@ -632,8 +639,9 @@
             .focus-course-label { padding: var(--space-2) var(--space-5); }
             #settings-panel { width: 100%; border-radius: 0; }
             .add-event-modal { max-width: 100%; border-radius: var(--radius-md); margin: var(--space-4); }
-            #schedule-timeline { padding: var(--space-5); }
             .schedule-week-section { padding: var(--space-4) var(--space-5); }
+            .cal-day { min-height: 56px; }
+            .cal-day-num { font-size: 0.65rem; }
             .wl-card { padding: var(--space-5); }
             .wl-pill { padding: var(--space-2) var(--space-4); min-height: 44px; display: inline-flex; align-items: center; }
         }
@@ -650,8 +658,6 @@
             .add-event-body { padding: var(--space-5); gap: var(--space-4); }
             #ob-review { border-radius: 0; }
             .rv-header, .rv-body, .rv-footer { padding-left: var(--space-4); padding-right: var(--space-4); }
-            .tl-item { gap: var(--space-3); padding: var(--space-4) var(--space-3); }
-            .tl-date-col { min-width: 56px; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
@@ -970,6 +976,7 @@
         <a href="index.html" class="top-bar-logo">Sylla<span>Bot</span></a>
         <div class="view-switcher" role="tablist">
             <button class="view-btn active" id="vb-list"     role="tab" aria-selected="true"  aria-controls="view-list"     onclick="switchView('list')" data-i18n="vbList">עכשיו</button>
+            <button class="view-btn"        id="vb-calendar" role="tab" aria-selected="false" aria-controls="view-calendar" onclick="switchView('calendar')" data-i18n="vbCalendar">יומן</button>
             <button class="view-btn"        id="vb-timeline" role="tab" aria-selected="false" aria-controls="view-timeline" onclick="switchView('timeline')" data-i18n="vbTimeline">לוח זמנים</button>
             <button class="view-btn"        id="vb-workload" role="tab" aria-selected="false" aria-controls="view-workload" onclick="switchView('workload')" data-i18n="vbWorkload">קורסים</button>
         </div>
@@ -1004,9 +1011,21 @@
         </div>
     </div>
 
-    <!-- SCHEDULE VIEW -->
+    <!-- CALENDAR VIEW -->
+    <div id="view-calendar" role="tabpanel" aria-labelledby="vb-calendar">
+        <div class="cal-card">
+            <div class="cal-header">
+                <button class="cal-nav" onclick="calNav(-1)">›</button>
+                <div class="cal-header-title" id="cal-month-title"></div>
+                <button class="cal-nav" onclick="calNav(1)">‹</button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div id="cal-detail"></div>
+    </div>
+
+    <!-- SCHEDULE VIEW (syllabus weekly content only) -->
     <div id="view-timeline" role="tabpanel" aria-labelledby="vb-timeline">
-        <!-- This Week -->
         <div class="schedule-week-section">
             <div class="focus-header">
                 <div class="focus-header-left">
@@ -1020,8 +1039,6 @@
             </div>
             <div id="syllabus-content"></div>
         </div>
-        <!-- Timeline -->
-        <div id="schedule-timeline"></div>
     </div>
 
     <!-- COURSES VIEW -->
@@ -1567,6 +1584,7 @@
             obSemesterSub:   'זה יעזור לנו לשייך את המשימות לשבועות הנכונים',
             obSemesterBtn:   'המשך',
             vbList:          'עכשיו',
+            vbCalendar:      'יומן',
             vbTimeline:      'לוח זמנים',
             vbWorkload:      'קורסים',
             focusTasks:      'משימות',
@@ -1690,6 +1708,7 @@
             obSemesterSub:   'This helps us assign tasks to the correct weeks',
             obSemesterBtn:   'Continue',
             vbList:          'Now',
+            vbCalendar:      'Calendar',
             vbTimeline:      'Schedule',
             vbWorkload:      'Courses',
             focusTasks:      'Tasks',
@@ -1847,6 +1866,8 @@
         // View switcher buttons
         const vbList = document.getElementById('vb-list');
         if (vbList) vbList.textContent = s.vbList;
+        const vbCalendar = document.getElementById('vb-calendar');
+        if (vbCalendar) vbCalendar.textContent = s.vbCalendar;
         const vbTimeline = document.getElementById('vb-timeline');
         if (vbTimeline) vbTimeline.textContent = s.vbTimeline;
         const vbWorkload = document.getElementById('vb-workload');
@@ -3012,7 +3033,33 @@ function addCourseChip(course) {
     }
     function changeWeek(dir) { currentWeekIdx = Math.max(0, Math.min(weekRanges.length-1, currentWeekIdx+dir)); render(); }
 
+    // ── Clean iCal titles: strip course name, prof patterns, "Campus" prefix, tag keywords ──
+    function cleanTitle(title, courseName, tag) {
+        if (!title) return '';
+        let t = title;
+        // Strip "Campus " prefix
+        t = t.replace(/^Campus\s+/i, '');
+        // Strip professor patterns (ד"ר ..., פרופ' ..., גב' ..., מר ...)
+        t = t.replace(/\s*(?:ד"ר|פרופ'|גב'|מר|דר)\s+[\u0590-\u05FF]+(?:\s+[\u0590-\u05FF]+)*/g, '');
+        // Strip course name from title (if present)
+        if (courseName && t.includes(courseName)) {
+            t = t.replace(courseName, '').replace(/\s*[-–—]\s*$/, '').replace(/^\s*[-–—]\s*/, '');
+        }
+        // Strip tag keyword if already shown as badge
+        if (tag) {
+            t = t.replace(new RegExp('\\b' + tag.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\b', 'g'), '');
+        }
+        // Strip מועד patterns like "מועד 1", "מועד א" — but keep as part of cleaned title if it's meaningful
+        // Clean up whitespace
+        t = t.replace(/\s{2,}/g, ' ').trim();
+        // If nothing left, fall back to original
+        return t || title;
+    }
+
     let nowFilterCourse = null; // null = show all
+    let calMonth = new Date().getMonth();
+    let calYear = new Date().getFullYear();
+    let calSelectedDate = null;
 
     function renderNowFilter() {
         const bar = document.getElementById('now-filter-bar');
@@ -3037,10 +3084,15 @@ function addCourseChip(course) {
         // ── Course filter bar ──
         renderNowFilter();
 
-        // ── Now: merged urgency-sorted list ──
+        // ── Now: urgency-sorted, next 14 days only ──
         const nowEl = document.getElementById('now-list'); nowEl.innerHTML = '';
         const filtered = nowFilterCourse ? userExams.filter(x => x.c === nowFilterCourse) : userExams;
-        const sorted = [...filtered].sort((a,b) => new Date(a.d)-new Date(b.d));
+        const upcoming = filtered.filter(x => {
+            if (!x.d) return false;
+            const days = Math.floor((new Date(x.d) - now) / 86400000);
+            return days >= -1 && days <= 14; // include yesterday (just passed) through 14 days out
+        });
+        const sorted = [...upcoming].sort((a,b) => new Date(a.d)-new Date(b.d));
         if (!sorted.length) {
             nowEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div>${s.nowEmpty || s.emptyExams}<div style="font-size:var(--text-xs);margin-top:var(--space-2)">${s.nowEmptyCta || s.emptyExamsCta}</div><div class="empty-cta"><button class="empty-btn" onclick="openIcalOnboarding()">${s.connectCal}</button><button class="empty-btn" onclick="showOnboarding()">${s.uploadSyl}</button></div></div>`;
         } else {
@@ -3053,7 +3105,8 @@ function addCourseChip(course) {
                 const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
                 const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
                 const safeTag = DOMPurify.sanitize(x.tag || '', {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
-                const safeT   = DOMPurify.sanitize(x.t,   {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
+                const cleaned = cleanTitle(x.t, x.c, x.tag);
+                const safeT   = DOMPurify.sanitize(cleaned, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
                 const safeC   = x.c ? DOMPurify.sanitize(x.c, {ALLOWED_TAGS: [], ALLOWED_ATTR: []}) : '';
                 const courseColor = getCourseColor(x.c||'');
                 const courseInfo = safeC
@@ -3496,7 +3549,7 @@ function addCourseChip(course) {
     // ── VIEW SWITCHER ──
     function switchView(v, skipSave) {
         currentView = v;
-        const views = ['list', 'timeline', 'workload'];
+        const views = ['list', 'calendar', 'timeline', 'workload'];
         views.forEach(name => {
             const btn = document.getElementById(`vb-${name}`);
             if (btn) {
@@ -3506,11 +3559,14 @@ function addCourseChip(course) {
         });
         const listEl = document.getElementById('view-list');
         if (listEl) listEl.classList.toggle('view-hidden', v !== 'list');
+        const calEl = document.getElementById('view-calendar');
+        if (calEl) calEl.classList.toggle('view-visible', v === 'calendar');
         const tlEl = document.getElementById('view-timeline');
         if (tlEl) tlEl.classList.toggle('view-visible', v === 'timeline');
         const wlEl = document.getElementById('view-workload');
         if (wlEl) wlEl.classList.toggle('view-visible', v === 'workload');
 
+        if (v === 'calendar') renderCalendar();
         if (v === 'timeline') renderSchedule();
         if (v === 'workload') renderCourses();
         if (!skipSave) savePreferredView(v);
@@ -3567,67 +3623,6 @@ function addCourseChip(course) {
                 sC.innerHTML += `</div>`;
             });
         }
-
-        // ── Timeline ──
-        const container = document.getElementById('schedule-timeline');
-        const now = new Date();
-        const semStart = new Date(semesterStart);
-        const tlItems = [];
-
-        userExams.forEach(ex => {
-            if (!ex.d) return;
-            tlItems.push({ date: new Date(ex.d), title: ex.t || '', type: ex.tag || 'מבחן', course: ex.c || '' });
-        });
-        userSyllabus.filter(si => si.t === 'מטלה').forEach(si => {
-            const d = new Date(semStart); d.setDate(d.getDate() + (si.w || 0) * 7);
-            tlItems.push({ date: d, title: si.txt || '', type: 'מטלה', course: si.c || '' });
-        });
-        tlItems.sort((a, b) => a.date - b.date);
-
-        if (!tlItems.length) {
-            container.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center"><div class="empty-icon">📅</div>אין בחינות או מטלות עדיין</div>';
-            return;
-        }
-
-        const byMonth = new Map();
-        tlItems.forEach(item => {
-            const key = item.date.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
-            if (!byMonth.has(key)) byMonth.set(key, []);
-            byMonth.get(key).push(item);
-        });
-
-        let html = '';
-        byMonth.forEach((monthItems, month) => {
-            html += `<div class="tl-month-header">${month}</div>`;
-            monthItems.forEach(item => {
-                const diff = item.date - now;
-                const days = Math.floor(diff / 86400000);
-                let itemCls = '', daysCls = 'tl-days-ok', daysLabel = `${days} ימים`;
-                if (diff < 0)        { itemCls = 'tl-past';   daysCls = 'tl-days-past';   daysLabel = 'עבר'; }
-                else if (days <= 7)  { itemCls = 'tl-urgent'; daysCls = 'tl-days-urgent'; }
-                else if (days <= 14) { itemCls = 'tl-soon';   daysCls = 'tl-days-soon'; }
-
-                const color = item.course ? (courseColors[item.course] || '#888') : '#888';
-                const knownTypes = ['מבחן','מועד-ב','מטלה','פרזנטציה','קריאה','שיעור','תרגול','בוחן','צפייה','סרטון'];
-                const tagCls = knownTypes.includes(item.type) ? `tag-${item.type}` : 'tag-default';
-                const dateStr = item.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'short' });
-                const safeTitle  = DOMPurify.sanitize(item.title,  {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
-                const safeCourse = DOMPurify.sanitize(item.course, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
-
-                html += `<div class="tl-item ${itemCls}">
-                    <div class="tl-date-col"><strong>${dateStr}</strong><span class="tl-days-badge ${daysCls}">${daysLabel}</span></div>
-                    <div class="tl-dot" style="background:${color}"></div>
-                    <div class="tl-body">
-                        <div class="tl-title">${safeTitle}</div>
-                        <div class="tl-meta">
-                            <span class="badge ${tagCls}">${item.type}</span>
-                            ${safeCourse ? `<span class="tl-course-name">${safeCourse}</span>` : ''}
-                        </div>
-                    </div>
-                </div>`;
-            });
-        });
-        container.innerHTML = html;
     }
 
     function renderCourses() {
@@ -3668,7 +3663,8 @@ function addCourseChip(course) {
                 html += `<div class="course-card-section">
                     <div class="course-card-section-title">${s.coursesExams}</div>`;
                 exams.forEach(ex => {
-                    const safeT = DOMPurify.sanitize(ex.t || '', {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
+                    const cleaned = cleanTitle(ex.t || '', course, ex.tag);
+                    const safeT = DOMPurify.sanitize(cleaned, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
                     const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
                     const tagCls = knownTags.includes(ex.tag) ? `tag-${ex.tag}` : 'tag-default';
                     const dateStr = ex.d ? new Date(ex.d).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' }) : '';
@@ -3717,6 +3713,108 @@ function addCourseChip(course) {
         });
 
         container.innerHTML = html;
+    }
+
+    // ── CALENDAR VIEW ──
+    function calNav(dir) {
+        calMonth += dir;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        if (calMonth < 0)  { calMonth = 11; calYear--; }
+        calSelectedDate = null;
+        renderCalendar();
+    }
+
+    function calSelectDate(dateStr) {
+        calSelectedDate = calSelectedDate === dateStr ? null : dateStr;
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const s = STRINGS[currentLang] || STRINGS.he;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+        // Month title
+        const monthTitle = new Date(calYear, calMonth).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+        document.getElementById('cal-month-title').textContent = monthTitle;
+
+        // Build events by date
+        const eventsByDate = {};
+        userExams.forEach(ex => {
+            if (!ex.d) return;
+            const d = new Date(ex.d);
+            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            if (!eventsByDate[key]) eventsByDate[key] = [];
+            eventsByDate[key].push(ex);
+        });
+
+        // Calendar grid
+        const firstDay = new Date(calYear, calMonth, 1);
+        const lastDay = new Date(calYear, calMonth + 1, 0);
+        const startDay = firstDay.getDay(); // 0=Sun
+        const daysInMonth = lastDay.getDate();
+
+        // Day headers (Sun-Sat, Hebrew)
+        const dayNames = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+        let gridHtml = dayNames.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+        // Previous month fill
+        const prevMonth = new Date(calYear, calMonth, 0);
+        for (let i = startDay - 1; i >= 0; i--) {
+            const day = prevMonth.getDate() - i;
+            gridHtml += `<div class="cal-day cal-other"><div class="cal-day-num">${day}</div></div>`;
+        }
+
+        // Current month days
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateKey = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const isToday = dateKey === todayStr;
+            const isSelected = dateKey === calSelectedDate;
+            const dayEvents = eventsByDate[dateKey] || [];
+            const dots = dayEvents.map(ex => {
+                const color = getCourseColor(ex.c || '');
+                return `<div class="cal-dot" style="background:${color}" title="${DOMPurify.sanitize(ex.t||'', {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}"></div>`;
+            }).join('');
+            gridHtml += `<div class="cal-day${isToday ? ' cal-today' : ''}${isSelected ? ' cal-today' : ''}" onclick="calSelectDate('${dateKey}')">
+                <div class="cal-day-num">${d}</div>
+                <div class="cal-dots">${dots}</div>
+            </div>`;
+        }
+
+        // Next month fill
+        const totalCells = startDay + daysInMonth;
+        const remaining = (7 - (totalCells % 7)) % 7;
+        for (let d = 1; d <= remaining; d++) {
+            gridHtml += `<div class="cal-day cal-other"><div class="cal-day-num">${d}</div></div>`;
+        }
+
+        document.getElementById('cal-grid').innerHTML = gridHtml;
+
+        // Detail panel for selected date
+        const detailEl = document.getElementById('cal-detail');
+        if (calSelectedDate && eventsByDate[calSelectedDate]) {
+            const selDate = new Date(calSelectedDate + 'T00:00:00');
+            const dateLabel = selDate.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+            const items = eventsByDate[calSelectedDate];
+            let detailHtml = `<div class="cal-day-detail"><div class="cal-day-detail-title">${dateLabel}</div>`;
+            items.forEach(ex => {
+                const cleaned = cleanTitle(ex.t || '', ex.c, ex.tag);
+                const safeT = DOMPurify.sanitize(cleaned, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
+                const safeC = ex.c ? DOMPurify.sanitize(ex.c, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]}) : '';
+                const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
+                const tagCls = knownTags.includes(ex.tag) ? `tag-${ex.tag}` : 'tag-default';
+                const courseColor = getCourseColor(ex.c||'');
+                detailHtml += `<div class="course-card-item">
+                    <span class="badge ${tagCls}">${DOMPurify.sanitize(ex.tag || '', {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}</span>
+                    ${safeC ? `<span class="focus-course-dot" style="background:${courseColor}"></span><strong style="font-size:var(--text-xs)">${safeC}</strong><span style="color:var(--color-text-muted)">—</span>` : ''}
+                    <span>${safeT}</span>
+                </div>`;
+            });
+            detailHtml += `</div>`;
+            detailEl.innerHTML = detailHtml;
+        } else {
+            detailEl.innerHTML = '';
+        }
     }
 
     document.addEventListener('click', (e) => {
