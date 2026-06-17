@@ -653,7 +653,7 @@
 </style>
 </head>
 <body>
-<a href="#main-content" class="skip-link">Skip to content</a>
+<a href="#main-content" class="skip-link" data-i18n="skipLink">Skip to content</a>
 
 <!-- PILOT BANNER -->
 <div id="pilot-banner">
@@ -860,6 +860,7 @@
   // ── I18N ──
   const T = {
     he: {
+      skipLink: 'דלג לתוכן',
       navCta: 'התחל עכשיו →',
       heroLabel: 'כלי AI לסטודנטים',
       heroTitle: 'הסמסטר שלך,<br>סוף סוף <span class="highlight">מסודר</span>',
@@ -933,6 +934,7 @@
       footerTagline: 'נבנה עם ❤️ לסטודנטים',
     },
     en: {
+      skipLink: 'Skip to content',
       navCta: 'Get Started →',
       heroLabel: 'AI Tool for Students',
       heroTitle: 'Your semester,<br>finally <span class="highlight">organized</span>',
@@ -1023,6 +1025,10 @@
     });
     const bannerText = document.getElementById('pilot-banner-text');
     if (bannerText) bannerText.textContent = t.pilotBanner;
+    const dismissBtn = document.getElementById('pilot-banner-dismiss');
+    if (dismissBtn) dismissBtn.setAttribute('aria-label', lang === 'en' ? 'Close' : 'סגור');
+    const langToggle = document.getElementById('lang-toggle');
+    if (langToggle) langToggle.setAttribute('aria-label', lang === 'en' ? 'Switch language' : 'החלף שפה');
     localStorage.setItem('landing-lang', lang);
   }
 

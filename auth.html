@@ -628,6 +628,11 @@
       errPassLen: 'הסיסמה חייבת להכיל לפחות 6 תווים', errFillEmail: 'אנא הכנס אימייל',
       successSignup: 'נשלח אליך אימייל לאישור. בדוק את תיבת הדואר שלך!',
       successReset: 'נשלח קישור לאיפוס סיסמה לאימייל שלך',
+      successGreeting: (name) => `שלום, ${name}! 👋`,
+      successMsg: 'מכין את הדשבורד שלך...',
+      successBtn: 'לוח הבקרה שלי ←',
+      skipLink: 'דלג לתוכן',
+      signupLang: 'שפה',
       errGeneric: 'אירעה שגיאה. נסה שוב',
       errMap: {
         'Invalid login credentials': 'אימייל או סיסמה שגויים',
@@ -655,6 +660,11 @@
       errPassLen: 'Password must be at least 6 characters', errFillEmail: 'Please enter your email',
       successSignup: 'A confirmation email was sent. Check your inbox!',
       successReset: 'A password reset link was sent to your email',
+      successGreeting: (name) => `Hello, ${name}! 👋`,
+      successMsg: 'Preparing your dashboard...',
+      successBtn: 'My Dashboard →',
+      skipLink: 'Skip to content',
+      signupLang: 'Language',
       errGeneric: 'An error occurred. Try again',
       errMap: {
         'Invalid login credentials': 'Incorrect email or password',
@@ -692,6 +702,7 @@
     if (signupLabels[0]) signupLabels[0].textContent = t.signupName;
     if (signupLabels[1]) signupLabels[1].textContent = t.signupEmail;
     if (signupLabels[2]) signupLabels[2].textContent = t.signupPassword;
+    if (signupLabels[3]) signupLabels[3].textContent = t.signupLang;
     const btnSignup = document.getElementById('btn-signup');
     if (btnSignup) { btnSignup.textContent = t.btnSignup; btnSignup.setAttribute('data-label', t.btnSignup); }
     updateGoogleBtn('#form-signup .btn-google', t.googleSignup);
@@ -726,6 +737,16 @@
       inp.dir = lang === 'en' ? 'ltr' : 'rtl';
       inp.style.textAlign = lang === 'en' ? 'left' : 'right';
     });
+
+    // Skip link
+    const skipLink = document.querySelector('.skip-link');
+    if (skipLink) skipLink.textContent = t.skipLink;
+
+    // Success section static text
+    const successMsg = document.getElementById('success-msg');
+    if (successMsg) successMsg.textContent = t.successMsg;
+    const successBtnEl = document.querySelector('#success-section .btn-dashboard');
+    if (successBtnEl) successBtnEl.textContent = t.successBtn;
 
     // Update any open modals immediately
     const modalDir = lang === 'en' ? 'ltr' : 'rtl';
@@ -862,7 +883,7 @@
     document.getElementById('auth-section').style.display = 'none';
     document.getElementById('success-section').style.display = 'block';
     const name = user.user_metadata?.full_name || user.email;
-    document.getElementById('success-title').textContent = `שלום, ${name.split(' ')[0]}! 👋`;
+    document.getElementById('success-title').textContent = T[currentLang].successGreeting(name.split(' ')[0]);
 
     // PAYMENT WALL DISABLED - FREE LAUNCH PERIOD
     window.location.href = 'dashboard.html';
