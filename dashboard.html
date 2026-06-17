@@ -920,6 +920,7 @@
                 </ol>
             </div>
             <input type="url" id="ob-ical-yedion" placeholder="https://yedion.runi.ac.il/..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:16px;box-sizing:border-box">
+            <div id="ob-ical-hint" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;margin-bottom:14px;font-size:0.85rem;color:#92400e;text-align:right"></div>
             <button id="ob-ical-save-btn" onclick="obSaveIcal()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">המשך</button>
             <div class="ob-back-link" onclick="obBackToChoice()">← חזור לבחירה</div>
         </div>
@@ -935,6 +936,15 @@
                 ⚙️ אפשר לשנות בהגדרות בכל רגע
             </div>
             <button onclick="obFinishIcal()" style="width:100%;padding:14px;background:#27ae60;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#1a7a42'" onmouseout="this.style.background='#27ae60'" id="ob-complete-btn">פתח את לוח הבקרה</button>
+        </div>
+
+        <!-- Step 0d: PDF upload prompt (after iCal path) -->
+        <div id="ob-pdf-prompt" style="display:none;text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:12px">📄</div>
+            <h2 class="ob-title" style="font-size:1.3rem">רוצה להוסיף גם סילבוסים?</h2>
+            <p class="ob-sub" style="margin-bottom:20px">ה-AI שלנו יכול לחלץ מידע נוסף מקבצי PDF של סילבוסים — שיעורים, קריאות, ומשימות שלא מופיעים ביומן.</p>
+            <button onclick="obPdfPromptUpload()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s;margin-bottom:10px" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">העלה סילבוסים</button>
+            <button onclick="obPdfPromptSkip()" style="width:100%;padding:14px;background:transparent;color:#666;border:1.5px solid #e0e0e0;border-radius:12px;font-size:0.95rem;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#999'" onmouseout="this.style.borderColor='#e0e0e0'">אולי אחר כך</button>
         </div>
 
         <!-- Step 1: Drop zone (PDF path) -->
@@ -2097,6 +2107,7 @@
         document.getElementById('ob-choice-section').style.display = '';
         document.getElementById('ob-ical-step').style.display = 'none';
         document.getElementById('ob-complete-section').style.display = 'none';
+        document.getElementById('ob-pdf-prompt').style.display = 'none';
         document.getElementById('ob-drop-section').style.display = 'none';
         document.getElementById('ob-wizard').style.display = 'none';
         document.getElementById('ob-semester-step').style.display = 'none';
@@ -2127,6 +2138,7 @@
         document.getElementById('ob-choice-section').style.display = '';
     };
 
+    let _icalHintShown = false;
     window.obSaveIcal = async function() {
         const moodleUrl = document.getElementById('ob-ical-moodle').value.trim();
         const yedionUrl = document.getElementById('ob-ical-yedion').value.trim();
@@ -2134,6 +2146,16 @@
         const urlPattern = /^https:\/\/.+/;
         if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה — חייבת להתחיל ב-https://'); return; }
         if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה — חייבת להתחיל ב-https://'); return; }
+
+        // Show hint if only one source is filled (first time only)
+        const hint = document.getElementById('ob-ical-hint');
+        if (!_icalHintShown && (moodleUrl ? !yedionUrl : yedionUrl)) {
+            const missing = moodleUrl ? 'Yedion (מערכת שעות ומבחנים)' : 'Moodle (מטלות ודדליינים)';
+            hint.innerHTML = `<strong>טיפ:</strong> מומלץ לחבר גם את ${missing} לקבלת תמונה מלאה יותר. אפשר גם להמשיך עם מה שיש.`;
+            hint.style.display = '';
+            _icalHintShown = true;
+            return;
+        }
 
         const btn = document.getElementById('ob-ical-save-btn');
         btn.disabled = true; btn.textContent = 'שומר...';
@@ -2172,6 +2194,19 @@
         await saveToSupabase(true);
         localStorage.setItem(`welcome_${currentUser.id}`, 'show');
         showDashboard();
+    };
+
+    window.obPdfPromptUpload = function() {
+        document.getElementById('ob-pdf-prompt').style.display = 'none';
+        document.getElementById('ob-drop-section').style.display = '';
+    };
+
+    window.obPdfPromptSkip = function() {
+        document.getElementById('ob-pdf-prompt').style.display = 'none';
+        const dayNames = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+        const dd = document.getElementById('ob-complete-day');
+        if (dd) dd.textContent = dayNames[_reminderPrefs.digest_day || 0];
+        document.getElementById('ob-complete-section').style.display = '';
     };
 
     function obDrop(e) {
@@ -2566,12 +2601,9 @@
         track('adhd_self_report', { has_adhd: hasAdhd });
         document.getElementById('ob-semester-step').style.display = 'none';
 
-        // iCal path: skip PDF analysis, show completion step
+        // iCal path: prompt user to also upload PDFs
         if (_obPath === 'ical') {
-            const dayNames = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-            const dd = document.getElementById('ob-complete-day');
-            if (dd) dd.textContent = dayNames[_reminderPrefs.digest_day || 0];
-            document.getElementById('ob-complete-section').style.display = '';
+            document.getElementById('ob-pdf-prompt').style.display = '';
             return;
         }
 
