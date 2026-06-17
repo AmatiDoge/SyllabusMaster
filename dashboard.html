@@ -1212,10 +1212,10 @@
     }
     async function copyCalendarFeed(btn) {
         const t = await ensureIcsToken();
-        if (!t) { alert('שמור קודם את לוח הזמנים שלך'); return; }
+        if (!t) { alert(currentLang === 'en' ? 'Save your schedule first' : 'שמור קודם את לוח הזמנים שלך'); return; }
         const url = `https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/calendar-feed?token=${t}`;
         try { await navigator.clipboard.writeText(url); } catch (_) {}
-        if (btn) { const o = btn.textContent; btn.textContent = '✓ הקישור הועתק'; setTimeout(() => btn.textContent = o, 1800); }
+        if (btn) { const o = btn.textContent; btn.textContent = currentLang === 'en' ? '✓ Link copied' : '✓ הקישור הועתק'; setTimeout(() => btn.textContent = o, 1800); }
         track('calendar_subscribe_copy');
     }
 
@@ -1299,21 +1299,22 @@
     }
 
     async function saveIcalCredentials() {
+        const _s = STRINGS[currentLang] || STRINGS.he;
         const moodleUrl = document.getElementById('ical-moodle-url').value.trim();
         const yedionUrl = document.getElementById('ical-yedion-url').value.trim();
 
         if (!moodleUrl && !yedionUrl) {
-            alert('נא להזין לפחות כתובת אחת');
+            alert(_s.obIcalAlertEmpty);
             return;
         }
 
         // Basic URL validation (HTTPS required — DB enforces this too)
         const urlPattern = /^https:\/\/.+/;
-        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה — חייבת להתחיל ב-https://'); return; }
-        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה — חייבת להתחיל ב-https://'); return; }
+        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert(_s.obIcalAlertBadUrl('Moodle')); return; }
+        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert(_s.obIcalAlertBadUrl('Yedion')); return; }
 
         const btn = document.getElementById('ical-save-btn');
-        btn.disabled = true; btn.textContent = 'שומר...';
+        btn.disabled = true; btn.textContent = currentLang === 'en' ? 'Saving...' : 'שומר...';
 
         try {
             const payload = {
@@ -1335,14 +1336,14 @@
             await loadIcalCredentials();
             closeIcalModal();
         } catch (e) {
-            alert('שגיאה בשמירה: ' + (e.message || e));
+            alert(_s.obIcalAlertSaveErr(e.message || e));
         } finally {
-            btn.disabled = false; btn.textContent = 'שמור וחבר';
+            btn.disabled = false; btn.textContent = currentLang === 'en' ? 'Save & Connect' : 'שמור וחבר';
         }
     }
 
     async function disconnectIcal() {
-        if (!confirm('בטוח שאתה רוצה לנתק את הסנכרון האוטומטי?')) return;
+        if (!confirm((STRINGS[currentLang] || STRINGS.he).spDisconnectConfirm)) return;
         await sb.from('ical_credentials').delete().eq('user_id', currentUser.id);
         icalCredentials = null;
         updateIcalUI();
@@ -1660,6 +1661,38 @@
             addEventWeek:    'שבוע',
             addEventCancel:  'ביטול',
             addEventSubmit:  'הוסף',
+            // iCal onboarding step
+            obIcalStepLabel: 'הגדרות · חיבור יומן',
+            obIcalTitle:     'חבר את יומני המוסד שלך',
+            obIcalSub:       'הכנס את כתובות ה-iCal מ-Moodle ו/או Yedion. לא חובה את שניהם.',
+            obIcalMoodleTitle:'Moodle — מטלות ודדליינים',
+            obIcalMoodleSteps:'<li>היכנס ל-<strong>moodle.runi.ac.il</strong></li><li>לחץ על <strong>לוח שנה</strong> (Calendar) בתפריט</li><li>לחץ <strong>ייצוא לוח שנה</strong> (Export calendar)</li><li>בחר "כל האירועים" ולחץ <strong>קבל כתובת URL</strong></li>',
+            obIcalYedionTitle:'Yedion — מערכת שעות ומבחנים',
+            obIcalYedionSteps:'<li>היכנס ל-<strong>yedion.runi.ac.il</strong></li><li>לחץ על <strong>הוסף ליומן Google</strong> או <strong>ייצוא iCal</strong></li>',
+            obIcalSaveBtn:   'המשך',
+            obIcalBack:      '← חזור לבחירה',
+            obIcalHint:      (missing) => `<strong>טיפ:</strong> מומלץ לחבר גם את ${missing} לקבלת תמונה מלאה יותר. אפשר גם להמשיך עם מה שיש.`,
+            obIcalHintMoodle:'Moodle (מטלות ודדליינים)',
+            obIcalHintYedion:'Yedion (מערכת שעות ומבחנים)',
+            obIcalAlertEmpty:'נא להזין לפחות כתובת אחת',
+            obIcalAlertBadUrl:(source) => `כתובת ${source} לא תקינה — חייבת להתחיל ב-https://`,
+            obIcalAlertSaveErr:(msg) => `שגיאה בשמירה: ${msg}`,
+            // PDF prompt (after iCal)
+            obPdfPromptTitle:'רוצה להוסיף גם סילבוסים?',
+            obPdfPromptSub:  'ה-AI שלנו יכול לחלץ מידע נוסף מקבצי PDF של סילבוסים — שיעורים, קריאות, ומשימות שלא מופיעים ביומן.',
+            obPdfPromptUpload:'העלה סילבוסים',
+            obPdfPromptSkip: 'אולי אחר כך',
+            // Complete section info
+            obCompleteInfo:  '📧 <strong>סיכום שבועי</strong> — כל יום <span id="ob-complete-day">ראשון</span> בבוקר<br>🔔 <strong>תזכורת לפני דדליין</strong> — יום לפני + שבוע לפני<br>⚙️ אפשר לשנות בהגדרות בכל רגע',
+            // Semester step label
+            obSemesterStepLabel: 'הגדרות · תאריכי סמסטר',
+            // Settings alerts
+            spDisconnectConfirm: 'בטוח שאתה רוצה לנתק את הסנכרון האוטומטי?',
+            spDeleteCourseConfirm: (name) => `למחוק את הקורס "${name}" וכל הפריטים שלו?`,
+            spError:         'אירעה שגיאה. נסה שוב.',
+            spNoSubError:    'לא נמצא מנוי פעיל',
+            concurrencyBanner: 'הלוח שלך שונה ממכשיר אחר — טען מחדש כדי לקבל את הגרסה העדכנית.',
+            concurrencyReload: 'טען מחדש',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -1784,6 +1817,38 @@
             addEventWeek:    'Week',
             addEventCancel:  'Cancel',
             addEventSubmit:  'Add',
+            // iCal onboarding step
+            obIcalStepLabel: 'Setup · Connect Calendar',
+            obIcalTitle:     'Connect your institution calendars',
+            obIcalSub:       'Enter your iCal URLs from Moodle and/or Yedion. You don\'t need both.',
+            obIcalMoodleTitle:'Moodle — Assignments & Deadlines',
+            obIcalMoodleSteps:'<li>Go to <strong>moodle.runi.ac.il</strong></li><li>Click <strong>Calendar</strong> in the menu</li><li>Click <strong>Export calendar</strong></li><li>Select "All events" and click <strong>Get calendar URL</strong></li>',
+            obIcalYedionTitle:'Yedion — Schedule & Exams',
+            obIcalYedionSteps:'<li>Go to <strong>yedion.runi.ac.il</strong></li><li>Click <strong>Add to Google Calendar</strong> or <strong>Export iCal</strong></li>',
+            obIcalSaveBtn:   'Continue',
+            obIcalBack:      '← Back to options',
+            obIcalHint:      (missing) => `<strong>Tip:</strong> We recommend also connecting ${missing} for a more complete picture. You can also continue with what you have.`,
+            obIcalHintMoodle:'Moodle (assignments & deadlines)',
+            obIcalHintYedion:'Yedion (schedule & exams)',
+            obIcalAlertEmpty:'Please enter at least one URL',
+            obIcalAlertBadUrl:(source) => `${source} URL is invalid — must start with https://`,
+            obIcalAlertSaveErr:(msg) => `Error saving: ${msg}`,
+            // PDF prompt (after iCal)
+            obPdfPromptTitle:'Want to also upload syllabi?',
+            obPdfPromptSub:  'Our AI can extract additional info from syllabus PDFs — lectures, readings, and assignments not shown in the calendar.',
+            obPdfPromptUpload:'Upload Syllabi',
+            obPdfPromptSkip: 'Maybe later',
+            // Complete section info
+            obCompleteInfo:  '📧 <strong>Weekly digest</strong> — every <span id="ob-complete-day">Sunday</span> morning<br>🔔 <strong>Deadline reminder</strong> — 1 day + 1 week before<br>⚙️ Change anytime in settings',
+            // Semester step label
+            obSemesterStepLabel: 'Setup · Semester dates',
+            // Settings alerts
+            spDisconnectConfirm: 'Are you sure you want to disconnect automatic sync?',
+            spDeleteCourseConfirm: (name) => `Delete the course "${name}" and all its items?`,
+            spError:         'An error occurred. Try again.',
+            spNoSubError:    'No active subscription found',
+            concurrencyBanner: 'Your schedule was changed on another device — reload to get the latest.',
+            concurrencyReload: 'Reload',
         },
     };
 
@@ -1962,6 +2027,40 @@
         const _welBtn = document.getElementById('welcome-settings-btn');
         if (_welBtn) _welBtn.textContent = isEn2 ? '⚙️ Reminder settings' : '⚙️ הגדרות תזכורות';
 
+        // iCal step translations
+        const _obIcalTitle = document.getElementById('ob-ical-title');
+        if (_obIcalTitle) _obIcalTitle.textContent = s.obIcalTitle;
+        const _obIcalSub = document.getElementById('ob-ical-sub');
+        if (_obIcalSub) _obIcalSub.textContent = s.obIcalSub;
+        const _obIcalStepLabel = document.querySelector('#ob-ical-step .ob-step-label');
+        if (_obIcalStepLabel) _obIcalStepLabel.textContent = s.obIcalStepLabel;
+        const _moodleTitle = document.querySelector('#ob-ical-step div[style*="f0f7ff"] > div:first-child');
+        if (_moodleTitle) _moodleTitle.textContent = s.obIcalMoodleTitle;
+        const _moodleSteps = document.querySelector('#ob-ical-step div[style*="f0f7ff"] ol');
+        if (_moodleSteps) _moodleSteps.innerHTML = s.obIcalMoodleSteps;
+        const _yedionTitle = document.querySelector('#ob-ical-step div[style*="f0fff4"] > div:first-child');
+        if (_yedionTitle) _yedionTitle.textContent = s.obIcalYedionTitle;
+        const _yedionSteps = document.querySelector('#ob-ical-step div[style*="f0fff4"] ol');
+        if (_yedionSteps) _yedionSteps.innerHTML = s.obIcalYedionSteps;
+        const _obIcalSaveBtn = document.getElementById('ob-ical-save-btn');
+        if (_obIcalSaveBtn) _obIcalSaveBtn.textContent = s.obIcalSaveBtn;
+        const _obIcalBack = document.querySelector('#ob-ical-step .ob-back-link');
+        if (_obIcalBack) _obIcalBack.textContent = s.obIcalBack;
+        // PDF prompt translations
+        const _pdfPromptTitle = document.querySelector('#ob-pdf-prompt .ob-title');
+        if (_pdfPromptTitle) _pdfPromptTitle.textContent = s.obPdfPromptTitle;
+        const _pdfPromptSub = document.querySelector('#ob-pdf-prompt .ob-sub');
+        if (_pdfPromptSub) _pdfPromptSub.textContent = s.obPdfPromptSub;
+        const _pdfPromptBtns = document.querySelectorAll('#ob-pdf-prompt button');
+        if (_pdfPromptBtns[0]) _pdfPromptBtns[0].textContent = s.obPdfPromptUpload;
+        if (_pdfPromptBtns[1]) _pdfPromptBtns[1].textContent = s.obPdfPromptSkip;
+        // Complete info translations
+        const _obCompInfo = document.getElementById('ob-complete-info');
+        if (_obCompInfo) _obCompInfo.innerHTML = s.obCompleteInfo;
+        // Semester step label + content
+        const _semLabel = document.getElementById('ob-semester-step-label');
+        if (_semLabel) _semLabel.textContent = s.obSemesterStepLabel;
+
         // Semester step (if visible)
         if (document.getElementById('ob-semester-step')?.style.display !== 'none') {
             document.getElementById('ob-semester-title').textContent = s.obSemesterTitle;
@@ -2002,7 +2101,8 @@
                 if (error) throw error;
                 if (!updated || updated.length === 0) {
                     setSyncStatus('error');
-                    showBanner('Your schedule was changed on another device — reload to get the latest. Your recent edits are backed up on this device.', 'Reload', () => location.reload());
+                    const _cs = STRINGS[currentLang] || STRINGS.he;
+                    showBanner(_cs.concurrencyBanner, _cs.concurrencyReload, () => location.reload());
                     return;
                 }
                 currentRev = nextRev;
@@ -2140,25 +2240,26 @@
 
     let _icalHintShown = false;
     window.obSaveIcal = async function() {
+        const _s = STRINGS[currentLang] || STRINGS.he;
         const moodleUrl = document.getElementById('ob-ical-moodle').value.trim();
         const yedionUrl = document.getElementById('ob-ical-yedion').value.trim();
-        if (!moodleUrl && !yedionUrl) { alert('נא להזין לפחות כתובת אחת'); return; }
+        if (!moodleUrl && !yedionUrl) { alert(_s.obIcalAlertEmpty); return; }
         const urlPattern = /^https:\/\/.+/;
-        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert('כתובת Moodle לא תקינה — חייבת להתחיל ב-https://'); return; }
-        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert('כתובת Yedion לא תקינה — חייבת להתחיל ב-https://'); return; }
+        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert(_s.obIcalAlertBadUrl('Moodle')); return; }
+        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert(_s.obIcalAlertBadUrl('Yedion')); return; }
 
         // Show hint if only one source is filled (first time only)
         const hint = document.getElementById('ob-ical-hint');
         if (!_icalHintShown && (moodleUrl ? !yedionUrl : yedionUrl)) {
-            const missing = moodleUrl ? 'Yedion (מערכת שעות ומבחנים)' : 'Moodle (מטלות ודדליינים)';
-            hint.innerHTML = `<strong>טיפ:</strong> מומלץ לחבר גם את ${missing} לקבלת תמונה מלאה יותר. אפשר גם להמשיך עם מה שיש.`;
+            const missing = moodleUrl ? _s.obIcalHintYedion : _s.obIcalHintMoodle;
+            hint.innerHTML = _s.obIcalHint(missing);
             hint.style.display = '';
             _icalHintShown = true;
             return;
         }
 
         const btn = document.getElementById('ob-ical-save-btn');
-        btn.disabled = true; btn.textContent = 'שומר...';
+        btn.disabled = true; btn.textContent = currentLang === 'en' ? 'Saving...' : 'שומר...';
         try {
             const payload = {
                 user_id: currentUser.id,
@@ -2177,16 +2278,15 @@
             await loadIcalCredentials();
             // Proceed to semester step
             document.getElementById('ob-ical-step').style.display = 'none';
-            const _s = STRINGS[currentLang] || STRINGS.he;
             document.getElementById('ob-semester-step').style.display = '';
             document.getElementById('ob-semester-title').textContent = _s.obSemesterTitle;
             document.getElementById('ob-semester-sub').textContent = _s.obSemesterSub;
             document.getElementById('ob-semester-btn').textContent = _s.obSemesterBtn;
             document.getElementById('ob-semester-date').value = semesterStart;
         } catch (e) {
-            alert('שגיאה בשמירה: ' + (e.message || e));
+            alert(_s.obIcalAlertSaveErr(e.message || e));
         } finally {
-            btn.disabled = false; btn.textContent = 'המשך';
+            btn.disabled = false; btn.textContent = _s.obIcalSaveBtn;
         }
     };
 
@@ -3621,7 +3721,7 @@ function addCourseChip(course) {
     }
 
     function deleteCourse(name) {
-        if (!confirm(`למחוק את הקורס "${name}" וכל הפריטים שלו?`)) return;
+        if (!confirm((STRINGS[currentLang] || STRINGS.he).spDeleteCourseConfirm(name))) return;
         userSyllabus = userSyllabus.filter(i => i.c !== name);
         delete courseColors[name];
         save();
@@ -3697,13 +3797,12 @@ function addCourseChip(course) {
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                alert(data.error === 'No active subscription found'
-                    ? 'לא נמצא מנוי פעיל. אם שילמת לאחרונה, נסה שוב בעוד מספר שניות.'
-                    : 'אירעה שגיאה. נסה שוב.');
+                const _ss = STRINGS[currentLang] || STRINGS.he;
+                alert(data.error === 'No active subscription found' ? _ss.spNoSubError : _ss.spError);
             }
         } catch(e) {
             console.error(e);
-            alert('אירעה שגיאה. נסה שוב.');
+            alert((STRINGS[currentLang] || STRINGS.he).spError);
         }
     }
 
@@ -3715,7 +3814,7 @@ function addCourseChip(course) {
             window.location.href = 'index.html';
         } catch(e) {
             console.error(e);
-            alert('אירעה שגיאה. נסה שוב.');
+            alert((STRINGS[currentLang] || STRINGS.he).spError);
         }
     }
 
