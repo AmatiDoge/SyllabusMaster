@@ -311,6 +311,53 @@
         .done { opacity: 0.45; transition: opacity var(--duration-normal) var(--ease-default); } .done span { text-decoration: line-through; color: var(--color-text-muted); }
         .del-btn { color: var(--color-error); cursor: pointer; border: none; background: none; font-size: 1rem; padding: 0; transition: opacity var(--duration-fast); }
         .del-btn:hover { opacity: 0.7; }
+        .moed-toggle {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 2px 8px;
+            font-size: var(--text-xs);
+            cursor: pointer;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+        }
+        .moed-toggle:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        .moed-prompt {
+            margin-bottom: var(--space-3);
+        }
+        .moed-prompt-inner {
+            background: var(--color-surface);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+        }
+        .moed-prompt-title {
+            font-size: var(--text-base);
+            font-weight: 600;
+            margin: 0 0 var(--space-3) 0;
+        }
+        .moed-prompt-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+        .moed-btn {
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            cursor: pointer;
+            font-size: var(--text-sm);
+        }
+        .moed-btn-done { border-color: #4ad97a; color: #4ad97a; }
+        .moed-btn-done:hover { background: #4ad97a1a; }
+        .moed-btn-next { border-color: var(--color-primary); color: var(--color-primary); }
+        .moed-btn-next:hover { background: var(--color-primary-light, #df4a2210); }
+        .moed-btn-skip { color: var(--color-text-muted); }
+        .moed-btn-skip:hover { background: var(--color-surface-hover, #f5f5f5); }
         .empty-state { padding: var(--space-9); text-align: center; color: var(--color-text-muted); font-size: var(--text-sm); }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: var(--space-4); }
 
@@ -3076,6 +3123,93 @@ function addCourseChip(course) {
             }).join('');
     }
 
+    function cycleMoed(examIdx) {
+        const exam = userExams[examIdx];
+        if (!exam || !exam.moed_group) return;
+        // Find all items in same group
+        const group = userExams.filter(x => x.moed_group === exam.moed_group);
+        if (group.length <= 1) return;
+        // Sort by date
+        group.sort((a, b) => new Date(a.d) - new Date(b.d));
+        // Find current selected
+        const currentIdx = group.findIndex(x => x.selected !== false);
+        // Deselect current, select next (wrap around)
+        const nextIdx = (currentIdx + 1) % group.length;
+        group.forEach((item, i) => { item.selected = (i === nextIdx); });
+        render();
+        save();
+    }
+
+    function checkPassedMoedPrompts() {
+        const now = new Date();
+        const dismissed = JSON.parse(localStorage.getItem('moed_dismissed') || '{}');
+        const prompts = [];
+        for (let i = 0; i < userExams.length; i++) {
+            const ex = userExams[i];
+            if (!ex.moed_group || !ex.d) continue;
+            if (ex.selected === false) continue;
+            if (doneMap[ex.uid || ex.t]) continue;
+            if (dismissed[ex.moed_group]) continue;
+            const days = Math.floor((new Date(ex.d) - now) / 86400000);
+            if (days >= 0) continue; // not passed yet
+            // Find next available מועד
+            const group = userExams.filter(x => x.moed_group === ex.moed_group);
+            group.sort((a, b) => new Date(a.d) - new Date(b.d));
+            const currentSlotIdx = group.indexOf(ex);
+            const nextMoed = group[currentSlotIdx + 1];
+            if (!nextMoed) continue; // no next מועד available
+            prompts.push({ examIdx: i, exam: ex, nextMoed, groupId: ex.moed_group });
+        }
+        return prompts;
+    }
+
+    function showMoedPrompt(prompt) {
+        const title = prompt.exam.clean_title || prompt.exam.t;
+        const nextSlot = prompt.nextMoed.moed_slot || 'ב';
+        const el = document.createElement('div');
+        el.className = 'moed-prompt';
+        el.innerHTML = `
+            <div class="moed-prompt-inner" dir="rtl">
+                <p class="moed-prompt-title">איך הלך ${sanitize(title)}? 🎯</p>
+                <div class="moed-prompt-actions">
+                    <button onclick="moedDone('${prompt.groupId}', ${prompt.examIdx})" class="moed-btn moed-btn-done">✅ סיימתי</button>
+                    <button onclick="moedNext('${prompt.groupId}', ${prompt.examIdx})" class="moed-btn moed-btn-next">📝 מועד ${nextSlot}׳</button>
+                    <button onclick="moedDismiss('${prompt.groupId}')" class="moed-btn moed-btn-skip">⏭️ דלג</button>
+                </div>
+            </div>`;
+        document.getElementById('now-list').prepend(el);
+    }
+
+    function moedDone(groupId, examIdx) {
+        const ex = userExams[examIdx];
+        if (ex) doneMap[ex.uid || ex.t] = true;
+        const dismissed = JSON.parse(localStorage.getItem('moed_dismissed') || '{}');
+        dismissed[groupId] = true;
+        localStorage.setItem('moed_dismissed', JSON.stringify(dismissed));
+        render(); save();
+    }
+
+    function moedNext(groupId, examIdx) {
+        const group = userExams.filter(x => x.moed_group === groupId);
+        group.sort((a, b) => new Date(a.d) - new Date(b.d));
+        const current = group.findIndex(x => x.selected !== false);
+        if (current >= 0 && current < group.length - 1) {
+            group[current].selected = false;
+            group[current + 1].selected = true;
+        }
+        const dismissed = JSON.parse(localStorage.getItem('moed_dismissed') || '{}');
+        dismissed[groupId] = true;
+        localStorage.setItem('moed_dismissed', JSON.stringify(dismissed));
+        render(); save();
+    }
+
+    function moedDismiss(groupId) {
+        const dismissed = JSON.parse(localStorage.getItem('moed_dismissed') || '{}');
+        dismissed[groupId] = true;
+        localStorage.setItem('moed_dismissed', JSON.stringify(dismissed));
+        document.querySelector('.moed-prompt')?.remove();
+    }
+
     function render() {
         const s = STRINGS[currentLang] || STRINGS.he;
         const now = new Date();
@@ -3120,12 +3254,17 @@ function addCourseChip(course) {
                         ${courseInfo}<span>${safeT}</span>
                     </div>
                     <div class="focus-item-actions">
+                        ${x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : ''}
                         <span class="timer ${timerCls}">${isPast ? s.passed : days + 'd'}</span>
                         <button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>
                     </div>
                 </div>`;
             });
         }
+
+        // Show מועד post-exam prompts
+        const moedPrompts = checkPassedMoedPrompts();
+        moedPrompts.forEach(p => showMoedPrompt(p));
 
         // ── Tasks ──
         const tL = document.getElementById('tkList'); tL.innerHTML = '';
