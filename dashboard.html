@@ -644,6 +644,7 @@
         .cal-day.cal-today .cal-day-num { color: var(--color-accent); }
         .cal-dots { display: flex; flex-wrap: wrap; gap: 3px; }
         .cal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .cal-next-up-banner { background: var(--color-bg-card); border-radius: var(--radius-md); border: var(--border-structural); box-shadow: var(--shadow-hard-sm); margin-top: var(--space-4); padding: var(--space-4) var(--space-5); display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; font-size: var(--text-sm); }
         .cal-day-detail { background: var(--color-bg-card); border-radius: var(--radius-md); border: var(--border-structural); box-shadow: var(--shadow-hard-sm); margin-top: var(--space-5); padding: var(--space-5) var(--space-6); }
         .cal-day-detail-title { font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-black); margin-bottom: var(--space-4); }
 
@@ -1078,6 +1079,7 @@
             </div>
             <div class="cal-grid" id="cal-grid"></div>
         </div>
+        <div id="cal-next-up"></div>
         <div id="cal-detail"></div>
     </div>
 
@@ -3242,7 +3244,9 @@ function addCourseChip(course) {
 
     function renderNowFilter() {
         const bar = document.getElementById('now-filter-bar');
-        const courses = [...new Set(userExams.map(x => x.c).filter(Boolean))];
+        const examCourses = userExams.map(x => x.c).filter(Boolean);
+        const syllabusCourses = userSyllabus.filter(x => NOW_SYLLABUS_TAGS.has(x.t)).map(x => x.c).filter(Boolean);
+        const courses = [...new Set([...examCourses, ...syllabusCourses])];
         if (courses.length < 2) { bar.innerHTML = ''; return; }
         const allActive = !nowFilterCourse;
         bar.innerHTML =
@@ -3342,6 +3346,83 @@ function addCourseChip(course) {
         document.querySelector('.moed-prompt')?.remove();
     }
 
+    /** Resolve syllabus week index to approximate ISO date string */
+    function resolveWeekDate(w) {
+        const start = new Date(semesterStart);
+        const d = new Date(start.getTime() + w * 7 * 86400000);
+        return d.toISOString().slice(0, 10);
+    }
+
+    /** Hard deadline tags — always visible regardless of distance */
+    const HARD_DEADLINE_TAGS = new Set(['מבחן', 'מועד-ב', 'מועד-ג', 'מטלה', 'בוחן']);
+
+    /** Prep work tags — only visible within 14 days */
+    const PREP_TAGS = new Set(['קריאה', 'צפייה']);
+
+    /** All tags eligible for Now view from syllabus */
+    const NOW_SYLLABUS_TAGS = new Set([...HARD_DEADLINE_TAGS, ...PREP_TAGS]);
+
+    /** Build unified Now item list from exams + syllabus */
+    function buildNowItems() {
+        const now = new Date();
+        const items = [];
+
+        // 1. All exam items (Yedion/Moodle/manual)
+        for (let i = 0; i < userExams.length; i++) {
+            const x = userExams[i];
+            if (!x.d) continue;
+            if (x.moed_group && x.selected === false) continue;
+            const days = Math.floor((new Date(x.d) - now) / 86400000);
+            if (days < -1) continue;
+            const tag = x.tag || '';
+            // Hard deadlines: no upper cap. Other exam items: 14-day cap
+            if (HARD_DEADLINE_TAGS.has(tag) || days <= 14) {
+                items.push({ ...x, _approx: false, _src: 'exam', _examIdx: i });
+            }
+        }
+
+        // 2. Syllabus items (מטלה, בוחן, קריאה, צפייה)
+        // Build dedup keys from exam items already collected
+        const examKeys = new Set();
+        for (const x of items) {
+            if (x.c && x.tag) {
+                const weekOfExam = Math.floor((new Date(x.d) - new Date(semesterStart)) / (7 * 86400000));
+                examKeys.add(`${x.c.trim()}|${weekOfExam}`);
+            }
+        }
+
+        for (const s of userSyllabus) {
+            const tag = s.t; // syllabus uses 't' for type (tag)
+            if (!NOW_SYLLABUS_TAGS.has(tag)) continue;
+            if (s.w == null) continue;
+
+            const resolvedDate = resolveWeekDate(s.w);
+            const days = Math.floor((new Date(resolvedDate) - now) / 86400000);
+            if (days < -1) continue;
+
+            // Tiered horizon: hard deadlines unlimited, prep 14 days
+            if (PREP_TAGS.has(tag) && days > 14) continue;
+
+            // Dedup: skip if an exam item covers this course+week
+            const weekKey = `${(s.c || '').trim()}|${s.w}`;
+            if (HARD_DEADLINE_TAGS.has(tag) && examKeys.has(weekKey)) continue;
+
+            items.push({
+                d: resolvedDate,
+                t: s.txt || s.t,
+                c: s.c,
+                tag: tag,
+                source: 'syllabus',
+                _approx: true,
+                _src: 'syllabus',
+            });
+        }
+
+        // Sort by date ascending
+        items.sort((a, b) => new Date(a.d) - new Date(b.d));
+        return items;
+    }
+
     function render() {
         const s = STRINGS[currentLang] || STRINGS.he;
         const now = new Date();
@@ -3350,17 +3431,10 @@ function addCourseChip(course) {
         // ── Course filter bar ──
         renderNowFilter();
 
-        // ── Now: urgency-sorted, next 14 days only ──
+        // ── Now: unified items with tiered time horizons ──
         const nowEl = document.getElementById('now-list'); nowEl.innerHTML = '';
-        const filtered = nowFilterCourse ? userExams.filter(x => x.c === nowFilterCourse) : userExams;
-        const upcoming = filtered.filter(x => {
-            if (!x.d) return false;
-            // Only show the selected מועד (or items without מועד grouping)
-            if (x.moed_group && x.selected === false) return false;
-            const days = Math.floor((new Date(x.d) - now) / 86400000);
-            return days >= -1 && days <= 14;
-        });
-        const sorted = [...upcoming].sort((a,b) => new Date(a.d)-new Date(b.d));
+        const allNowItems = buildNowItems();
+        const sorted = nowFilterCourse ? allNowItems.filter(x => x.c === nowFilterCourse) : allNowItems;
         if (!sorted.length) {
             nowEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div>${s.nowEmpty || s.emptyExams}<div style="font-size:var(--text-xs);margin-top:var(--space-2)">${s.nowEmptyCta || s.emptyExamsCta}</div><div class="empty-cta"><button class="empty-btn" onclick="openIcalOnboarding()">${s.connectCal}</button><button class="empty-btn" onclick="showOnboarding()">${s.uploadSyl}</button></div></div>`;
         } else {
@@ -3369,7 +3443,8 @@ function addCourseChip(course) {
                 const isPast = diff < 0;
                 const urgency = isPast ? 'urgency-past' : days <= 3 ? 'urgency-critical' : days <= 7 ? 'urgency-soon' : 'urgency-ok';
                 const timerCls = isPast ? 'bg-passed' : days <= 3 ? 'bg-red' : days <= 7 ? 'bg-red' : 'bg-green';
-                const oi = userExams.indexOf(x);
+                const isFromExams = x._src === 'exam';
+                const oi = isFromExams ? x._examIdx : -1;
                 const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
                 const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
                 const safeTag = DOMPurify.sanitize(x.tag || '', {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
@@ -3380,15 +3455,21 @@ function addCourseChip(course) {
                 const courseInfo = safeC
                     ? `<span class="focus-course-dot" style="background:${courseColor}"></span><strong>${safeC}</strong><span style="color:var(--color-text-muted)">—</span>`
                     : '';
+                // Approximate dates show ~Xw, exact dates show Xd
+                const weeks = Math.ceil(days / 7);
+                const timerLabel = isPast ? s.passed : x._approx ? '~' + weeks + 'w' : days + 'd';
+                // Moed toggle + delete only for exam-sourced items
+                const moedBtn = isFromExams && x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : '';
+                const delBtn = isFromExams ? `<button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>` : '';
                 nowEl.innerHTML += `<div class="focus-item focus-item-urgency ${urgency}">
                     <div class="focus-item-text">
                         <span class="badge ${tagCls}">${safeTag}</span>
                         ${courseInfo}<span>${safeT}</span>
                     </div>
                     <div class="focus-item-actions">
-                        ${x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : ''}
-                        <span class="timer ${timerCls}">${isPast ? s.passed : days + 'd'}</span>
-                        <button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>
+                        ${moedBtn}
+                        <span class="timer ${timerCls}">${timerLabel}</span>
+                        ${delBtn}
                     </div>
                 </div>`;
             });
@@ -4010,7 +4091,7 @@ function addCourseChip(course) {
         const monthTitle = new Date(calYear, calMonth).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
         document.getElementById('cal-month-title').textContent = monthTitle;
 
-        // Build events by date
+        // Build events by date (exams + syllabus deadlines)
         const eventsByDate = {};
         const visibleExams = userExams.filter(x => !x.moed_group || x.selected !== false);
         visibleExams.forEach(ex => {
@@ -4019,6 +4100,16 @@ function addCourseChip(course) {
             const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             if (!eventsByDate[key]) eventsByDate[key] = [];
             eventsByDate[key].push(ex);
+        });
+        // Add syllabus מטלה/בוחן items (resolved to dates)
+        const CAL_SYLLABUS_TAGS = new Set(['מטלה', 'בוחן']);
+        userSyllabus.forEach(s => {
+            if (!CAL_SYLLABUS_TAGS.has(s.t) || s.w == null) return;
+            const resolved = resolveWeekDate(s.w);
+            const d = new Date(resolved);
+            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            if (!eventsByDate[key]) eventsByDate[key] = [];
+            eventsByDate[key].push({ d: resolved, t: s.txt || s.t, c: s.c, tag: s.t, source: 'syllabus' });
         });
 
         // Calendar grid
@@ -4062,6 +4153,44 @@ function addCourseChip(course) {
         }
 
         document.getElementById('cal-grid').innerHTML = gridHtml;
+
+        // "Next up" banner when displayed month has no items
+        const calNextUp = document.getElementById('cal-next-up');
+        const monthStart = new Date(calYear, calMonth, 1);
+        const monthEnd = new Date(calYear, calMonth + 1, 0);
+        const hasItemsThisMonth = Object.keys(eventsByDate).some(key => {
+            const d = new Date(key + 'T00:00:00');
+            return d >= monthStart && d <= monthEnd;
+        });
+        if (!hasItemsThisMonth && calNextUp) {
+            // Find the nearest future item from the viewed month
+            const viewedMonthEnd = monthEnd.getTime();
+            let nearest = null;
+            for (const [key, items] of Object.entries(eventsByDate)) {
+                const d = new Date(key + 'T00:00:00');
+                if (d.getTime() > viewedMonthEnd) {
+                    if (!nearest || d < new Date(nearest.dateKey + 'T00:00:00')) {
+                        nearest = { dateKey: key, item: items[0], date: d };
+                    }
+                }
+            }
+            if (nearest) {
+                const daysUntil = Math.floor((nearest.date - now) / 86400000);
+                const cleaned = nearest.item.clean_title || cleanTitle(nearest.item.t || '', nearest.item.c, nearest.item.tag);
+                const safeTitle = DOMPurify.sanitize(cleaned, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
+                const dateLabel = nearest.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long' });
+                const courseColor = getCourseColor(nearest.item.c || '');
+                calNextUp.innerHTML = `<div class="cal-next-up-banner" style="border-inline-start: 3px solid ${courseColor}">
+                    <span style="font-weight:600">${safeTitle}</span>
+                    <span style="color:var(--color-text-muted)">${dateLabel} · ${daysUntil} ימים</span>
+                    <button class="empty-btn" style="font-size:var(--text-xs);padding:4px 10px" onclick="calMonth=${nearest.date.getMonth()};calYear=${nearest.date.getFullYear()};renderCalendar();">קפוץ &larr;</button>
+                </div>`;
+            } else {
+                calNextUp.innerHTML = '';
+            }
+        } else if (calNextUp) {
+            calNextUp.innerHTML = '';
+        }
 
         // Detail panel for selected date
         const detailEl = document.getElementById('cal-detail');
