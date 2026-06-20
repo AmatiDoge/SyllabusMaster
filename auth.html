@@ -869,7 +869,7 @@
     if (!email) return showMsg(t.errFillEmail, 'error');
 
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset.html'
+      redirectTo: window.location.origin + '/SyllabusMaster/reset.html'
     });
 
     if (error) {

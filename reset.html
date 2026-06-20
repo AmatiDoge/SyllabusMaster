@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SyllaBot – איפוס סיסמה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    /* -- Fonts -- */
+    --font-display:        'Frank Ruhl Libre', 'Rubik', serif;
+    --font-body:           'Rubik', 'Heebo', sans-serif;
+    --font-mono:           'JetBrains Mono', 'Menlo', monospace;
+
+    /* -- Font Sizes -- */
+    --text-xs:             0.72rem;
+    --text-sm:             0.82rem;
+    --text-base:           0.95rem;
+    --text-md:             1.05rem;
+    --text-lg:             1.2rem;
+    --text-xl:             1.5rem;
+    --text-2xl:            2rem;
+    --text-3xl:            clamp(2.4rem, 5vw, 3.2rem);
+    --text-4xl:            clamp(3rem, 7vw, 5rem);
+
+    /* -- Font Weights -- */
+    --weight-light:        300;
+    --weight-normal:       400;
+    --weight-medium:       500;
+    --weight-semibold:     600;
+    --weight-bold:         700;
+    --weight-black:        900;
+
+    /* -- Line Heights -- */
+    --leading-tight:       1.1;
+    --leading-snug:        1.3;
+    --leading-normal:      1.5;
+    --leading-relaxed:     1.7;
+
+    /* -- Letter Spacing -- */
+    --tracking-tight:      -0.03em;
+    --tracking-normal:     0;
+    --tracking-wide:       0.08em;
+    --tracking-wider:      0.14em;
+
+    /* -- Colors: Backgrounds -- */
+    --color-bg:            #f4f1ea;
+    --color-bg-secondary:  #ece7dc;
+    --color-bg-card:       #ffffff;
+    --color-bg-inverse:    #1b1714;
+
+    /* -- Colors: Text -- */
+    --color-text:          #1b1714;
+    --color-text-secondary:#2b2622;
+    --color-text-muted:    #736d64;
+    --color-text-inverse:  #f4f1ea;
+    --color-text-link:     #c03d18;
+
+    /* -- Colors: Accent -- */
+    --color-accent:        #df4a22;
+    --color-accent-hover:  #c03d18;
+    --color-accent-active: #a83515;
+    --color-accent-soft:   #fbe9e2;
+    --color-accent-text:   #c03d18;
+
+    /* -- Colors: Secondary Accent -- */
+    --color-accent2:       #225fa8;
+    --color-accent2-soft:  #e8f0fa;
+
+    /* -- Colors: Status -- */
+    --color-success:       #27ae60;
+    --color-success-soft:  #f6ffed;
+    --color-warning:       #e67e22;
+    --color-warning-soft:  #fff8f0;
+    --color-error:         #d63031;
+    --color-error-soft:    #fff1f0;
+
+    /* -- Colors: Borders -- */
+    --color-border:        rgba(27, 23, 20, 0.10);
+    --color-border-strong: rgba(27, 23, 20, 0.18);
+    --color-border-ink:    #1b1714;
+    --color-border-focus:  #df4a22;
+
+    /* -- Colors: Surfaces -- */
+    --color-overlay:       rgba(27, 23, 20, 0.45);
+
+    /* -- Spacing -- */
+    --space-0:   0;
+    --space-1:   2px;
+    --space-2:   4px;
+    --space-3:   6px;
+    --space-4:   8px;
+    --space-5:   12px;
+    --space-6:   16px;
+    --space-7:   24px;
+    --space-8:   32px;
+    --space-9:   48px;
+    --space-10:  64px;
+    --space-11:  96px;
+    --space-12:  128px;
+
+    /* -- Layout -- */
+    --max-width-content:   700px;
+    --max-width-wide:      960px;
+    --max-width-page:      1200px;
+
+    /* -- Border Radius -- */
+    --radius-sm:           6px;
+    --radius-md:           12px;
+    --radius-lg:           16px;
+    --radius-pill:         100px;
+
+    /* -- Borders: Structural -- */
+    --border-thin:         1.5px solid var(--color-border);
+    --border-structural:   2.5px solid var(--color-border-ink);
+    --border-heavy:        3px solid var(--color-border-ink);
+
+    /* -- Shadows: Soft -- */
+    --shadow-sm:           0 1px 3px rgba(27, 23, 20, 0.06);
+    --shadow-md:           0 8px 24px rgba(27, 23, 20, 0.08);
+    --shadow-lg:           0 20px 60px rgba(27, 23, 20, 0.12);
+
+    /* -- Shadows: Hard (brutalist) -- */
+    --shadow-hard-sm:      2px 2px 0 var(--color-border-ink);
+    --shadow-hard-md:      4px 4px 0 var(--color-border-ink);
+    --shadow-hard-lg:      6px 6px 0 var(--color-border-ink);
+    --shadow-hard-accent:  4px 4px 0 var(--color-accent);
+
+    /* -- Shadows: Press effect -- */
+    --shadow-press-rest:   var(--shadow-hard-md);
+    --shadow-press-hover:  1px 1px 0 var(--color-border-ink);
+    --press-translate:     translate(3px, 3px);
+
+    /* -- Shadows: Focus -- */
+    --shadow-focus:        0 0 0 3px rgba(223, 74, 34, 0.25);
+
+    /* -- Motion -- */
+    --duration-instant:    50ms;
+    --duration-fast:       120ms;
+    --duration-normal:     200ms;
+    --duration-slow:       400ms;
+    --duration-slower:     600ms;
+    --ease-default:        cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out:            cubic-bezier(0, 0, 0.2, 1);
+    --ease-bounce:         cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7);
+    -webkit-font-smoothing: antialiased;
+  }
+  .logo { font-family: var(--font-display); font-weight: var(--weight-black); }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    font-size: 1.9rem;
+    font-weight: var(--weight-black);
+    letter-spacing: var(--tracking-tight);
+    text-align: center;
+    margin-bottom: var(--space-8);
+    display: block;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+  .logo span { color: var(--color-accent); }
+
+  .card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    border: var(--border-heavy);
+    padding: 40px 36px;
+    box-shadow: var(--shadow-hard-accent);
+  }
+
+  .card h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-black);
+    text-align: center;
+    margin-bottom: var(--space-7);
+    color: var(--color-text);
+  }
+
+  .form { display: flex; flex-direction: column; gap: 14px; }
+
+  label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    display: block;
+    margin-bottom: var(--space-3);
+  }
+
+  input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid var(--color-border-ink);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--color-text);
+    background: var(--color-bg);
+    transition: border-color var(--duration-normal), box-shadow var(--duration-normal);
+    direction: ltr;
+    text-align: right;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--color-border-focus);
+    box-shadow: var(--shadow-focus);
+    background: white;
+  }
+  input::placeholder { color: rgba(107,103,96,0.5); }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 11px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: var(--weight-bold);
+    cursor: pointer;
+    border: var(--border-structural);
+    background: var(--color-accent);
+    color: white;
+    box-shadow: var(--shadow-press-rest);
+    transition: transform var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-normal);
+    margin-top: var(--space-2);
+  }
+  .btn:hover { background: var(--color-accent-hover); transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
+  .btn:disabled { background: var(--color-text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .msg {
+    padding: var(--space-5) var(--space-6);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    text-align: center;
+    display: none;
+  }
+  .msg.error { background: var(--color-error-soft); color: var(--color-error); border: 2px solid var(--color-error); display: block; }
+  .msg.success { background: var(--color-success-soft); color: var(--color-success); border: 2px solid var(--color-success); display: block; }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: var(--space-6);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--color-accent-text); }
+
+  .waiting-msg {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    padding: var(--space-7) 0;
+  }
+
+  /* -- LANG TOGGLE -- */
+  .lang-toggle {
+    position: fixed;
+    top: var(--space-6);
+    right: var(--space-6);
+    z-index: 500;
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: var(--border-structural);
+    padding: 8px 16px;
+    border-radius: 11px;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-black);
+    cursor: pointer;
+    box-shadow: var(--shadow-hard-sm);
+    transition: transform var(--duration-fast), box-shadow var(--duration-fast);
+    letter-spacing: var(--tracking-wide);
+  }
+  .lang-toggle:hover { transform: var(--press-translate); box-shadow: var(--shadow-press-hover); }
+
+  /* -- Responsive -- */
+  @media (max-width: 768px) {
+    body { padding: var(--space-6); }
+    .card { padding: var(--space-8) var(--space-7); }
+    .lang-toggle { top: var(--space-5); right: var(--space-5); }
+  }
+  @media (max-width: 375px) {
+    body { padding: var(--space-5); }
+    .card { padding: var(--space-7) var(--space-6); box-shadow: 3px 3px 0 var(--color-accent); }
+    .container { max-width: 100%; }
+    .logo { font-size: 1.6rem; }
+  }
+
+  /* -- Reduced Motion -- */
+  @media (prefers-reduced-motion: reduce) {
+    .container { animation: none; }
+    .btn, .lang-toggle { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
+
+<div class="container">
+  <a href="auth.html" class="logo">Sylla<span>Bot</span></a>
+
+  <div class="card">
+    <h2 id="page-title"></h2>
+
+    <div id="msg" class="msg" role="alert" aria-live="polite"></div>
+
+    <!-- Waiting state: shown before PASSWORD_RECOVERY event fires -->
+    <div id="waiting-section">
+      <p class="waiting-msg" id="waiting-text"></p>
+    </div>
+
+    <!-- Reset form: hidden until PASSWORD_RECOVERY event -->
+    <div id="reset-form" class="form" style="display:none">
+      <div>
+        <label for="new-password" id="label-new-password"></label>
+        <input type="password" id="new-password" placeholder="••••••••">
+      </div>
+      <div>
+        <label for="confirm-password" id="label-confirm-password"></label>
+        <input type="password" id="confirm-password" placeholder="••••••••">
+      </div>
+      <button class="btn" id="reset-btn" onclick="updatePassword()"></button>
+    </div>
+
+    <a href="auth.html" class="back-link" id="back-link"></a>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentLang = localStorage.getItem('landing-lang') || 'he';
+
+  const T = {
+    he: {
+      title: 'איפוס סיסמה',
+      newPassword: 'סיסמה חדשה',
+      confirmPassword: 'אימות סיסמה',
+      resetBtn: 'עדכון סיסמה',
+      loadingBtn: 'מעדכן...',
+      passwordUpdated: 'הסיסמה עודכנה בהצלחה!',
+      passwordMismatch: 'הסיסמאות אינן תואמות',
+      passwordTooShort: 'הסיסמה חייבת להכיל לפחות 6 תווים',
+      backToLogin: 'חזרה לכניסה',
+      waitingText: 'מאמת את הקישור שלך...',
+      toggleLabel: 'EN',
+      errGeneric: 'שגיאה לא צפויה',
+      errMap: {
+        'Invalid login credentials': 'אימייל או סיסמה שגויים',
+        'Email not confirmed': 'האימייל לא אושר עדיין. בדוק את תיבת הדואר שלך',
+        'User already registered': 'כבר קיים חשבון עם האימייל הזה',
+        'Password should be at least 6 characters': 'הסיסמה חייבת להכיל לפחות 6 תווים',
+        'Unable to validate email address: invalid format': 'כתובת אימייל לא תקינה',
+        'New password should be different from the old password.': 'הסיסמה החדשה חייבת להיות שונה מהסיסמה הישנה',
+        'Auth session missing!': 'פג תוקף הקישור. בקש קישור חדש מדף הכניסה',
+      },
+    },
+    en: {
+      title: 'Reset Password',
+      newPassword: 'New Password',
+      confirmPassword: 'Confirm Password',
+      resetBtn: 'Update Password',
+      loadingBtn: 'Updating...',
+      passwordUpdated: 'Password updated successfully!',
+      passwordMismatch: 'Passwords don\'t match',
+      passwordTooShort: 'Password must be at least 6 characters',
+      backToLogin: 'Back to Login',
+      waitingText: 'Verifying your link...',
+      toggleLabel: '\u05E2\u05D1',
+      errGeneric: 'An unexpected error occurred',
+      errMap: {
+        'Invalid login credentials': 'Incorrect email or password',
+        'Email not confirmed': 'Email not confirmed yet. Check your inbox',
+        'User already registered': 'An account with this email already exists',
+        'Password should be at least 6 characters': 'Password must be at least 6 characters',
+        'Unable to validate email address: invalid format': 'Invalid email address',
+        'New password should be different from the old password.': 'New password must be different from the old password',
+        'Auth session missing!': 'Link has expired. Request a new one from the login page',
+      },
+    },
+  };
+
+  function applyLang(lang) {
+    const t = T[lang] || T.he;
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'en' ? 'ltr' : 'rtl';
+
+    // Page title
+    const pageTitle = document.getElementById('page-title');
+    if (pageTitle) pageTitle.textContent = t.title;
+
+    // Form labels
+    const labelNew = document.getElementById('label-new-password');
+    if (labelNew) labelNew.textContent = t.newPassword;
+    const labelConfirm = document.getElementById('label-confirm-password');
+    if (labelConfirm) labelConfirm.textContent = t.confirmPassword;
+
+    // Button
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn && !resetBtn.disabled) resetBtn.textContent = t.resetBtn;
+
+    // Back link
+    const backLink = document.getElementById('back-link');
+    if (backLink) backLink.textContent = t.backToLogin;
+
+    // Waiting text
+    const waitingText = document.getElementById('waiting-text');
+    if (waitingText) waitingText.textContent = t.waitingText;
+
+    // Toggle button label
+    const toggleBtn = document.getElementById('lang-toggle');
+    if (toggleBtn) toggleBtn.textContent = t.toggleLabel;
+
+    // Input direction
+    document.querySelectorAll('input').forEach(inp => {
+      inp.dir = lang === 'en' ? 'ltr' : 'rtl';
+      inp.style.textAlign = lang === 'en' ? 'left' : 'right';
+    });
+  }
+
+  function toggleLang() {
+    const next = currentLang === 'he' ? 'en' : 'he';
+    applyLang(next);
+    localStorage.setItem('landing-lang', next);
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+  function clearMsg() {
+    const el = document.getElementById('msg');
+    el.className = 'msg';
+    el.textContent = '';
+  }
+
+  function translateError(msg) {
+    const t = T[currentLang];
+    return t.errMap[msg] || t.errGeneric;
+  }
+
+  // Listen for PASSWORD_RECOVERY event from Supabase
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      // Show the password reset form, hide waiting state
+      document.getElementById('waiting-section').style.display = 'none';
+      document.getElementById('reset-form').style.display = 'flex';
+    }
+  });
+
+  async function updatePassword() {
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const t = T[currentLang];
+
+    clearMsg();
+
+    // Validate password length
+    if (newPassword.length < 6) {
+      return showMsg(t.passwordTooShort, 'error');
+    }
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      return showMsg(t.passwordMismatch, 'error');
+    }
+
+    // Disable button and show loading
+    const btn = document.getElementById('reset-btn');
+    btn.disabled = true;
+    btn.textContent = t.loadingBtn;
+
+    const { error } = await sb.auth.updateUser({ password: newPassword });
+
+    btn.disabled = false;
+    btn.textContent = t.resetBtn;
+
+    if (error) {
+      showMsg(translateError(error.message), 'error');
+    } else {
+      showMsg(t.passwordUpdated, 'success');
+      // Redirect to auth page after 2 seconds
+      setTimeout(() => { window.location.href = 'auth.html'; }, 2000);
+    }
+  }
+
+  // Initialize language on page load
+  applyLang(currentLang);
+</script>
+</body>
+</html>
