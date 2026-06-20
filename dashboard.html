@@ -645,6 +645,7 @@
         .cal-dots { display: flex; flex-wrap: wrap; gap: 3px; }
         .cal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .cal-next-up-banner { background: var(--color-bg-card); border-radius: var(--radius-md); border: var(--border-structural); box-shadow: var(--shadow-hard-sm); margin-top: var(--space-4); padding: var(--space-4) var(--space-5); display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; font-size: var(--text-sm); }
+        .moodle-upload-banner { background: #fef9e7; border: 1.5px solid #f0c929; border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4); }
         .cal-day-detail { background: var(--color-bg-card); border-radius: var(--radius-md); border: var(--border-structural); box-shadow: var(--shadow-hard-sm); margin-top: var(--space-5); padding: var(--space-5) var(--space-6); }
         .cal-day-detail-title { font-family: var(--font-display); font-size: var(--text-sm); font-weight: var(--weight-black); margin-bottom: var(--space-4); }
 
@@ -2904,7 +2905,7 @@ function addCourseChip(course) {
             return `<div class="rv-course-group">
                 <div class="rv-course-header" onclick="toggleRvSection('rvc-${ci}','rvct-${ci}')">
                     <span class="rv-card-dot" style="background:${color}"></span>
-                    <span class="rv-course-name">${course}</span>
+                    <span class="rv-course-name">${esc(course)}</span>
                     ${status}
                     <span class="rv-section-count">${items.length}</span>
                     <span class="rv-section-toggle" id="rvct-${ci}">${collapsed ? '▸' : '▾'}</span>
@@ -2970,7 +2971,7 @@ function addCourseChip(course) {
             <div class="rv-card-top">
                 <div class="rv-card-course" style="direction:${cardDir}">
                     <span class="rv-card-dot" style="background:${courseColor}"></span>
-                    ${item.c || ''}
+                    ${esc(item.c)}
                 </div>
                 <div class="rv-card-meta">
                     <span class="badge ${typeClass}">${typeLabel || '?'}</span>
@@ -2980,7 +2981,7 @@ function addCourseChip(course) {
             <div class="rv-card-desc" style="direction:${cardDir}">
                 <input class="rv-desc-input" type="text" value="${desc.replace(/"/g, '&quot;')}" style="direction:${cardDir};text-align:${isEn ? 'left' : 'right'}" oninput="rvSetField(${item.id},'${descField}',this.value)">
             </div>
-            ${item.reason ? `<div class="rv-card-warning" style="direction:${cardDir}">⚠️ ${item.reason}</div>` : ''}
+            ${item.reason ? `<div class="rv-card-warning" style="direction:${cardDir}">⚠️ ${esc(item.reason)}</div>` : ''}
             <div class="rv-card-actions" style="flex-direction:${isEn ? 'row' : 'row-reverse'}">
                 <button class="rv-card-btn rv-confirm" onclick="rvConfirm(${item.id})">${_s.rvBtnConfirm}</button>
                 <button class="rv-card-btn rv-edit" onclick="rvFocusEdit(${item.id})">${_s.rvBtnEdit}</button>
@@ -3002,7 +3003,7 @@ function addCourseChip(course) {
             <span class="rv-card-dot" style="background:${courseColor}"></span>
             <span class="badge ${typeClass}">${typeLabel || '?'}</span>
             <span style="font-size:0.72rem;color:var(--color-text-muted);flex-shrink:0">${weekOrDate}</span>
-            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${desc}</span>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(desc)}</span>
         </div>`;
     }
 
@@ -3187,7 +3188,8 @@ function addCourseChip(course) {
         }
     }
 
-    function sanitize(str) { return str.replace(/<[^>]*>/g, '').trim(); }
+    function sanitize(str) { return DOMPurify.sanitize(String(str || ''), {ALLOWED_TAGS: [], ALLOWED_ATTR: []}); }
+    function esc(str) { return DOMPurify.sanitize(String(str || ''), {ALLOWED_TAGS: [], ALLOWED_ATTR: []}); }
 
     function addEx() {
         const t = sanitize(document.getElementById('exT').value);
@@ -3346,6 +3348,65 @@ function addCourseChip(course) {
         document.querySelector('.moed-prompt')?.remove();
     }
 
+    /** Show Moodle upload banner when server sync is blocked by bot detection */
+    function renderMoodleUploadBanner(containerEl) {
+        if (!icalCredentials || !icalCredentials.moodle_url) return;
+        const hasMoodleItems = userExams.some(e => e.source === 'moodle');
+        if (hasMoodleItems) return;
+        const banner = document.createElement('div');
+        banner.className = 'moodle-upload-banner';
+        banner.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:1.2rem">📥</span>
+                <strong>סנכרון Moodle — נדרשת העלאה ידנית</strong>
+            </div>
+            <div style="font-size:0.82rem;color:var(--color-text-muted);margin-bottom:10px">שרת Moodle חוסם סנכרון אוטומטי. הורד את קובץ הלוח ממודל והעלה אותו כאן.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <a href="${DOMPurify.sanitize(icalCredentials.moodle_url, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}" target="_blank" rel="noopener" class="empty-btn" style="text-decoration:none;font-size:0.82rem">הורד קובץ .ics ↗</a>
+                <label class="empty-btn" style="cursor:pointer;font-size:0.82rem">
+                    העלה קובץ .ics
+                    <input type="file" accept=".ics,text/calendar" style="display:none" onchange="handleMoodleFileUpload(this.files[0])">
+                </label>
+            </div>
+            <div id="moodle-upload-status" style="font-size:0.8rem;margin-top:6px"></div>`;
+        containerEl.prepend(banner);
+    }
+
+    /** Handle uploaded Moodle .ics file */
+    async function handleMoodleFileUpload(file) {
+        if (!file) return;
+        const statusEl = document.getElementById('moodle-upload-status');
+        statusEl.textContent = 'מעבד...';
+        statusEl.style.color = 'var(--color-text-muted)';
+        try {
+            const text = await file.text();
+            if (!text.trimStart().startsWith('BEGIN:VCALENDAR')) {
+                statusEl.textContent = 'הקובץ אינו קובץ לוח שנה תקין (.ics)';
+                statusEl.style.color = '#c0392b';
+                return;
+            }
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) { statusEl.textContent = 'לא מחובר'; return; }
+            const resp = await fetch(SUPABASE_URL + '/functions/v1/client-ingest', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + session.access_token,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ics_text: text, source: 'moodle' }),
+            });
+            const result = await resp.json();
+            if (!resp.ok) throw new Error(result.error || 'Upload failed');
+            statusEl.textContent = `סונכרנו ${result.countdown} פריטים מ-Moodle`;
+            statusEl.style.color = '#27ae60';
+            // Reload data from Supabase to show new items
+            await loadFromSupabase();
+        } catch (err) {
+            statusEl.textContent = 'שגיאה: ' + (err.message || 'Unknown error');
+            statusEl.style.color = '#c0392b';
+        }
+    }
+
     /** Resolve syllabus week index to approximate ISO date string */
     function resolveWeekDate(w) {
         const start = new Date(semesterStart);
@@ -3474,6 +3535,9 @@ function addCourseChip(course) {
                 </div>`;
             });
         }
+
+        // ── Moodle upload banner (when server-side sync is blocked) ──
+        renderMoodleUploadBanner(nowEl);
 
         // Show מועד post-exam prompts
         const moedPrompts = checkPassedMoedPrompts();
@@ -3890,7 +3954,14 @@ function addCourseChip(course) {
     async function deleteAccount() {
         if (!confirm((STRINGS[currentLang] || STRINGS.he).spDeleteConfirm)) return;
         try {
-            await sb.from('user_data').delete().eq('user_id', currentUser.id);
+            const session = await sb.auth.getSession();
+            const token = session?.data?.session?.access_token;
+            const resp = await fetch(EDGE_URL.replace(/\/[^/]+$/, '/delete-account'), {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+            });
+            if (!resp.ok) throw new Error('Delete failed');
             await sb.auth.signOut();
             window.location.href = 'index.html';
         } catch(e) {
