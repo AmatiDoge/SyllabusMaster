@@ -3690,7 +3690,7 @@ function addCourseChip(course) {
                 const moedBtn = isFromExams && x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : '';
                 const delBtn = isFromExams ? `<button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>` : '';
                 const key = nowItemKey(x);
-                const safeKey = key.replace(/'/g, '&#39;');
+                const safeKey = key.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
                 const isDone = doneMap[key];
                 return `<div class="focus-item focus-item-urgency ${urgency} ${isDone ? 'is-done' : ''}">
                     <div class="focus-checkbox now-checkbox ${isDone ? 'checked' : ''}" data-key="${safeKey}" onclick="toggleNowItem('${safeKey}')" role="checkbox" aria-checked="${isDone || false}" tabindex="0">${checkSvg}</div>
