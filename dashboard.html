@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1b1714">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="/SyllabusMaster/manifest.json">
+    <link rel="apple-touch-icon" href="/SyllabusMaster/icons/icon-192.png">
     <title>SyllaBot – Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
@@ -268,9 +273,27 @@
         .focus-course-group { padding-top: var(--space-2); }
         .focus-course-label { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-6); font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--color-text-muted); letter-spacing: var(--tracking-wide); text-transform: uppercase; }
         .focus-course-dot { width: 8px; height: 8px; border-radius: var(--radius-full); flex-shrink: 0; }
+        /* ── NOW VIEW TIERS ── */
+        .now-tier { margin-bottom: var(--space-5); }
+        .now-tier-header { padding: var(--space-4) var(--space-6); font-family: var(--font-display); font-weight: var(--weight-bold); font-size: var(--text-sm); color: var(--color-text-muted); letter-spacing: var(--tracking-wide); text-transform: uppercase; display: flex; align-items: center; gap: var(--space-3); }
+        .now-tier-header .now-tier-count { background: var(--color-bg-secondary); border-radius: var(--radius-pill); padding: 2px 8px; font-size: var(--text-xs); font-weight: var(--weight-bold); }
+        .now-tier-header .now-tier-dot { width: 8px; height: 8px; border-radius: var(--radius-full); flex-shrink: 0; }
+        .now-tier-header .now-tier-dot.tier-urgent { background: var(--color-error); }
+        .now-tier-header .now-tier-dot.tier-soon { background: var(--color-warning); }
+        .now-tier-header .now-tier-dot.tier-upcoming { background: var(--color-border); }
+        .now-tier-items { background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); overflow: hidden; }
+        /* ── CELEBRATION CARD ── */
+        .now-clear-card { text-align: center; padding: var(--space-9) var(--space-7); background: var(--color-bg-card); border-radius: var(--radius-lg); border: var(--border-structural); box-shadow: var(--shadow-hard-md); animation: clearReveal 500ms var(--ease-bounce); }
+        .now-clear-icon { font-size: 3rem; margin-bottom: var(--space-4); animation: clearBounce 600ms var(--ease-bounce) 200ms both; }
+        .now-clear-title { font-family: var(--font-display); font-weight: var(--weight-black); font-size: var(--text-xl); color: var(--color-success); margin-bottom: var(--space-3); }
+        .now-clear-sub { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-muted); }
+        @keyframes clearReveal { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes clearBounce { 0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
         @media (prefers-reduced-motion: reduce) {
             .focus-checkbox.completing { animation: none; }
             .focus-item.is-done { transition: none; }
+            .now-clear-card { animation: none; }
+            .now-clear-icon { animation: none; }
         }
         .syl-add-toggle { background: var(--color-bg-secondary); border: 1.5px solid var(--color-border-ink); color: var(--color-text); cursor: pointer; border-radius: 50%; width: 24px; height: 24px; font-size: 1.1rem; font-weight: bold; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background var(--duration-normal), transform var(--duration-normal); flex-shrink: 0; }
         .syl-add-toggle:hover { background: var(--color-accent-soft); }
@@ -711,6 +734,14 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
+
+        /* ── PWA Install Banner ── */
+        #pwa-install-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--color-bg-card); border: var(--border-structural); border-radius: var(--radius-md); box-shadow: var(--shadow-hard-md); padding: var(--space-4) var(--space-5); z-index: 800; display: none; align-items: center; gap: var(--space-3); max-width: 420px; width: 90%; font-family: var(--font-body); font-size: var(--text-sm); }
+        #pwa-install-banner .pwa-install-btn { background: var(--color-border-ink); color: var(--color-bg-card); border: none; border-radius: var(--radius-sm); padding: var(--space-2) var(--space-4); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; white-space: nowrap; }
+        #pwa-install-banner .pwa-dismiss { position: absolute; top: 8px; left: 8px; background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--color-text-muted); }
+
+        /* ── PWA Offline Banner ── */
+        #offline-banner { display: none; position: fixed; top: 0; left: 0; right: 0; background: var(--color-accent-soft); border-bottom: var(--border-structural); padding: var(--space-2) var(--space-4); text-align: center; font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--weight-bold); z-index: 900; color: var(--color-accent-text); }
     </style>
 </head>
 <body>
@@ -718,6 +749,16 @@
 <div id="auth-loading">
     <div class="spinner"></div>
     <p>Loading...</p>
+</div>
+
+<!-- PWA OFFLINE BANNER -->
+<div id="offline-banner"></div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-install-banner">
+    <button class="pwa-dismiss" onclick="dismissInstallBanner()">&times;</button>
+    <span id="pwa-install-text"></span>
+    <button class="pwa-install-btn" onclick="installPwa()" id="pwa-install-btn"></button>
 </div>
 
 <!-- SETTINGS OVERLAY + PANEL -->
@@ -1145,6 +1186,58 @@
 </div>
 
 <script>
+    // ── Service Worker Registration ──
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/SyllabusMaster/sw.js', { scope: '/SyllabusMaster/' })
+            .catch(err => console.error('SW registration failed:', err));
+    }
+
+    // ── PWA Install Prompt ──
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (localStorage.getItem('syllabot_install_dismissed')) return;
+        const banner = document.getElementById('pwa-install-banner');
+        if (!banner) return;
+        const lang = (typeof currentLang !== 'undefined' && currentLang) || 'he';
+        document.getElementById('pwa-install-text').textContent = STRINGS[lang].pwaInstall;
+        document.getElementById('pwa-install-btn').textContent = STRINGS[lang].pwaInstallBtn;
+        banner.style.display = 'flex';
+    });
+
+    async function installPwa() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (typeof track === 'function') track('pwa_install_' + outcome);
+        deferredPrompt = null;
+        document.getElementById('pwa-install-banner').style.display = 'none';
+    }
+
+    function dismissInstallBanner() {
+        localStorage.setItem('syllabot_install_dismissed', '1');
+        document.getElementById('pwa-install-banner').style.display = 'none';
+        if (typeof track === 'function') track('pwa_install_banner_dismissed');
+    }
+
+    // ── PWA Offline Indicator ──
+    function updateOnlineStatus() {
+        const banner = document.getElementById('offline-banner');
+        if (!banner) return;
+        if (navigator.onLine) {
+            banner.style.display = 'none';
+        } else {
+            const lang = (typeof currentLang !== 'undefined' && currentLang) || 'he';
+            banner.textContent = STRINGS[lang].pwaOffline;
+            banner.style.display = 'block';
+        }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
     const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
     const EDGE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/analyze-syllabus-v2';
@@ -1165,6 +1258,7 @@
     let currentUser = null, saveTimer = null, currentWeekIdx = 0;
     let currentRev = 0, rowExists = false, icsToken = null;
     let userTasks = [], userExams = [], userSyllabus = [], doneMap = {}, courseColors = {};
+    let celebrationTracked = false;
     let obFiles = [], obResults = [], reviewItems = [];
     let obCourseNames = {}, obWizardIdx = 0;
     let semesterStart = '2026-03-15';
@@ -1687,6 +1781,12 @@
             focusTasks:      'משימות',
             nowEmpty:        'אין דדליינים קרובים',
             nowEmptyCta:     'חבר יומן או העלה סילבוס כדי לראות את המשימות שלך',
+            nowTierUrgent:   'היום/מחר',
+            nowTierSoon:     'השבוע',
+            nowTierUpcoming: 'בקרוב',
+            nowTierCount:    (n) => `${n} פריטים`,
+            nowClear:        'הכל בסדר!',
+            nowClearSub:     'אין דדליינים פתוחים. תיהנה! 🎉',
             coursesEmpty:    'אין קורסים עדיין. העלה סילבוס או חבר יומן כדי להתחיל.',
             coursesExams:    'בחינות ומטלות',
             coursesSyllabus:  'תכני שבוע',
@@ -1736,6 +1836,9 @@
             calGoogle:   '📅 הוסף ליומן Google',
             calHelper:   'מתעדכן אוטומטית כל כמה שעות',
             calDownload: '⬇️ הורד קובץ יומן (.ics)',
+            pwaInstall:    'התקן את SyllaBot על המסך הראשי',
+            pwaInstallBtn: 'התקן',
+            pwaOffline:    'אופליין — מציג נתונים מהסנכרון האחרון',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -1847,6 +1950,12 @@
             focusTasks:      'Tasks',
             nowEmpty:        'No upcoming deadlines',
             nowEmptyCta:     'Connect a calendar or upload a syllabus to see your tasks',
+            nowTierUrgent:   'Today / Tomorrow',
+            nowTierSoon:     'This Week',
+            nowTierUpcoming: 'Coming Up',
+            nowTierCount:    (n) => `${n} items`,
+            nowClear:        "You're all clear!",
+            nowClearSub:     'No open deadlines. Enjoy! 🎉',
             coursesEmpty:    'No courses yet. Upload a syllabus or connect a calendar to get started.',
             coursesExams:    'Exams & Assignments',
             coursesSyllabus:  'Weekly Content',
@@ -1896,6 +2005,9 @@
             calGoogle:   '📅 Add to Google Calendar',
             calHelper:   'Updates automatically every few hours',
             calDownload: '⬇️ Download calendar file (.ics)',
+            pwaInstall:    'Install SyllaBot to your home screen',
+            pwaInstallBtn: 'Install',
+            pwaOffline:    'Offline — showing data from last sync',
         },
     };
 
@@ -3482,7 +3594,7 @@ function addCourseChip(course) {
             const tag = x.tag || '';
             // Hard deadlines: no upper cap. Other exam items: 14-day cap
             if (HARD_DEADLINE_TAGS.has(tag) || days <= 14) {
-                items.push({ ...x, _approx: false, _src: 'exam', _examIdx: i });
+                items.push({ ...x, _approx: false, _src: 'exam', _examIdx: i, _nowKey: x.uid || x.t });
             }
         }
 
@@ -3520,6 +3632,7 @@ function addCourseChip(course) {
                 source: 'syllabus',
                 _approx: true,
                 _src: 'syllabus',
+                _nowKey: 'now:' + (s.c || '').trim() + ':' + (tag || '') + ':' + ((s.txt || s.t || '').slice(0, 40)),
             });
         }
 
@@ -3536,37 +3649,51 @@ function addCourseChip(course) {
         // ── Course filter bar ──
         renderNowFilter();
 
-        // ── Now: unified items with tiered time horizons ──
+        // ── Now: unified items with tiered time horizons ── // ADHD-core: tiered grouping + checkboxes + celebration
         const nowEl = document.getElementById('now-list'); nowEl.innerHTML = '';
         const allNowItems = buildNowItems();
         const sorted = nowFilterCourse ? allNowItems.filter(x => x.c === nowFilterCourse) : allNowItems;
         if (!sorted.length) {
             nowEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div>${s.nowEmpty || s.emptyExams}<div style="font-size:var(--text-xs);margin-top:var(--space-2)">${s.nowEmptyCta || s.emptyExamsCta}</div><div class="empty-cta"><button class="empty-btn" onclick="openIcalOnboarding()">${s.connectCal}</button><button class="empty-btn" onclick="showOnboarding()">${s.uploadSyl}</button></div></div>`;
         } else {
+            // Group items into tiers
+            const tierUrgent = [], tierSoon = [], tierUpcoming = [];
             sorted.forEach(x => {
-                const diff = new Date(x.d)-now, days = Math.floor(diff/86400000);
+                const diff = new Date(x.d) - now, days = Math.floor(diff / 86400000);
                 const isPast = diff < 0;
-                const urgency = isPast ? 'urgency-past' : days <= 3 ? 'urgency-critical' : days <= 7 ? 'urgency-soon' : 'urgency-ok';
-                const timerCls = isPast ? 'bg-passed' : days <= 3 ? 'bg-red' : days <= 7 ? 'bg-red' : 'bg-green';
+                x._days = days; x._isPast = isPast;
+                if (isPast || days <= 1) tierUrgent.push(x);
+                else if (days <= 7) tierSoon.push(x);
+                else tierUpcoming.push(x);
+            });
+
+            const checkSvg = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"></polyline></svg>';
+            const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
+
+            function renderNowItem(x) {
+                const days = x._days, isPast = x._isPast;
+                const urgency = isPast ? 'urgency-past' : days <= 1 ? 'urgency-critical' : days <= 7 ? 'urgency-soon' : 'urgency-ok';
+                const timerCls = isPast ? 'bg-passed' : days <= 1 ? 'bg-red' : days <= 7 ? 'bg-red' : 'bg-green';
                 const isFromExams = x._src === 'exam';
                 const oi = isFromExams ? x._examIdx : -1;
-                const knownTags = ['מבחן','מועד-ב','מטלה','פרזנטציה','בוחן','קריאה','שיעור','תרגול','צפייה','סרטון'];
                 const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
                 const safeTag = DOMPurify.sanitize(x.tag || '', {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
                 const cleaned = x.clean_title || cleanTitle(x.t, x.c, x.tag);
                 const safeT   = DOMPurify.sanitize(cleaned, {ALLOWED_TAGS: [], ALLOWED_ATTR: []});
                 const safeC   = x.c ? DOMPurify.sanitize(x.c, {ALLOWED_TAGS: [], ALLOWED_ATTR: []}) : '';
-                const courseColor = getCourseColor(x.c||'');
+                const courseColor = getCourseColor(x.c || '');
                 const courseInfo = safeC
                     ? `<span class="focus-course-dot" style="background:${courseColor}"></span><strong>${safeC}</strong><span style="color:var(--color-text-muted)">—</span>`
                     : '';
-                // Approximate dates show ~Xw, exact dates show Xd
                 const weeks = Math.ceil(days / 7);
                 const timerLabel = isPast ? s.passed : x._approx ? '~' + weeks + 'w' : days + 'd';
-                // Moed toggle + delete only for exam-sourced items
                 const moedBtn = isFromExams && x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : '';
                 const delBtn = isFromExams ? `<button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>` : '';
-                nowEl.innerHTML += `<div class="focus-item focus-item-urgency ${urgency}">
+                const key = nowItemKey(x);
+                const safeKey = key.replace(/'/g, '&#39;');
+                const isDone = doneMap[key];
+                return `<div class="focus-item focus-item-urgency ${urgency} ${isDone ? 'is-done' : ''}">
+                    <div class="focus-checkbox now-checkbox ${isDone ? 'checked' : ''}" data-key="${safeKey}" onclick="toggleNowItem('${safeKey}')" role="checkbox" aria-checked="${isDone || false}" tabindex="0">${checkSvg}</div>
                     <div class="focus-item-text">
                         <span class="badge ${tagCls}">${safeTag}</span>
                         ${courseInfo}<span>${safeT}</span>
@@ -3577,7 +3704,40 @@ function addCourseChip(course) {
                         ${delBtn}
                     </div>
                 </div>`;
-            });
+            }
+
+            function renderTierSection(tierItems, tierName, tierDotClass) {
+                if (!tierItems.length) return;
+                const countLabel = s.nowTierCount ? s.nowTierCount(tierItems.length) : tierItems.length;
+                let html = `<div class="now-tier">
+                    <div class="now-tier-header">
+                        <span class="now-tier-dot ${tierDotClass}"></span>
+                        ${tierName}
+                        <span class="now-tier-count">${countLabel}</span>
+                    </div>
+                    <div class="now-tier-items">`;
+                tierItems.forEach(x => { html += renderNowItem(x); });
+                html += `</div></div>`;
+                nowEl.innerHTML += html;
+            }
+
+            renderTierSection(tierUrgent, s.nowTierUrgent, 'tier-urgent');
+            renderTierSection(tierSoon, s.nowTierSoon, 'tier-soon');
+            renderTierSection(tierUpcoming, s.nowTierUpcoming, 'tier-upcoming');
+
+            // ADHD-core: celebration when all non-past items are done
+            const nonPastItems = sorted.filter(x => !x._isPast);
+            const allNowDone = nonPastItems.length > 0 && nonPastItems.every(x => doneMap[nowItemKey(x)]);
+            if (allNowDone) {
+                nowEl.innerHTML = `<div class="now-clear-card">
+                    <div class="now-clear-icon">✅</div>
+                    <div class="now-clear-title">${s.nowClear}</div>
+                    <div class="now-clear-sub">${s.nowClearSub}</div>
+                </div>`;
+                if (!celebrationTracked) { track('now_all_clear'); celebrationTracked = true; }
+            } else {
+                celebrationTracked = false;
+            }
         }
 
         // ── Moodle upload banner (when server-side sync is blocked) ──
@@ -3616,6 +3776,18 @@ function addCourseChip(course) {
         userTasks[i].f = !userTasks[i].f;
         const items = document.querySelectorAll('#tkList .focus-checkbox');
         if (items[i]) { items[i].classList.add('completing'); setTimeout(() => items[i].classList.remove('completing'), 300); }
+        render();
+    }
+
+    function nowItemKey(item) {
+        return item._nowKey || item.uid || item.t || '';
+    }
+
+    function toggleNowItem(key) {
+        doneMap[key] = !doneMap[key];
+        const cb = document.querySelector(`.now-checkbox[data-key="${key}"]`);
+        if (cb) { cb.classList.add('completing'); setTimeout(() => cb.classList.remove('completing'), 300); }
+        track('now_item_toggle', { key: key, done: doneMap[key] });
         render();
     }
 
