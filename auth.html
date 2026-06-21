@@ -614,6 +614,9 @@
   }
 
   const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
+  // SECURITY NOTE (CR-07): Verify in Supabase dashboard that this key is the
+  // public anon key with no elevated permissions. Its non-standard format
+  // (not eyJ...) warrants manual confirmation it is NOT a service role key.
   const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
   const { createClient } = supabase;
   const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
