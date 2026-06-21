@@ -1,0 +1,26 @@
+{
+  "name": "SyllaBot",
+  "short_name": "SyllaBot",
+  "description": "הסמסטר שלך, מאורגן",
+  "start_url": "/SyllabusMaster/dashboard.html",
+  "scope": "/SyllabusMaster/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "he",
+  "theme_color": "#1b1714",
+  "background_color": "#f4f1ea",
+  "icons": [
+    {
+      "src": "/SyllabusMaster/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/SyllabusMaster/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1b1714">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="/SyllabusMaster/manifest.json">
+<link rel="apple-touch-icon" href="/SyllabusMaster/icons/icon-192.png">
+<title>SyllaBot – Pilot Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; }
+    :root {
+        /* ── Fonts ── */
+        --font-display: 'Frank Ruhl Libre', 'Rubik', serif;
+        --font-body: 'Rubik', 'Heebo', sans-serif;
+        --font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+        /* ── Font Sizes ── */
+        --text-xs: 0.72rem; --text-sm: 0.82rem; --text-base: 0.95rem;
+        --text-md: 1.05rem; --text-lg: 1.2rem; --text-xl: 1.5rem;
+        --text-2xl: 2rem; --text-3xl: clamp(2.4rem, 5vw, 3.2rem);
+        --text-4xl: clamp(3rem, 7vw, 5rem);
+
+        /* ── Font Weights ── */
+        --weight-light: 300; --weight-normal: 400; --weight-medium: 500;
+        --weight-semibold: 600; --weight-bold: 700; --weight-black: 900;
+
+        /* ── Line Heights ── */
+        --leading-tight: 1.1; --leading-snug: 1.3;
+        --leading-normal: 1.5; --leading-relaxed: 1.7;
+
+        /* ── Letter Spacing ── */
+        --tracking-tight: -0.03em; --tracking-normal: 0;
+        --tracking-wide: 0.08em; --tracking-wider: 0.14em;
+
+        /* ── Colors: Backgrounds ── */
+        --color-bg: #f4f1ea; --color-bg-secondary: #ece7dc;
+        --color-bg-card: #ffffff; --color-bg-inverse: #1b1714;
+
+        /* ── Colors: Text ── */
+        --color-text: #1b1714; --color-text-secondary: #2b2622;
+        --color-text-muted: #736d64; --color-text-inverse: #f4f1ea;
+        --color-text-link: #c03d18;
+
+        /* ── Colors: Accent ── */
+        --color-accent: #df4a22; --color-accent-hover: #c03d18;
+        --color-accent-active: #a83515; --color-accent-soft: #fbe9e2;
+        --color-accent-text: #c03d18;
+
+        /* ── Colors: Secondary Accent ── */
+        --color-accent2: #225fa8; --color-accent2-soft: #e8f0fa;
+
+        /* ── Colors: Status ── */
+        --color-success: #27ae60; --color-success-soft: #f6ffed;
+        --color-warning: #e67e22; --color-warning-soft: #fff8f0;
+        --color-error: #d63031; --color-error-soft: #fff1f0;
+
+        /* ── Colors: Borders ── */
+        --color-border: rgba(27, 23, 20, 0.10);
+        --color-border-strong: rgba(27, 23, 20, 0.18);
+        --color-border-ink: #1b1714; --color-border-focus: #df4a22;
+
+        /* ── Colors: Surfaces ── */
+        --color-overlay: rgba(27, 23, 20, 0.45);
+
+        /* ── Spacing ── */
+        --space-0: 0; --space-1: 2px; --space-2: 4px; --space-3: 6px;
+        --space-4: 8px; --space-5: 12px; --space-6: 16px; --space-7: 24px;
+        --space-8: 32px; --space-9: 48px; --space-10: 64px;
+        --space-11: 96px; --space-12: 128px;
+
+        /* ── Layout ── */
+        --max-width-content: 700px; --max-width-wide: 960px; --max-width-page: 1200px;
+
+        /* ── Border Radius ── */
+        --radius-sm: 6px; --radius-md: 12px; --radius-lg: 16px; --radius-pill: 100px; --radius-full: 50%;
+
+        /* ── Borders: Structural ── */
+        --border-thin: 1.5px solid var(--color-border);
+        --border-structural: 2.5px solid var(--color-border-ink);
+        --border-heavy: 3px solid var(--color-border-ink);
+
+        /* ── Shadows: Soft ── */
+        --shadow-sm: 0 1px 3px rgba(27, 23, 20, 0.06);
+        --shadow-md: 0 8px 24px rgba(27, 23, 20, 0.08);
+        --shadow-lg: 0 20px 60px rgba(27, 23, 20, 0.12);
+
+        /* ── Shadows: Hard ── */
+        --shadow-hard-sm: 2px 2px 0 var(--color-border-ink);
+        --shadow-hard-md: 4px 4px 0 var(--color-border-ink);
+        --shadow-hard-lg: 6px 6px 0 var(--color-border-ink);
+        --shadow-hard-accent: 4px 4px 0 var(--color-accent);
+
+        /* ── Shadows: Press effect ── */
+        --shadow-press-rest: var(--shadow-hard-md);
+        --shadow-press-hover: 1px 1px 0 var(--color-border-ink);
+        --press-translate: translate(3px, 3px);
+
+        /* ── Shadows: Focus ── */
+        --shadow-focus: 0 0 0 3px rgba(223, 74, 34, 0.25);
+
+        /* ── Motion ── */
+        --duration-instant: 50ms; --duration-fast: 120ms;
+        --duration-normal: 200ms; --duration-slow: 400ms; --duration-slower: 600ms;
+        --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+        --ease-out: cubic-bezier(0, 0, 0.2, 1);
+        --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    body {
+        font-family: var(--font-body);
+        background: var(--color-bg);
+        color: var(--color-text);
+        margin: 0;
+        padding: var(--space-7);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Auth Loading ── */
+    #auth-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        position: fixed;
+        inset: 0;
+        background: var(--color-bg);
+        z-index: 100;
+    }
+    .auth-spinner {
+        width: 32px; height: 32px;
+        border: 3px solid var(--color-border);
+        border-top-color: var(--color-accent);
+        border-radius: var(--radius-full);
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Admin Layout ── */
+    .admin-container {
+        max-width: var(--max-width-wide);
+        margin: 0 auto;
+        display: none;
+    }
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-8);
+        flex-wrap: wrap;
+        gap: var(--space-4);
+    }
+    .admin-title {
+        font-family: var(--font-display);
+        font-weight: var(--weight-black);
+        font-size: var(--text-2xl);
+        letter-spacing: var(--tracking-tight);
+        margin: 0;
+    }
+    .admin-subtitle {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        margin-top: var(--space-2);
+    }
+    .admin-lang-btn {
+        background: transparent;
+        border: var(--border-structural);
+        border-radius: var(--radius-sm);
+        padding: var(--space-2) var(--space-4);
+        cursor: pointer;
+        font-family: var(--font-body);
+        font-weight: var(--weight-bold);
+        font-size: var(--text-sm);
+        color: var(--color-text);
+        transition: box-shadow var(--duration-fast), transform var(--duration-fast);
+        box-shadow: var(--shadow-hard-sm);
+    }
+    .admin-lang-btn:hover {
+        box-shadow: var(--shadow-press-hover);
+        transform: var(--press-translate);
+    }
+
+    /* ── Grid ── */
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-7);
+    }
+
+    /* ── Cards ── */
+    .admin-card {
+        background: var(--color-bg-card);
+        border: var(--border-structural);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-hard-md);
+        padding: var(--space-7);
+    }
+    .admin-card-title {
+        font-family: var(--font-display);
+        font-weight: var(--weight-bold);
+        font-size: var(--text-md);
+        margin-bottom: var(--space-5);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+    }
+    .admin-metric {
+        font-family: var(--font-display);
+        font-weight: var(--weight-black);
+        font-size: var(--text-3xl);
+        color: var(--color-text);
+        line-height: var(--leading-tight);
+    }
+    .admin-metric-label {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        margin-top: var(--space-2);
+    }
+    .admin-metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: var(--space-4);
+    }
+    .admin-metric-sm {
+        font-family: var(--font-display);
+        font-weight: var(--weight-bold);
+        font-size: var(--text-xl);
+    }
+
+    /* ── Cohort Grid ── */
+    .admin-cohort-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-6);
+    }
+    .admin-cohort-card {
+        padding: var(--space-6);
+        border-radius: var(--radius-md);
+        border: var(--border-thin);
+    }
+    .admin-cohort-label {
+        font-weight: var(--weight-bold);
+        font-size: var(--text-sm);
+        margin-bottom: var(--space-4);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+    }
+    .admin-cohort-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: var(--space-2) 0;
+        font-size: var(--text-sm);
+    }
+    .admin-cohort-stat-value {
+        font-weight: var(--weight-bold);
+        font-family: var(--font-display);
+    }
+
+    /* ── Funnel ── */
+    .admin-funnel-step {
+        display: flex;
+        align-items: center;
+        gap: var(--space-5);
+        padding: var(--space-4) 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .admin-funnel-step:last-child { border-bottom: none; }
+    .admin-funnel-label {
+        flex-shrink: 0;
+        font-size: var(--text-sm);
+        min-width: 120px;
+    }
+    .admin-funnel-bar-track {
+        flex: 1;
+        height: 8px;
+        background: var(--color-bg-secondary);
+        border-radius: var(--radius-pill);
+        overflow: hidden;
+    }
+    .admin-funnel-bar {
+        height: 8px;
+        background: var(--color-accent);
+        border-radius: var(--radius-pill);
+        transition: width var(--duration-normal);
+    }
+    .admin-funnel-count {
+        flex-shrink: 0;
+        font-weight: var(--weight-bold);
+        font-family: var(--font-display);
+        font-size: var(--text-sm);
+        min-width: 30px;
+        text-align: end;
+    }
+
+    /* ── Sources ── */
+    .admin-source-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: var(--space-3) 0;
+        font-size: var(--text-sm);
+    }
+    .admin-source-count {
+        font-weight: var(--weight-bold);
+        font-family: var(--font-display);
+    }
+
+    /* ── Utility ── */
+    .admin-wide { grid-column: 1 / -1; }
+    .admin-error {
+        text-align: center;
+        padding: var(--space-9);
+        color: var(--color-error);
+        font-weight: var(--weight-bold);
+        display: none;
+    }
+    .admin-loading {
+        text-align: center;
+        padding: var(--space-9);
+        color: var(--color-text-muted);
+    }
+    .admin-timestamp {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        text-align: center;
+        margin-top: var(--space-8);
+    }
+    .admin-chart-container {
+        max-height: 220px;
+        position: relative;
+        margin-top: var(--space-5);
+    }
+    .admin-no-data {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        font-style: italic;
+        padding: var(--space-6) 0;
+        text-align: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+        .admin-cohort-grid { grid-template-columns: 1fr; }
+        .admin-grid { grid-template-columns: 1fr; }
+        .admin-header { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- Auth Loading -->
+<div id="auth-loading">
+    <div class="auth-spinner"></div>
+</div>
+
+<!-- Main Container -->
+<div class="admin-container" id="admin-container">
+
+    <!-- Header -->
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title" data-i18n="adminTitle"></h1>
+            <p class="admin-subtitle" data-i18n="adminSubtitle"></p>
+        </div>
+        <button class="admin-lang-btn" onclick="toggleLang()" data-i18n="langToggle"></button>
+    </div>
+
+    <!-- Error State -->
+    <div id="admin-error" class="admin-error"></div>
+
+    <!-- Loading State -->
+    <div id="admin-loading" class="admin-loading" data-i18n="loadingMetrics"></div>
+
+    <!-- Metrics Grid -->
+    <div id="admin-grid" class="admin-grid" style="display:none;">
+
+        <!-- 1. Retention Card -->
+        <div class="admin-card">
+            <div class="admin-card-title" data-i18n="retentionTitle"></div>
+            <div class="admin-metric" id="retention-rate-7d">0%</div>
+            <div class="admin-metric-label" data-i18n="retentionActive7d"></div>
+            <div style="margin-top: var(--space-5);">
+                <div class="admin-metric-row">
+                    <span class="admin-metric-label" data-i18n="retentionActive7d"></span>
+                    <span class="admin-metric-sm" id="retention-active-7d">0</span>
+                </div>
+                <div class="admin-metric-row">
+                    <span class="admin-metric-label" data-i18n="retentionActive3d"></span>
+                    <span class="admin-metric-sm" id="retention-active-3d">0</span>
+                </div>
+                <div class="admin-metric-row">
+                    <span class="admin-metric-label" data-i18n="retentionTotal"></span>
+                    <span class="admin-metric-sm" id="retention-total">0</span>
+                </div>
+                <div class="admin-metric-row">
+                    <span class="admin-metric-label" data-i18n="retentionActive3d"></span>
+                    <span class="admin-metric-sm" id="retention-rate-3d">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Sync Health Card -->
+        <div class="admin-card">
+            <div class="admin-card-title" data-i18n="syncTitle"></div>
+            <div class="admin-chart-container">
+                <canvas id="syncChart"></canvas>
+            </div>
+            <div style="margin-top: var(--space-5); text-align: center;">
+                <div class="admin-metric" id="sync-health-score">0%</div>
+                <div class="admin-metric-label" data-i18n="syncOk"></div>
+            </div>
+        </div>
+
+        <!-- 3. Accuracy Card -->
+        <div class="admin-card">
+            <div class="admin-card-title" data-i18n="accuracyTitle"></div>
+            <div class="admin-metric" id="accuracy-score">0%</div>
+            <div class="admin-metric-label" data-i18n="accuracyOverall"></div>
+            <div class="admin-chart-container" id="accuracy-chart-container">
+                <canvas id="accuracyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 4. ADHD Comparison Card (full width) -->
+        <div class="admin-card admin-wide">
+            <div class="admin-card-title" data-i18n="cohortTitle"></div>
+            <div class="admin-cohort-grid">
+                <!-- ADHD cohort -->
+                <div class="admin-cohort-card">
+                    <div class="admin-cohort-label" data-i18n="cohortAdhd"></div>
+                    <div id="cohort-adhd-content">
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortCount"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-adhd-count">0</span>
+                        </div>
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortRetention"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-adhd-retention">0%</span>
+                        </div>
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortAccuracy"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-adhd-accuracy">0%</span>
+                        </div>
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortEngagement"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-adhd-toggles">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Non-ADHD cohort -->
+                <div class="admin-cohort-card">
+                    <div class="admin-cohort-label" data-i18n="cohortNonAdhd"></div>
+                    <div id="cohort-nonadhd-content">
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortCount"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-nonadhd-count">0</span>
+                        </div>
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortRetention"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-nonadhd-retention">0%</span>
+                        </div>
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortAccuracy"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-nonadhd-accuracy">0%</span>
+                        </div>
+                        <div class="admin-cohort-stat">
+                            <span data-i18n="cohortEngagement"></span>
+                            <span class="admin-cohort-stat-value" id="cohort-nonadhd-toggles">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Funnel Card -->
+        <div class="admin-card">
+            <div class="admin-card-title" data-i18n="funnelTitle"></div>
+            <div class="admin-funnel-step">
+                <span class="admin-funnel-label" data-i18n="funnelSignup"></span>
+                <div class="admin-funnel-bar-track"><div class="admin-funnel-bar" id="funnel-bar-signup"></div></div>
+                <span class="admin-funnel-count" id="funnel-signup">0</span>
+            </div>
+            <div class="admin-funnel-step">
+                <span class="admin-funnel-label" data-i18n="funnelOnboarding"></span>
+                <div class="admin-funnel-bar-track"><div class="admin-funnel-bar" id="funnel-bar-onboarding"></div></div>
+                <span class="admin-funnel-count" id="funnel-onboarding">0</span>
+            </div>
+            <div class="admin-funnel-step">
+                <span class="admin-funnel-label" data-i18n="funnelCalendar"></span>
+                <div class="admin-funnel-bar-track"><div class="admin-funnel-bar" id="funnel-bar-calendar"></div></div>
+                <span class="admin-funnel-count" id="funnel-calendar">0</span>
+            </div>
+            <div class="admin-funnel-step">
+                <span class="admin-funnel-label" data-i18n="funnelAccuracy"></span>
+                <div class="admin-funnel-bar-track"><div class="admin-funnel-bar" id="funnel-bar-accuracy"></div></div>
+                <span class="admin-funnel-count" id="funnel-accuracy">0</span>
+            </div>
+        </div>
+
+        <!-- 6. Sources Card -->
+        <div class="admin-card">
+            <div class="admin-card-title" data-i18n="sourcesTitle"></div>
+            <div class="admin-source-row">
+                <span data-i18n="sourcesMoodle"></span>
+                <span class="admin-source-count" id="source-moodle">0</span>
+            </div>
+            <div class="admin-source-row">
+                <span data-i18n="sourcesYedion"></span>
+                <span class="admin-source-count" id="source-yedion">0</span>
+            </div>
+            <div class="admin-source-row">
+                <span data-i18n="sourcesBoth"></span>
+                <span class="admin-source-count" id="source-both">0</span>
+            </div>
+            <div class="admin-source-row">
+                <span data-i18n="sourcesNeither"></span>
+                <span class="admin-source-count" id="source-neither">0</span>
+            </div>
+        </div>
+
+    </div><!-- /admin-grid -->
+
+    <!-- Timestamp -->
+    <div class="admin-timestamp" id="admin-timestamp" style="display:none;">
+        <span data-i18n="generatedAt"></span>: <span id="timestamp-value"></span>
+    </div>
+
+</div><!-- /admin-container -->
+
+<script>
+    // ── Supabase Init ──
+    const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ── Admin Allowlist ──
+    const ADMIN_EMAILS = ['yuvalamati@post.runi.ac.il'];
+
+    // ── i18n ──
+    const STRINGS = {
+        he: {
+            adminTitle: '\u05dc\u05d5\u05d7 \u05d1\u05e7\u05e8\u05d4 \u2014 \u05e4\u05d9\u05d9\u05dc\u05d5\u05d8',
+            adminSubtitle: '\u05de\u05d3\u05d3\u05d9 \u05d1\u05e8\u05d9\u05d0\u05d5\u05ea \u05dc\u05e4\u05e0\u05d9 \u05d4\u05e9\u05e7\u05d4',
+            retentionTitle: '\u05e9\u05d9\u05de\u05d5\u05e8',
+            retentionActive7d: '\u05e4\u05e2\u05d9\u05dc\u05d9\u05dd \u05d1-7 \u05d9\u05de\u05d9\u05dd',
+            retentionActive3d: '\u05e4\u05e2\u05d9\u05dc\u05d9\u05dd \u05d1-3 \u05d9\u05de\u05d9\u05dd',
+            retentionTotal: '\u05e1\u05d4"\u05db \u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd',
+            syncTitle: '\u05d1\u05e8\u05d9\u05d0\u05d5\u05ea \u05e1\u05e0\u05db\u05e8\u05d5\u05df',
+            syncOk: '\u05ea\u05e7\u05d9\u05df',
+            syncStale: '\u05de\u05d9\u05d5\u05e9\u05df',
+            syncError: '\u05e9\u05d2\u05d9\u05d0\u05d4',
+            syncPending: '\u05de\u05de\u05ea\u05d9\u05df',
+            accuracyTitle: '\u05d3\u05d9\u05d5\u05e7',
+            accuracyOverall: '\u05e6\u05d9\u05d5\u05df \u05db\u05d5\u05dc\u05dc',
+            accuracyWeekly: '\u05de\u05d2\u05de\u05d4 \u05e9\u05d1\u05d5\u05e2\u05d9\u05ea',
+            cohortTitle: 'ADHD \u05dc\u05e2\u05d5\u05de\u05ea \u05dc\u05dc\u05d0',
+            cohortAdhd: 'ADHD',
+            cohortNonAdhd: '\u05dc\u05dc\u05d0 ADHD',
+            cohortCount: '\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd',
+            cohortRetention: '\u05e9\u05d9\u05de\u05d5\u05e8 7 \u05d9\u05de\u05d9\u05dd',
+            cohortAccuracy: '\u05d3\u05d9\u05d5\u05e7',
+            cohortEngagement: '\u05de\u05de\u05d5\u05e6\u05e2 \u05e1\u05d9\u05de\u05d5\u05e0\u05d9\u05dd',
+            funnelTitle: '\u05de\u05e9\u05e4\u05da \u05d4\u05e6\u05d8\u05e8\u05e4\u05d5\u05ea',
+            funnelSignup: '\u05d4\u05e8\u05e9\u05de\u05d4',
+            funnelOnboarding: '\u05e1\u05d9\u05d5\u05dd \u05d0\u05d5\u05e0\u05d1\u05d5\u05e8\u05d3\u05d9\u05e0\u05d2',
+            funnelCalendar: '\u05d7\u05d9\u05d1\u05d5\u05e8 \u05d9\u05d5\u05de\u05df',
+            funnelAccuracy: '\u05de\u05e9\u05d5\u05d1 \u05d3\u05d9\u05d5\u05e7',
+            sourcesTitle: '\u05de\u05e7\u05d5\u05e8\u05d5\u05ea \u05de\u05d9\u05d3\u05e2',
+            sourcesMoodle: '\u05de\u05d5\u05d3\u05dc \u05d1\u05dc\u05d1\u05d3',
+            sourcesYedion: '\u05d9\u05d3\u05d9\u05e2\u05d5\u05df \u05d1\u05dc\u05d1\u05d3',
+            sourcesBoth: '\u05e9\u05e0\u05d9\u05d4\u05dd',
+            sourcesNeither: '\u05dc\u05dc\u05d0 \u05d7\u05d9\u05d1\u05d5\u05e8',
+            accessDenied: '\u05d0\u05d9\u05df \u05d2\u05d9\u05e9\u05d4 \u2014 \u05dc\u05d5\u05d7 \u05d1\u05e7\u05e8\u05d4 \u05d6\u05d4 \u05de\u05d5\u05ea\u05e8 \u05dc\u05de\u05e0\u05d4\u05dc\u05d9\u05dd \u05d1\u05dc\u05d1\u05d3',
+            loadingMetrics: '\u05d8\u05d5\u05e2\u05df \u05de\u05d3\u05d3\u05d9\u05dd...',
+            errorLoading: '\u05e9\u05d2\u05d9\u05d0\u05d4 \u05d1\u05d8\u05e2\u05d9\u05e0\u05ea \u05de\u05d3\u05d3\u05d9\u05dd',
+            generatedAt: '\u05e2\u05d5\u05d3\u05db\u05df \u05dc\u05d0\u05d7\u05e8\u05d5\u05e0\u05d4',
+            langToggle: 'EN',
+            noAdhdData: '\u05d0\u05d9\u05df \u05e0\u05ea\u05d5\u05e0\u05d9 ADHD',
+            noDataYet: '\u05d0\u05d9\u05df \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e2\u05d3\u05d9\u05d9\u05df',
+        },
+        en: {
+            adminTitle: 'Pilot Dashboard',
+            adminSubtitle: 'Pre-launch health metrics',
+            retentionTitle: 'Retention',
+            retentionActive7d: 'Active (7d)',
+            retentionActive3d: 'Active (3d)',
+            retentionTotal: 'Total users',
+            syncTitle: 'Sync Health',
+            syncOk: 'OK',
+            syncStale: 'Stale',
+            syncError: 'Error',
+            syncPending: 'Pending',
+            accuracyTitle: 'Accuracy',
+            accuracyOverall: 'Overall score',
+            accuracyWeekly: 'Weekly trend',
+            cohortTitle: 'ADHD vs Non-ADHD',
+            cohortAdhd: 'ADHD',
+            cohortNonAdhd: 'Non-ADHD',
+            cohortCount: 'Users',
+            cohortRetention: '7d retention',
+            cohortAccuracy: 'Accuracy',
+            cohortEngagement: 'Avg toggles',
+            funnelTitle: 'Onboarding Funnel',
+            funnelSignup: 'Signup',
+            funnelOnboarding: 'Onboarding complete',
+            funnelCalendar: 'Calendar connected',
+            funnelAccuracy: 'Accuracy feedback',
+            sourcesTitle: 'Data Sources',
+            sourcesMoodle: 'Moodle only',
+            sourcesYedion: 'Yedion only',
+            sourcesBoth: 'Both',
+            sourcesNeither: 'None',
+            accessDenied: 'Access denied \u2014 this dashboard is restricted to administrators',
+            loadingMetrics: 'Loading metrics...',
+            errorLoading: 'Error loading metrics',
+            generatedAt: 'Last updated',
+            langToggle: '\u05e2\u05d1',
+            noAdhdData: 'No ADHD data',
+            noDataYet: 'No data yet',
+        }
+    };
+
+    let currentLang = 'he';
+
+    function applyLang(lang) {
+        const strings = STRINGS[lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (strings[key] !== undefined) {
+                el.textContent = strings[key];
+            }
+        });
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'he' ? 'en' : 'he';
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = currentLang === 'he' ? 'rtl' : 'ltr';
+        applyLang(currentLang);
+    }
+
+    // ── Charts ──
+    let syncChart = null;
+    let accuracyChart = null;
+
+    function renderMetrics(data) {
+        // Retention
+        const totalUsers = data.total_users || 0;
+        document.getElementById('retention-rate-7d').textContent = data.retention.rate_7d + '%';
+        document.getElementById('retention-active-7d').textContent = data.retention.active_7d;
+        document.getElementById('retention-active-3d').textContent = data.retention.active_3d;
+        document.getElementById('retention-total').textContent = totalUsers;
+        document.getElementById('retention-rate-3d').textContent = data.retention.rate_3d + '%';
+
+        // Sync Health — Donut Chart
+        document.getElementById('sync-health-score').textContent = data.sync_health.health_score + '%';
+        const syncCtx = document.getElementById('syncChart').getContext('2d');
+        if (syncChart) syncChart.destroy();
+        syncChart = new Chart(syncCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    STRINGS[currentLang].syncOk,
+                    STRINGS[currentLang].syncStale,
+                    STRINGS[currentLang].syncError,
+                    STRINGS[currentLang].syncPending
+                ],
+                datasets: [{
+                    data: [data.sync_health.ok, data.sync_health.stale, data.sync_health.error, data.sync_health.pending],
+                    backgroundColor: ['#27ae60', '#e67e22', '#d63031', '#736d64'],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                cutout: '70%',
+                animation: { duration: 600 },
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                },
+            }
+        });
+
+        // Accuracy
+        document.getElementById('accuracy-score').textContent = data.accuracy.score + '%';
+        const chartContainer = document.getElementById('accuracy-chart-container');
+        if (!data.accuracy.weekly || data.accuracy.weekly.length === 0) {
+            chartContainer.innerHTML = '<div class="admin-no-data" data-i18n="noDataYet">' + STRINGS[currentLang].noDataYet + '</div>';
+        } else {
+            const accCtx = document.getElementById('accuracyChart').getContext('2d');
+            if (accuracyChart) accuracyChart.destroy();
+            accuracyChart = new Chart(accCtx, {
+                type: 'line',
+                data: {
+                    labels: data.accuracy.weekly.map(w => 'W' + w.week),
+                    datasets: [{
+                        data: data.accuracy.weekly.map(w => w.score),
+                        borderColor: '#df4a22',
+                        backgroundColor: 'rgba(223, 74, 34, 0.1)',
+                        tension: 0.3,
+                        fill: false,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#df4a22',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 600 },
+                    plugins: {
+                        legend: { display: false },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(27, 23, 20, 0.10)' },
+                            ticks: { font: { family: 'Rubik' } },
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Rubik' } },
+                        }
+                    }
+                }
+            });
+        }
+
+        // ADHD Cohorts
+        function renderCohort(prefix, cohortData) {
+            if (cohortData.count === 0) {
+                const content = document.getElementById('cohort-' + prefix + '-content');
+                if (content) {
+                    content.innerHTML = '<div class="admin-no-data" data-i18n="noAdhdData">' + STRINGS[currentLang].noAdhdData + '</div>';
+                }
+                return;
+            }
+            document.getElementById('cohort-' + prefix + '-count').textContent = cohortData.count;
+            document.getElementById('cohort-' + prefix + '-retention').textContent = cohortData.retention_7d + '%';
+            document.getElementById('cohort-' + prefix + '-accuracy').textContent = cohortData.accuracy + '%';
+            document.getElementById('cohort-' + prefix + '-toggles').textContent = cohortData.avg_toggles;
+        }
+        renderCohort('adhd', data.cohorts.adhd);
+        renderCohort('nonadhd', data.cohorts.non_adhd);
+
+        // Funnel
+        const signupCount = data.funnel.signup || 1; // avoid division by zero
+        function setFunnel(id, value) {
+            document.getElementById('funnel-' + id).textContent = value;
+            const bar = document.getElementById('funnel-bar-' + id);
+            if (bar) bar.style.width = Math.round(value / signupCount * 100) + '%';
+        }
+        setFunnel('signup', data.funnel.signup);
+        setFunnel('onboarding', data.funnel.onboarding_complete);
+        setFunnel('calendar', data.funnel.calendar_connected);
+        setFunnel('accuracy', data.funnel.accuracy_responded);
+
+        // Sources
+        document.getElementById('source-moodle').textContent = data.sources.moodle_only;
+        document.getElementById('source-yedion').textContent = data.sources.yedion_only;
+        document.getElementById('source-both').textContent = data.sources.both;
+        document.getElementById('source-neither').textContent = data.sources.neither;
+
+        // Timestamp
+        if (data.generated_at) {
+            const ts = new Date(data.generated_at);
+            document.getElementById('timestamp-value').textContent = ts.toLocaleString(currentLang === 'he' ? 'he-IL' : 'en-US');
+            document.getElementById('admin-timestamp').style.display = 'block';
+        }
+    }
+
+    // ── Init ──
+    async function init() {
+        try {
+            // Auth check
+            const { data: { user } } = await sb.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // Hide auth loading, show container
+            document.getElementById('auth-loading').style.display = 'none';
+            document.getElementById('admin-container').style.display = 'block';
+
+            // Apply initial language
+            applyLang(currentLang);
+
+            // Admin check (UX guard — server re-validates)
+            if (!ADMIN_EMAILS.includes(user.email)) {
+                document.getElementById('admin-error').textContent = STRINGS[currentLang].accessDenied;
+                document.getElementById('admin-error').style.display = 'block';
+                document.getElementById('admin-loading').style.display = 'none';
+                return;
+            }
+
+            // Fetch metrics
+            const { data: { session } } = await sb.auth.getSession();
+            const resp = await fetch(SUPABASE_URL + '/functions/v1/pilot-metrics', {
+                headers: {
+                    'Authorization': 'Bearer ' + session.access_token,
+                }
+            });
+
+            if (!resp.ok) {
+                document.getElementById('admin-error').textContent = STRINGS[currentLang].errorLoading;
+                document.getElementById('admin-error').style.display = 'block';
+                document.getElementById('admin-loading').style.display = 'none';
+                return;
+            }
+
+            const metricsData = await resp.json();
+
+            // Hide loading, show grid
+            document.getElementById('admin-loading').style.display = 'none';
+            document.getElementById('admin-grid').style.display = 'grid';
+
+            // Render
+            renderMetrics(metricsData);
+
+        } catch (err) {
+            console.error('Admin init error:', err);
+            document.getElementById('auth-loading').style.display = 'none';
+            document.getElementById('admin-container').style.display = 'block';
+            applyLang(currentLang);
+            document.getElementById('admin-error').textContent = STRINGS[currentLang].errorLoading;
+            document.getElementById('admin-error').style.display = 'block';
+            document.getElementById('admin-loading').style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

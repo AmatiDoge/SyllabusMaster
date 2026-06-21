@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1b1714">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="/SyllabusMaster/manifest.json">
+<link rel="apple-touch-icon" href="/SyllabusMaster/icons/icon-192.png">
 <title>SyllaBot – כניסה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -602,6 +607,12 @@
 </div>
 
 <script>
+  // ── Service Worker Registration ──
+  if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/SyllabusMaster/sw.js', { scope: '/SyllabusMaster/' })
+          .catch(err => console.error('SW registration failed:', err));
+  }
+
   const SUPABASE_URL = 'https://uukpuvizkjgcssmlqltk.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_qZon0p7vFlETwrTZfJjHyQ_FohC19a1';
   const { createClient } = supabase;
