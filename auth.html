@@ -636,7 +636,7 @@
       forgotDesc: 'נשלח לך קישור לאיפוס סיסמה',
       forgotEmail: 'אימייל', btnForgotSend: 'שלח קישור', btnBackLogin: '← חזרה לכניסה',
       divider: 'או',
-      footerNote: 'בהרשמה אתה מסכים ל<a href="#" onclick="openLegal(\'tos\');return false;">תנאי השימוש</a> ול<a href="#" onclick="openLegal(\'privacy\');return false;">מדיניות הפרטיות</a>',
+      footerNote: 'בהרשמה אתה מסכים ל<a href="#" data-legal="tos">תנאי השימוש</a> ול<a href="#" data-legal="privacy">מדיניות הפרטיות</a>',
       toggleLabel: 'EN',
       errFillLogin: 'אנא מלא אימייל וסיסמה', errFillSignup: 'אנא מלא את כל השדות',
       errPassLen: 'הסיסמה חייבת להכיל לפחות 6 תווים', errFillEmail: 'אנא הכנס אימייל',
@@ -668,7 +668,7 @@
       forgotDesc: 'We will send you a password reset link',
       forgotEmail: 'Email', btnForgotSend: 'Send link', btnBackLogin: '← Back to login',
       divider: 'or',
-      footerNote: 'By signing up you agree to <a href="#" onclick="openLegal(\'tos\');return false;">Terms of Service</a> and <a href="#" onclick="openLegal(\'privacy\');return false;">Privacy Policy</a>',
+      footerNote: 'By signing up you agree to <a href="#" data-legal="tos">Terms of Service</a> and <a href="#" data-legal="privacy">Privacy Policy</a>',
       toggleLabel: 'עב',
       errFillLogin: 'Please enter your email and password', errFillSignup: 'Please fill in all fields',
       errPassLen: 'Password must be at least 6 characters', errFillEmail: 'Please enter your email',
@@ -924,6 +924,15 @@
     document.getElementById(overlayId).classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  // Event delegation for data-legal links (replaces inline onclick handlers)
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-legal]');
+    if (link) {
+      e.preventDefault();
+      openLegal(link.dataset.legal);
+    }
+  });
 
   function closeLegal(overlayId) {
     document.getElementById(overlayId).classList.remove('open');
