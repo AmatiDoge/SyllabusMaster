@@ -751,9 +751,10 @@
         <div class="sp-divider"></div>
         <div class="sp-section">
             <div class="sp-section-title">יומן</div>
-            <button class="sp-save-btn" style="width:100%;margin-bottom:8px" onclick="downloadICS()">⬇️ הורד קובץ יומן (.ics)</button>
-            <button class="sp-save-btn" style="width:100%;background:#2980b9" onclick="copyCalendarFeed(this)">🔗 העתק קישור להרשמה ליומן</button>
-            <div style="font-size:0.72rem;color:#888;margin-top:6px">הוסף ל-Google/Apple Calendar כדי לקבל עדכונים אוטומטית, כולל תזכורת יום לפני כל מבחן</div>
+            <button class="sp-save-btn" id="cal-apple-btn" data-i18n="calApple" style="width:100%;margin-bottom:8px" onclick="subscribeApple(this)">📅 הוסף ליומן Apple</button>
+            <button class="sp-save-btn" id="cal-google-btn" data-i18n="calGoogle" style="width:100%;margin-bottom:8px;background:#2980b9" onclick="subscribeGoogle(this)">📅 הוסף ליומן Google</button>
+            <div id="cal-helper" data-i18n="calHelper" style="font-size:0.72rem;color:#888;margin-top:6px">מתעדכן אוטומטית כל כמה שעות</div>
+            <button class="sp-save-btn" data-i18n="calDownload" style="width:100%;font-size:0.75rem;padding:6px 10px;opacity:0.7;margin-top:8px" onclick="downloadICS()">⬇️ הורד קובץ יומן (.ics)</button>
         </div>
         <div class="sp-divider"></div>
         <div class="sp-section" id="sp-reminders-section">
@@ -1195,6 +1196,13 @@
             if (ex.tag) lines.push(`DESCRIPTION:${esc(ex.tag)}`);
             lines.push('BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY',`DESCRIPTION:${title}`,'END:VALARM','END:VEVENT');
         });
+        (userSyllabus || []).forEach((s, j) => {
+            const start = s.iso_date ? fmt(s.iso_date) : null; if (!start) return;
+            const title = esc([s.c, s.txt].filter(Boolean).join(' — '));
+            lines.push('BEGIN:VEVENT', `UID:syllabot-local-syl-${j}@syllabot`, `DTSTAMP:${now}`, `DTSTART:${start}`, `SUMMARY:${title}`);
+            if (s.t) lines.push(`DESCRIPTION:${esc(s.t)}`);
+            lines.push('BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY',`DESCRIPTION:${title}`,'END:VALARM','END:VEVENT');
+        });
         lines.push('END:VCALENDAR');
         return lines.join('\r\n');
     }
@@ -1209,8 +1217,19 @@
         if (icsToken) return icsToken;
         try {
             const { data } = await sb.from('user_data').select('ics_token').eq('user_id', currentUser.id).single();
-            icsToken = data?.ics_token || null;
+            if (data?.ics_token) { icsToken = data.ics_token; return icsToken; }
         } catch (_) {}
+        // Auto-generate token if missing (D-10, D-11)
+        if (!icsToken) {
+            try {
+                const newToken = crypto.randomUUID();
+                await sb.from('user_data').update({ ics_token: newToken }).eq('user_id', currentUser.id);
+                icsToken = newToken;
+            } catch (e) {
+                console.error('Failed to save ics_token:', e);
+                return null;
+            }
+        }
         return icsToken;
     }
     async function copyCalendarFeed(btn) {
@@ -1220,6 +1239,23 @@
         try { await navigator.clipboard.writeText(url); } catch (_) {}
         if (btn) { const o = btn.textContent; btn.textContent = currentLang === 'en' ? '✓ Link copied' : '✓ הקישור הועתק'; setTimeout(() => btn.textContent = o, 1800); }
         track('calendar_subscribe_copy');
+    }
+    async function subscribeApple(btn) {
+        const t = await ensureIcsToken();
+        if (!t) { alert(currentLang === 'en' ? 'Save your schedule first' : 'שמור קודם את לוח הזמנים שלך'); return; }
+        const feedUrl = `https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/calendar-feed?token=${t}`;
+        const webcalUrl = feedUrl.replace('https://', 'webcal://');
+        window.location.href = webcalUrl;
+        track('calendar_subscribe_apple');
+    }
+    async function subscribeGoogle(btn) {
+        const t = await ensureIcsToken();
+        if (!t) { alert(currentLang === 'en' ? 'Save your schedule first' : 'שמור קודם את לוח הזמנים שלך'); return; }
+        const feedUrl = `https://uukpuvizkjgcssmlqltk.supabase.co/functions/v1/calendar-feed?token=${t}`;
+        const webcalUrl = feedUrl.replace('https://', 'webcal://');
+        const googleCalUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`;
+        window.open(googleCalUrl, '_blank');
+        track('calendar_subscribe_google');
     }
 
     // ── iCal AUTO-SYNC: connection, status badge, accuracy prompt ──
@@ -1696,6 +1732,10 @@
             spNoSubError:    'לא נמצא מנוי פעיל',
             concurrencyBanner: 'הלוח שלך שונה ממכשיר אחר — טען מחדש כדי לקבל את הגרסה העדכנית.',
             concurrencyReload: 'טען מחדש',
+            calApple:    '📅 הוסף ליומן Apple',
+            calGoogle:   '📅 הוסף ליומן Google',
+            calHelper:   'מתעדכן אוטומטית כל כמה שעות',
+            calDownload: '⬇️ הורד קובץ יומן (.ics)',
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -1852,6 +1892,10 @@
             spNoSubError:    'No active subscription found',
             concurrencyBanner: 'Your schedule was changed on another device — reload to get the latest.',
             concurrencyReload: 'Reload',
+            calApple:    '📅 Add to Apple Calendar',
+            calGoogle:   '📅 Add to Google Calendar',
+            calHelper:   'Updates automatically every few hours',
+            calDownload: '⬇️ Download calendar file (.ics)',
         },
     };
 
