@@ -7,8 +7,9 @@ const CACHE_NAME = 'syllabot-v1';
 const PRECACHE_URLS = [
   '/SyllabusMaster/index.html',
   '/SyllabusMaster/auth.html',
-  '/SyllabusMaster/dashboard.html',
   '/SyllabusMaster/reset.html',
+  // NOTE: dashboard.html and admin.html are NOT precached — they are auth-gated
+  // and served network-only to prevent stale data exposure after logout.
 ];
 
 // ── Install: precache HTML pages ──
@@ -41,6 +42,15 @@ self.addEventListener('fetch', (event) => {
 
   // Never cache Supabase auth responses
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/auth/')) return;
+
+  // Never cache auth-gated pages (dashboard, admin) — network-only
+  // Prevents stale user data from being served after logout
+  if (url.pathname.includes('dashboard.html') || url.pathname.includes('admin.html')) {
+    event.respondWith(
+      fetch(request).catch(() => new Response('Offline', { status: 503, statusText: 'Service Unavailable' }))
+    );
+    return;
+  }
 
   // Static assets: CacheFirst
   const isStaticAsset = /\.(js|css|woff2?|ttf|png|svg|jpg|jpeg|ico|webp)(\?.*)?$/.test(url.pathname);
