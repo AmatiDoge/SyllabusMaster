@@ -2989,6 +2989,10 @@ function addCourseChip(course) {
                     c: sanitize(item.c || ''),
                     t: sanitize(item.t || ''),
                     txt: sanitize(item.txt || ''),
+                    iso_date: item.iso_date || null,
+                    date_source: item.date_source || '',
+                    risk: item.risk || '',
+                    risk_reason: item.risk_reason || '',
                     deleted: false,
                     userConfirmed: false,
                 });
@@ -3216,7 +3220,8 @@ function addCourseChip(course) {
         let toSave = reviewItems.filter(i => !i.deleted);
 
         const syllabus = toSave.filter(i => i.source === 'syllabus').map(i => ({
-            w: i.w, c: i.c, t: i.t, txt: i.txt
+            w: i.w, c: i.c, t: i.t, txt: i.txt,
+            iso_date: i.iso_date || null, date_source: i.date_source || '', risk: i.risk || ''
         }));
         const exams = toSave.filter(i => i.source === 'exam').map(i => ({
             t: i.t, d: i.d, tag: i.tag, c: i.c || ''
