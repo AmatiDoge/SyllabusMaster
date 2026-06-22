@@ -330,12 +330,12 @@
         .tag-default { background:var(--color-bg-secondary);color:var(--color-text-muted); }
         .tag-פרזנטציה { background:color-mix(in srgb, var(--color-type-presentation) 12%, var(--color-bg-card));color:var(--color-type-presentation); }
         .timer { font-weight: var(--weight-bold); padding: 2px 10px; border-radius: var(--radius-sm); font-size: var(--text-xs); white-space: nowrap; }
-        .bg-red { background:var(--color-error-soft);color:var(--color-error); } .bg-green { background:var(--color-success-soft);color:var(--color-success); } .bg-passed { background:var(--color-bg-secondary);color:var(--color-text-muted); }
+        .bg-red { background:var(--color-error-soft);color:var(--color-error); } .bg-orange { background:var(--color-warning-soft);color:var(--color-warning); } .bg-green { background:var(--color-success-soft);color:var(--color-success); } .bg-passed { background:var(--color-bg-secondary);color:var(--color-text-muted); }
         .done { opacity: 0.45; transition: opacity var(--duration-normal) var(--ease-default); } .done span { text-decoration: line-through; color: var(--color-text-muted); }
         .del-btn { color: var(--color-error); cursor: pointer; border: none; background: none; font-size: 1rem; padding: 0; transition: opacity var(--duration-fast); }
         .del-btn:hover { opacity: 0.7; }
         .moed-toggle {
-            background: var(--color-surface);
+            background: var(--color-bg-secondary);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-sm);
             padding: 2px 8px;
@@ -345,15 +345,15 @@
             white-space: nowrap;
         }
         .moed-toggle:hover {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
         }
         .moed-prompt {
             margin-bottom: var(--space-3);
         }
         .moed-prompt-inner {
-            background: var(--color-surface);
-            border: 2px solid var(--color-primary);
+            background: var(--color-bg-secondary);
+            border: 2px solid var(--color-accent);
             border-radius: var(--radius-md);
             padding: var(--space-4);
         }
@@ -371,16 +371,16 @@
             padding: var(--space-2) var(--space-3);
             border-radius: var(--radius-sm);
             border: 1px solid var(--color-border);
-            background: var(--color-surface);
+            background: var(--color-bg-secondary);
             cursor: pointer;
             font-size: var(--text-sm);
         }
         .moed-btn-done { border-color: #4ad97a; color: #4ad97a; }
         .moed-btn-done:hover { background: #4ad97a1a; }
-        .moed-btn-next { border-color: var(--color-primary); color: var(--color-primary); }
-        .moed-btn-next:hover { background: var(--color-primary-light, #df4a2210); }
+        .moed-btn-next { border-color: var(--color-accent); color: var(--color-accent); }
+        .moed-btn-next:hover { background: var(--color-accent-soft, #df4a2210); }
         .moed-btn-skip { color: var(--color-text-muted); }
-        .moed-btn-skip:hover { background: var(--color-surface-hover, #f5f5f5); }
+        .moed-btn-skip:hover { background: var(--color-bg-secondary); }
         .empty-state { padding: var(--space-9); text-align: center; color: var(--color-text-muted); font-size: var(--text-sm); }
         .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: var(--space-4); }
 
@@ -3679,7 +3679,7 @@ function addCourseChip(course) {
             function renderNowItem(x) {
                 const days = x._days, isPast = x._isPast;
                 const urgency = isPast ? 'urgency-past' : days <= 1 ? 'urgency-critical' : days <= 7 ? 'urgency-soon' : 'urgency-ok';
-                const timerCls = isPast ? 'bg-passed' : days <= 1 ? 'bg-red' : days <= 7 ? 'bg-red' : 'bg-green';
+                const timerCls = isPast ? 'bg-passed' : days <= 1 ? 'bg-red' : days <= 7 ? 'bg-orange' : 'bg-green';
                 const isFromExams = x._src === 'exam';
                 const oi = isFromExams ? x._examIdx : -1;
                 const tagCls = knownTags.includes(x.tag) ? `tag-${x.tag}` : 'tag-default';
