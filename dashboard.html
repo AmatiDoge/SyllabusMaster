@@ -1801,6 +1801,8 @@
             addEventWeek:    'שבוע',
             addEventCancel:  'ביטול',
             addEventSubmit:  'הוסף',
+            confirmDeleteExam: 'למחוק את הפריט?',
+            confirmDeleteTask: 'למחוק את המשימה?',
             // iCal onboarding step
             obIcalStepLabel: 'הגדרות · חיבור יומן',
             obIcalTitle:     'חבר את יומני המוסד שלך',
@@ -1970,6 +1972,8 @@
             addEventWeek:    'Week',
             addEventCancel:  'Cancel',
             addEventSubmit:  'Add',
+            confirmDeleteExam: 'Delete this item?',
+            confirmDeleteTask: 'Delete this task?',
             // iCal onboarding step
             obIcalStepLabel: 'Setup · Connect Calendar',
             obIcalTitle:     'Connect your institution calendars',
@@ -3694,7 +3698,7 @@ function addCourseChip(course) {
                 const weeks = Math.ceil(days / 7);
                 const timerLabel = isPast ? s.passed : x._approx ? '~' + weeks + 'w' : days + 'd';
                 const moedBtn = isFromExams && x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : '';
-                const delBtn = isFromExams ? `<button onclick="userExams.splice(${oi},1);render();save();" class="del-btn">×</button>` : '';
+                const delBtn = isFromExams ? `<button onclick="if(confirm('${s.confirmDeleteExam||"Delete this item?"}')){userExams.splice(${oi},1);render();save();}" class="del-btn">×</button>` : '';
                 const key = nowItemKey(x);
                 const safeKey = key.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
                 const isDone = doneMap[key];
@@ -3767,7 +3771,7 @@ function addCourseChip(course) {
                     <div class="focus-checkbox ${x.f?'checked':''}" onclick="toggleTask(${i})" role="checkbox" aria-checked="${x.f}" tabindex="0">${checkSvg}</div>
                     <div class="focus-item-text"><span>${safeTaskT}</span></div>
                     <div class="focus-item-actions">
-                        <button onclick="userTasks.splice(${i},1);render();save();" class="del-btn">×</button>
+                        <button onclick="if(confirm('${s.confirmDeleteTask||"Delete this task?"}')){userTasks.splice(${i},1);render();save();}" class="del-btn">×</button>
                     </div>
                 </div>`;
             });
