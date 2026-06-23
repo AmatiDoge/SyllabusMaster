@@ -4701,7 +4701,8 @@ function addCourseChip(course) {
         const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
         // Month title
-        const monthTitle = new Date(calYear, calMonth).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+        const calLocale = currentLang === 'en' ? 'en-US' : 'he-IL';
+        const monthTitle = new Date(calYear, calMonth).toLocaleDateString(calLocale, { month: 'long', year: 'numeric' });
         document.getElementById('cal-month-title').textContent = monthTitle;
 
         // Build events by date (exams + syllabus deadlines)
@@ -4731,8 +4732,10 @@ function addCourseChip(course) {
         const startDay = firstDay.getDay(); // 0=Sun
         const daysInMonth = lastDay.getDate();
 
-        // Day headers (Sun-Sat, Hebrew)
-        const dayNames = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+        // Day headers (Sun-Sat)
+        const dayNames = currentLang === 'en'
+            ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+            : ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
         let gridHtml = dayNames.map(d => `<div class="cal-day-header">${d}</div>`).join('');
 
         // Previous month fill
@@ -4754,7 +4757,7 @@ function addCourseChip(course) {
                 return `<div class="cal-dot" style="background:${color}"></div>`;
             }).join('');
             const overflow = dayEvents.length > maxDots ? `<span class="cal-event-count">+${dayEvents.length - maxDots}</span>` : '';
-            const todayLabel = isToday ? '<span class="cal-today-label">היום</span>' : '';
+            const todayLabel = isToday ? `<span class="cal-today-label">${currentLang === 'en' ? 'Today' : 'היום'}</span>` : '';
             const tooltip = dayEvents.length > 0 ? `<div class="cal-day-tooltip">${dayEvents.map(ex => DOMPurify.sanitize(ex.t||'', {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})).join('<br>')}</div>` : '';
             gridHtml += `<div class="cal-day${isToday ? ' cal-today' : ''}${isSelected ? ' cal-today' : ''}" onclick="calSelectDate('${dateKey}')">
                 <div class="cal-day-num">${d}${todayLabel}</div>
@@ -4796,12 +4799,14 @@ function addCourseChip(course) {
                 const daysUntil = Math.floor((nearest.date - now) / 86400000);
                 const cleaned = nearest.item.clean_title || cleanTitle(nearest.item.t || '', nearest.item.c, nearest.item.tag);
                 const safeTitle = DOMPurify.sanitize(cleaned, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
-                const dateLabel = nearest.date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long' });
+                const dateLabel = nearest.date.toLocaleDateString(calLocale, { day: 'numeric', month: 'long' });
                 const courseColor = getCourseColor(nearest.item.c || '');
+                const daysWord = currentLang === 'en' ? 'days' : 'ימים';
+                const jumpLabel = currentLang === 'en' ? 'Jump &rarr;' : 'קפוץ &larr;';
                 calNextUp.innerHTML = `<div class="cal-next-up-banner" style="border-inline-start: 3px solid ${courseColor}">
                     <span class="cal-next-up-title">${safeTitle}</span>
-                    <span class="cal-next-up-date">${dateLabel} · ${daysUntil} ימים</span>
-                    <button class="empty-btn cal-next-up-jump" onclick="calMonth=${nearest.date.getMonth()};calYear=${nearest.date.getFullYear()};renderCalendar();">קפוץ &larr;</button>
+                    <span class="cal-next-up-date">${dateLabel} · ${daysUntil} ${daysWord}</span>
+                    <button class="empty-btn cal-next-up-jump" onclick="calMonth=${nearest.date.getMonth()};calYear=${nearest.date.getFullYear()};renderCalendar();">${jumpLabel}</button>
                 </div>`;
             } else {
                 calNextUp.innerHTML = '';
@@ -4814,7 +4819,7 @@ function addCourseChip(course) {
         const detailEl = document.getElementById('cal-detail');
         if (calSelectedDate && eventsByDate[calSelectedDate]) {
             const selDate = new Date(calSelectedDate + 'T00:00:00');
-            const dateLabel = selDate.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+            const dateLabel = selDate.toLocaleDateString(calLocale, { weekday: 'long', day: 'numeric', month: 'long' });
             const items = eventsByDate[calSelectedDate];
             let detailHtml = `<div class="cal-day-detail"><div class="cal-day-detail-title">${dateLabel}</div>`;
             items.forEach(ex => {
