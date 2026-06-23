@@ -180,6 +180,22 @@
         .progress-bar { height: 6px; background: var(--color-bg-secondary); border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--color-success); border-radius: 3px; transition: width var(--duration-slow); width: 0%; }
 
+        /* Floating tips during analysis */
+        .analysis-tip-wrap { margin-top: var(--space-5); min-height: 3em; display: flex; align-items: center; justify-content: center; }
+        .analysis-tip {
+            font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic;
+            text-align: center; max-width: 340px; line-height: 1.5;
+            animation: tipFade 8s ease-in-out infinite;
+        }
+        .analysis-tip .tip-icon { font-style: normal; margin-inline-end: 4px; }
+        @keyframes tipFade {
+            0%   { opacity: 0; transform: translateY(6px); }
+            10%  { opacity: 1; transform: translateY(0); }
+            85%  { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-6px); }
+        }
+        @media (prefers-reduced-motion: reduce) { .analysis-tip { animation: none; opacity: 1; } }
+
         .courses-found { margin-top: var(--space-6); display: none; flex-wrap: wrap; gap: var(--space-4); }
         .course-chip { background: var(--color-bg-secondary); border: var(--border-thin); border-radius: var(--radius-pill); padding: var(--space-2) var(--space-5); font-size: var(--text-xs); font-weight: var(--weight-semibold); display: flex; align-items: center; gap: var(--space-3); }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -392,7 +408,15 @@
         .rv-header { padding: var(--space-7) var(--space-8) var(--space-6); background: var(--color-bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: var(--border-thin); }
         .rv-title { font-size: var(--text-xl); font-weight: var(--weight-black); letter-spacing: var(--tracking-tight); margin-bottom: var(--space-3); }
         .rv-sub { font-size: var(--text-sm); color: var(--color-text-muted); line-height: var(--leading-relaxed); margin-bottom: var(--space-5); direction: rtl; }
-        .rv-pills { display: flex; gap: var(--space-4); flex-direction: row-reverse; }
+        .rv-pills { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+        .rv-quick-actions { display: flex; gap: var(--space-4); margin-top: var(--space-5); }
+        .rv-quick-btn { padding: var(--space-4) var(--space-6); border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-bold); cursor: pointer; border: none; transition: all var(--duration-fast); }
+        .rv-quick-btn.primary { background: var(--color-text); color: var(--color-text-inverse); }
+        .rv-quick-btn.primary:hover { background: var(--color-accent); }
+        .rv-quick-btn.secondary { background: var(--color-success-soft); color: var(--color-success); border: 1px solid var(--color-success); }
+        .rv-quick-btn.secondary:hover { background: var(--color-success); color: white; }
+        .rv-trust-note { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: var(--space-3); line-height: 1.5; }
+        .rv-course-types { font-size: var(--text-xs); color: var(--color-text-muted); margin-inline-start: var(--space-3); }
         .rv-pill { font-size: var(--text-xs); font-weight: var(--weight-bold); padding: var(--space-2) var(--space-5); border-radius: var(--radius-pill); border: var(--border-thin); }
         .rv-pill.ok { background: var(--color-success-soft); color: var(--color-success); }
         .rv-pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
@@ -1039,7 +1063,7 @@
             <input type="date" id="ob-semester-date" value="2026-03-15" style="width:100%;border:1.5px solid #e8e8e8;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:1rem;margin-bottom:16px;box-sizing:border-box;text-align:center">
             <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:#555;margin-bottom:20px;cursor:pointer;justify-content:center">
                 <input type="checkbox" id="ob-adhd-check" style="width:16px;height:16px;cursor:pointer">
-                <span>יש לי קשיי ריכוז / ADHD (זה יעזור לנו להתאים את החוויה)</span>
+                <span id="ob-adhd-label">יש לי קשיי ריכוז / ADHD (זה יעזור לנו להתאים את החוויה)</span>
             </label>
             <button id="ob-semester-btn" onclick="obSemesterNext()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">המשך</button>
         </div>
@@ -1055,6 +1079,7 @@
                     <span id="ob-progress-count">0 / 0</span>
                 </div>
                 <div class="progress-bar"><div class="progress-fill" id="ob-progress-fill"></div></div>
+                <div class="analysis-tip-wrap" id="ob-tip-wrap"><div class="analysis-tip" id="ob-tip"></div></div>
             </div>
             <div class="courses-found" id="ob-courses-found"></div>
         </div>
@@ -1068,6 +1093,7 @@
             <h2 class="rv-title" id="rv-title">בדוק לפני שמירה ✋</h2>
             <p class="rv-sub" id="rv-subtitle"></p>
             <div class="rv-pills" id="rv-pills"></div>
+            <div id="rv-quick-wrap"></div>
         </div>
         <div class="rv-body">
             <div id="rv-sections"></div>
@@ -1077,6 +1103,36 @@
             <div class="rv-actions">
                 <button class="rv-btn-all" id="rv-btn-all" onclick="confirmReview('all')" data-i18n="rvSaveAll">שמור הכל ✓</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Post-review iCal prompt (PDF path → connect calendar) -->
+    <div id="ob-post-review-ical" style="display:none">
+        <div style="text-align:center;padding:32px 24px">
+            <div style="font-size:2.5rem;margin-bottom:12px">🔗</div>
+            <h2 class="ob-title" id="ob-post-ical-title" style="font-size:1.3rem;margin-bottom:8px">רוצה לחבר גם יומן?</h2>
+            <p class="ob-sub" id="ob-post-ical-sub" style="margin-bottom:8px;color:#666;font-size:0.9rem">חיבור Moodle ו-Yedion מביא דדליינים ומבחנים שלא מופיעים בסילבוס — ומתעדכן אוטומטית.</p>
+            <p id="ob-post-ical-note" style="font-size:0.78rem;color:#999;margin-bottom:20px">מומלץ לחבר לפחות את Moodle כדי לא לפספס מטלות</p>
+            <div style="background:#f0f7ff;border-radius:10px;padding:14px;margin-bottom:14px;text-align:right">
+                <div style="font-weight:600;margin-bottom:6px" id="ob-post-moodle-title">Moodle — מטלות ודדליינים</div>
+                <ol style="font-size:0.8rem;color:#444;margin:0;padding-inline-start:18px;line-height:1.7" id="ob-post-moodle-steps">
+                    <li>היכנס ל-<strong>moodle.runi.ac.il</strong></li>
+                    <li>לחץ על <strong>לוח שנה</strong> (Calendar) בתפריט</li>
+                    <li>לחץ <strong>ייצוא לוח שנה</strong> (Export calendar)</li>
+                    <li>בחר "כל האירועים" ולחץ <strong>קבל כתובת URL</strong></li>
+                </ol>
+            </div>
+            <input type="url" id="ob-post-moodle" placeholder="https://moodle.runi.ac.il/..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:14px;box-sizing:border-box">
+            <div style="background:#f0fff4;border-radius:10px;padding:14px;margin-bottom:14px;text-align:right">
+                <div style="font-weight:600;margin-bottom:6px" id="ob-post-yedion-title">Yedion — מערכת שעות ומבחנים</div>
+                <ol style="font-size:0.8rem;color:#444;margin:0;padding-inline-start:18px;line-height:1.7" id="ob-post-yedion-steps">
+                    <li>היכנס ל-<strong>yedion.runi.ac.il</strong></li>
+                    <li>לחץ על <strong>הוסף ליומן Google</strong> או <strong>ייצוא iCal</strong></li>
+                </ol>
+            </div>
+            <input type="url" id="ob-post-yedion" placeholder="https://yedion.runi.ac.il/..." style="width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.9rem;direction:ltr;margin-bottom:16px;box-sizing:border-box">
+            <button id="ob-post-ical-save" onclick="obPostReviewSaveIcal()" style="width:100%;padding:14px;background:#0d0d0d;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s;margin-bottom:10px" onmouseover="this.style.background='#27ae60'" onmouseout="this.style.background='#0d0d0d'">חבר וסיים</button>
+            <button onclick="obPostReviewSkipIcal()" style="width:100%;padding:14px;background:transparent;color:#666;border:1.5px solid #e0e0e0;border-radius:12px;font-size:0.95rem;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='#999'" onmouseout="this.style.borderColor='#e0e0e0'" id="ob-post-ical-skip">אולי אחר כך</button>
         </div>
     </div>
 </div>
@@ -1877,6 +1933,18 @@
             pwaInstall:    'התקן את SyllaBot על המסך הראשי',
             pwaInstallBtn: 'התקן',
             pwaOffline:    'אופליין — מציג נתונים מהסנכרון האחרון',
+            analysisTips: [
+                { icon: '💡', text: 'טיפ: חבר גם את יומן Moodle כדי לקבל עדכונים אוטומטיים על דדליינים' },
+                { icon: '📅', text: 'אחרי הניתוח תוכל לייצא הכל ליומן Google או Apple בלחיצה אחת' },
+                { icon: '🔔', text: 'SyllaBot ישלח לך תזכורות לפני כל מבחן ומטלה — שבוע לפני ויום לפני' },
+                { icon: '✅', text: 'סמן משימות כשסיימת אותן — ככה תדע תמיד מה נשאר' },
+                { icon: '📱', text: 'אפשר להתקין את SyllaBot כאפליקציה על הטלפון — בלי חנות' },
+                { icon: '🎯', text: 'התצוגה "עכשיו" מסדרת הכל לפי דחיפות — מה שבוער קודם' },
+                { icon: '🎨', text: 'כל קורס מקבל צבע אוטומטי — אפשר לשנות בהגדרות' },
+                { icon: '📊', text: 'התצוגה "קורסים" מראה התקדמות שבועית — כדי לא לפספס קריאות' },
+                { icon: '🔗', text: 'חיבור Yedion מביא גם מועדי מבחנים — כולל מועד ב\'' },
+                { icon: '💪', text: 'ההבטחה שלנו: כשסיימת — אתה יודע שסיימת. בלי הפתעות.' },
+            ],
         },
         en: {
             obStepLabel:   'Setup · Upload your syllabuses',
@@ -2048,6 +2116,18 @@
             pwaInstall:    'Install SyllaBot to your home screen',
             pwaInstallBtn: 'Install',
             pwaOffline:    'Offline — showing data from last sync',
+            analysisTips: [
+                { icon: '💡', text: 'Tip: Connect your Moodle calendar too for automatic deadline updates' },
+                { icon: '📅', text: 'After analysis you can export everything to Google or Apple Calendar in one click' },
+                { icon: '🔔', text: 'SyllaBot will send reminders before every exam and assignment — 1 week and 1 day ahead' },
+                { icon: '✅', text: 'Check off tasks as you complete them — always know what\'s left' },
+                { icon: '📱', text: 'Install SyllaBot as an app on your phone — no app store needed' },
+                { icon: '🎯', text: 'The "Now" view sorts everything by urgency — what\'s burning comes first' },
+                { icon: '🎨', text: 'Each course gets an automatic color — you can customize in settings' },
+                { icon: '📊', text: 'The "Courses" view shows weekly progress — so you never miss readings' },
+                { icon: '🔗', text: 'Connecting Yedion also brings exam dates — including moed bet' },
+                { icon: '💪', text: 'Our promise: when you\'re done, you know you\'re done. No surprises.' },
+            ],
         },
     };
 
@@ -2056,12 +2136,20 @@
     function applyLang(lang) {
         currentLang = lang;
         const s = STRINGS[lang] || STRINGS.he;
-        // Onboarding
-        document.querySelector('.ob-step-label').textContent    = s.obStepLabel;
-        document.querySelector('.ob-title').textContent         = s.obTitle;
-        document.querySelector('.ob-sub').textContent           = s.obSub;
-        document.querySelector('.drop-title').textContent       = s.dropTitle;
-        document.querySelector('.drop-sub').innerHTML           = s.dropSub;
+        // Onboarding — scope to #ob-drop-section to avoid hitting identically-classed elements in other steps
+        const dropSection = document.getElementById('ob-drop-section');
+        if (dropSection) {
+            const _dsl = dropSection.querySelector('.ob-step-label');
+            if (_dsl) _dsl.textContent = s.obStepLabel;
+            const _dt  = dropSection.querySelector('.ob-title');
+            if (_dt)  _dt.textContent  = s.obTitle;
+            const _ds  = dropSection.querySelector('.ob-sub');
+            if (_ds)  _ds.textContent  = s.obSub;
+            const _dtt = dropSection.querySelector('.drop-title');
+            if (_dtt) _dtt.textContent = s.dropTitle;
+            const _dts = dropSection.querySelector('.drop-sub');
+            if (_dts) _dts.innerHTML   = s.dropSub;
+        }
         document.getElementById('ob-progress-text').textContent = s.analyzing;
         // Dashboard top bar
         const addBtn = document.querySelector('.btn-add-course');
@@ -2259,13 +2347,15 @@
         // Semester step label + content
         const _semLabel = document.getElementById('ob-semester-step-label');
         if (_semLabel) _semLabel.textContent = s.obSemesterStepLabel;
+        const _adhdLabel = document.getElementById('ob-adhd-label');
+        if (_adhdLabel) _adhdLabel.textContent = isEn
+            ? 'I have attention difficulties / ADHD (helps us tailor the experience)'
+            : 'יש לי קשיי ריכוז / ADHD (זה יעזור לנו להתאים את החוויה)';
 
-        // Semester step (if visible)
-        if (document.getElementById('ob-semester-step')?.style.display !== 'none') {
-            document.getElementById('ob-semester-title').textContent = s.obSemesterTitle;
-            document.getElementById('ob-semester-sub').textContent   = s.obSemesterSub;
-            document.getElementById('ob-semester-btn').textContent   = s.obSemesterBtn;
-        }
+        // Semester step (always update — elements exist even if hidden)
+        document.getElementById('ob-semester-title').textContent = s.obSemesterTitle;
+        document.getElementById('ob-semester-sub').textContent   = s.obSemesterSub;
+        document.getElementById('ob-semester-btn').textContent   = s.obSemesterBtn;
 
         // Re-render wizard card if open (to update all wizard text + typing names)
         if (document.getElementById('ob-wizard')?.style.display === 'block') {
@@ -2402,6 +2492,7 @@
         document.getElementById('ob-courses-found').innerHTML = '';
         document.getElementById('ob-progress-wrap').style.display = 'none';
         document.getElementById('ob-progress-fill').style.width = '0%';
+        stopAnalysisTips();
         document.getElementById('ob-review').classList.remove('visible');
         document.querySelector('.ob-card').style.display = '';
         document.getElementById('ob-choice-section').style.display = '';
@@ -2412,6 +2503,7 @@
         document.getElementById('ob-wizard').style.display = 'none';
         document.getElementById('ob-semester-step').style.display = 'none';
         document.getElementById('ob-analysis').style.display = 'none';
+        document.getElementById('ob-post-review-ical').style.display = 'none';
     }
 
     window.obChooseIcal = function() {
@@ -2910,6 +3002,34 @@
         wzStartAnalysis();
     };
 
+    // ── ANALYSIS TIPS ROTATION ──
+    let _tipInterval = null;
+    function startAnalysisTips() {
+        const tipEl = document.getElementById('ob-tip');
+        if (!tipEl) return;
+        const tips = (STRINGS[currentLang] || STRINGS.he).analysisTips || [];
+        if (!tips.length) return;
+        // Shuffle tips
+        const shuffled = [...tips].sort(() => Math.random() - 0.5);
+        let idx = 0;
+        const show = () => {
+            const tip = shuffled[idx % shuffled.length];
+            tipEl.innerHTML = `<span class="tip-icon">${tip.icon}</span> ${tip.text}`;
+            // Reset animation
+            tipEl.style.animation = 'none';
+            tipEl.offsetHeight; // reflow
+            tipEl.style.animation = '';
+            idx++;
+        };
+        show();
+        _tipInterval = setInterval(show, 8000);
+    }
+    function stopAnalysisTips() {
+        if (_tipInterval) { clearInterval(_tipInterval); _tipInterval = null; }
+        const tipWrap = document.getElementById('ob-tip-wrap');
+        if (tipWrap) tipWrap.style.display = 'none';
+    }
+
     // Triggered from wizard last card "נתח הכל ✨"
     async function wzStartAnalysis() {
         if (!obFiles.length) return;
@@ -2922,6 +3042,7 @@
         const sharedHeaders = await getEdgeHeaders();
 
         document.getElementById('ob-progress-wrap').style.display = 'block';
+        startAnalysisTips();
         let completed = 0;
         const total = obFiles.length;
 
@@ -2971,6 +3092,7 @@
         }));
 
         setCurrentCourse(null);
+        stopAnalysisTips();
         document.getElementById('ob-progress-fill').style.width = '100%';
         document.getElementById('ob-progress-count').textContent = `${obResults.length} / ${total}`;
         const _finalS = (STRINGS[currentLang] || STRINGS.he);
@@ -3060,28 +3182,60 @@ function addCourseChip(course) {
     let _rvCourses = [];
     function renderReviewUI() {
         const _s = STRINGS[currentLang] || STRINGS.he;
+        const isEn = currentLang === 'en';
         const active    = reviewItems.filter(i => !i.deleted);
         const uncertain = active.filter(i => i.confidence < 80 && !i.userConfirmed);
         const confirmed = active.filter(i => i.confidence >= 80 || i.userConfirmed);
+        const courseCount = new Set(active.map(i => i.c)).size;
 
         document.getElementById('rv-subtitle').textContent =
             _s.rvSubtitle(active.length, confirmed.length, uncertain.length);
-        document.getElementById('rv-pills').innerHTML =
-            `<span class="rv-pill ok">${_s.rvPillOk(confirmed.length)}</span>` +
-            (uncertain.length
-                ? `<span class="rv-pill warn">${_s.rvPillWarn(uncertain.length)}</span>`
-                : `<span class="rv-pill ok">${_s.rvAllGood}</span>`);
+
+        // Pills + quick actions
+        let pillsHtml = `<span class="rv-pill ok">${_s.rvPillOk(confirmed.length)}</span>`;
+        if (uncertain.length) {
+            pillsHtml += `<span class="rv-pill warn">${_s.rvPillWarn(uncertain.length)}</span>`;
+        } else {
+            pillsHtml += `<span class="rv-pill ok">${_s.rvAllGood}</span>`;
+        }
+        document.getElementById('rv-pills').innerHTML = pillsHtml;
+
+        // Quick actions in header for fast-path
+        let quickHtml = '';
+        if (uncertain.length === 0) {
+            quickHtml = `<div class="rv-quick-actions">
+                <button class="rv-quick-btn primary" onclick="confirmReview('all')">${_s.rvSaveAll}</button>
+            </div>
+            <div class="rv-trust-note">${isEn ? `${courseCount} courses, ${active.length} items — everything looks good.` : `${courseCount} קורסים, ${active.length} פריטים — הכל נראה תקין.`}</div>`;
+        } else {
+            quickHtml = `<div class="rv-quick-actions">
+                <button class="rv-quick-btn primary" onclick="rvConfirmAll();confirmReview('all')">${isEn ? 'Trust AI & save all' : 'סומך על ה-AI — שמור הכל'}</button>
+                <button class="rv-quick-btn secondary" onclick="rvScrollToFlagged()">${isEn ? `Review ${uncertain.length} flagged` : `בדוק ${uncertain.length} מסומנים`}</button>
+            </div>
+            <div class="rv-trust-note">${isEn
+                ? `${confirmed.length} of ${active.length} items auto-confirmed. Only ${uncertain.length} need a quick look.`
+                : `${confirmed.length} מתוך ${active.length} פריטים אושרו אוטומטית. רק ${uncertain.length} דורשים בדיקה מהירה.`}</div>`;
+        }
+        const quickEl = document.getElementById('rv-quick-wrap');
+        if (quickEl) quickEl.innerHTML = quickHtml;
 
         document.getElementById('rv-sections').innerHTML = rvCourseGroupsHtml(active);
-
         document.getElementById('rv-counter').innerHTML = _s.rvCounter(active.length);
 
-        const isEn = currentLang === 'en';
         const rvEl = document.getElementById('ob-review');
         if (rvEl) {
             rvEl.style.direction = isEn ? 'ltr' : 'rtl';
             rvEl.style.textAlign = isEn ? 'left' : 'right';
         }
+    }
+
+    function rvConfirmAll() {
+        reviewItems.forEach(i => { if (!i.deleted) i.userConfirmed = true; });
+    }
+
+    function rvScrollToFlagged() {
+        const first = document.querySelector('.rv-course-status.warn');
+        if (first) first.closest('.rv-course-group')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     // Group review items by course: courses with flagged items expand; all-good courses collapse.
@@ -3094,6 +3248,13 @@ function addCourseChip(course) {
             byCourse.get(key).push(i);
         });
         _rvCourses = [...byCourse.keys()];
+        const isEn = currentLang === 'en';
+        // Sort: courses with flagged items first
+        _rvCourses.sort((a, b) => {
+            const af = byCourse.get(a).filter(i => i.confidence < 80 && !i.userConfirmed).length;
+            const bf = byCourse.get(b).filter(i => i.confidence < 80 && !i.userConfirmed).length;
+            return bf - af; // flagged-first
+        });
         return _rvCourses.map((course, ci) => {
             const items   = byCourse.get(course);
             const flagged = items.filter(i => i.confidence < 80 && !i.userConfirmed);
@@ -3103,10 +3264,20 @@ function addCourseChip(course) {
             const status = flagged.length
                 ? `<span class="rv-course-status warn">⚠️ ${_s.rvCourseToCheck(flagged.length)}</span>`
                 : `<span class="rv-course-status ok">✓ ${_s.rvCourseAllOk}</span>`;
+            // Type breakdown for collapsed header
+            const exams = items.filter(i => i.source === 'exam').length;
+            const sylItems = items.filter(i => i.source === 'syllabus').length;
+            const typeSummary = collapsed
+                ? `<span class="rv-course-types">${[
+                    exams ? (isEn ? `${exams} exam${exams>1?'s':''}` : `${exams} מבחנים`) : '',
+                    sylItems ? (isEn ? `${sylItems} item${sylItems>1?'s':''}` : `${sylItems} פריטים`) : '',
+                  ].filter(Boolean).join(isEn ? ', ' : ', ')}</span>`
+                : '';
             return `<div class="rv-course-group">
                 <div class="rv-course-header" onclick="toggleRvSection('rvc-${ci}','rvct-${ci}')">
                     <span class="rv-card-dot" style="background:${color}"></span>
                     <span class="rv-course-name">${esc(course)}</span>
+                    ${typeSummary}
                     ${status}
                     <span class="rv-section-count">${items.length}</span>
                     <span class="rv-section-toggle" id="rvct-${ci}">${collapsed ? '▸' : '▾'}</span>
@@ -3273,8 +3444,97 @@ function addCourseChip(course) {
         userExams    = [...new Map(userExams.map(i => [JSON.stringify(i), i])).values()];
         track('onboarding_complete', { syllabus: userSyllabus.length, exams: userExams.length });
         await saveToSupabase(true);
-        showDashboard();
+
+        // If user came via PDF path and hasn't connected iCal yet, prompt them
+        if (_obPath === 'pdf' && !icalCredentials) {
+            showPostReviewIcalPrompt();
+        } else {
+            showDashboard();
+        }
     }
+
+    function showPostReviewIcalPrompt() {
+        const _s = STRINGS[currentLang] || STRINGS.he;
+        const isEn = currentLang === 'en';
+        document.getElementById('ob-review').classList.remove('visible');
+        document.querySelector('.ob-card').style.display = '';
+        document.getElementById('ob-post-review-ical').style.display = '';
+
+        // Apply i18n
+        const t = document.getElementById('ob-post-ical-title');
+        if (t) t.textContent = isEn ? 'Want to also connect your calendar?' : 'רוצה לחבר גם יומן?';
+        const sub = document.getElementById('ob-post-ical-sub');
+        if (sub) sub.textContent = isEn
+            ? 'Connecting Moodle and Yedion brings deadlines and exams not found in syllabi — and stays up to date automatically.'
+            : 'חיבור Moodle ו-Yedion מביא דדליינים ומבחנים שלא מופיעים בסילבוס — ומתעדכן אוטומטית.';
+        const note = document.getElementById('ob-post-ical-note');
+        if (note) note.textContent = isEn
+            ? 'We recommend connecting at least Moodle so you don\'t miss assignments'
+            : 'מומלץ לחבר לפחות את Moodle כדי לא לפספס מטלות';
+        const saveBtn = document.getElementById('ob-post-ical-save');
+        if (saveBtn) saveBtn.textContent = isEn ? 'Connect & finish' : 'חבר וסיים';
+        const skipBtn = document.getElementById('ob-post-ical-skip');
+        if (skipBtn) skipBtn.textContent = isEn ? 'Maybe later' : 'אולי אחר כך';
+        const mt = document.getElementById('ob-post-moodle-title');
+        if (mt) mt.textContent = _s.obIcalMoodleTitle;
+        const ms = document.getElementById('ob-post-moodle-steps');
+        if (ms) ms.innerHTML = _s.obIcalMoodleSteps;
+        const yt = document.getElementById('ob-post-yedion-title');
+        if (yt) yt.textContent = _s.obIcalYedionTitle;
+        const ys = document.getElementById('ob-post-yedion-steps');
+        if (ys) ys.innerHTML = _s.obIcalYedionSteps;
+
+        // Set direction
+        const wrap = document.getElementById('ob-post-review-ical');
+        if (wrap) {
+            wrap.style.direction = isEn ? 'ltr' : 'rtl';
+            wrap.querySelectorAll('div[style*="text-align:right"]').forEach(el => {
+                el.style.textAlign = isEn ? 'left' : 'right';
+            });
+        }
+    }
+
+    window.obPostReviewSaveIcal = async function() {
+        const moodleUrl = document.getElementById('ob-post-moodle').value.trim();
+        const yedionUrl = document.getElementById('ob-post-yedion').value.trim();
+        const _s = STRINGS[currentLang] || STRINGS.he;
+
+        if (!moodleUrl && !yedionUrl) {
+            alert(_s.obIcalAlertEmpty);
+            return;
+        }
+        const urlPattern = /^https:\/\/.+/;
+        if (moodleUrl && !urlPattern.test(moodleUrl)) { alert(_s.obIcalAlertBadUrl('Moodle')); return; }
+        if (yedionUrl && !urlPattern.test(yedionUrl)) { alert(_s.obIcalAlertBadUrl('Yedion')); return; }
+
+        const btn = document.getElementById('ob-post-ical-save');
+        btn.disabled = true;
+        btn.textContent = currentLang === 'en' ? 'Saving...' : 'שומר...';
+        try {
+            const payload = {
+                user_id: currentUser.id,
+                moodle_url: moodleUrl || null,
+                yedion_url: yedionUrl || null,
+                sync_status: 'pending',
+                consecutive_failures: 0,
+                updated_at: new Date().toISOString(),
+            };
+            await sb.from('ical_credentials').insert(payload);
+            track('calendar_connected', { sources_count: (moodleUrl ? 1 : 0) + (yedionUrl ? 1 : 0), path: 'post_pdf_onboarding' });
+            await loadIcalCredentials();
+            localStorage.setItem(`welcome_${currentUser.id}`, 'show');
+            showDashboard();
+        } catch (e) {
+            alert(_s.obIcalAlertSaveErr(e.message || e));
+            btn.disabled = false;
+            btn.textContent = currentLang === 'en' ? 'Connect & finish' : 'חבר וסיים';
+        }
+    };
+
+    window.obPostReviewSkipIcal = function() {
+        localStorage.setItem(`welcome_${currentUser.id}`, 'show');
+        showDashboard();
+    };
 
     async function finalizeOnboarding() {
         obResults.forEach(r => {
