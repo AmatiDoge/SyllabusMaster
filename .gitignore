@@ -1,2 +1,6 @@
 .claude/
 .gstack/
+
+# Tooling artifacts
+.agents/
+skills-lock.json
