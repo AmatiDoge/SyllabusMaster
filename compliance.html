@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1b1714">
+<title>SyllaBot – מידע ותאימות נתונים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-display:        'Frank Ruhl Libre', 'Rubik', serif;
+    --font-body:           'Rubik', 'Heebo', sans-serif;
+    --text-xs:             0.72rem;
+    --text-sm:             0.82rem;
+    --text-base:           1rem;
+    --text-md:             1.05rem;
+    --text-lg:             1.2rem;
+    --text-xl:             1.5rem;
+    --text-2xl:            2rem;
+    --text-3xl:            clamp(2.4rem, 5vw, 3.2rem);
+    --color-bg:            #f4f1ea;
+    --color-bg-card:       #ffffff;
+    --color-bg-secondary:  #ece7dc;
+    --color-text:          #1b1714;
+    --color-text-secondary:#2b2622;
+    --color-text-muted:    #736d64;
+    --color-text-link:     #c03d18;
+    --color-accent:        #df4a22;
+    --color-accent-hover:  #c03d18;
+    --color-success:       #27ae60;
+    --color-border:        rgba(27, 23, 20, 0.10);
+    --color-border-ink:    #1b1714;
+    --space-4:   8px;
+    --space-5:   12px;
+    --space-6:   16px;
+    --space-7:   24px;
+    --space-8:   32px;
+    --space-9:   48px;
+    --space-10:  64px;
+    --space-11:  96px;
+    --max-width-content:   700px;
+    --radius-md:           12px;
+    --radius-sm:           6px;
+    --border-structural:   2.5px solid var(--color-border-ink);
+    --shadow-hard-md:      4px 4px 0 var(--color-border-ink);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.7;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  a { color: var(--color-text-link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-6) var(--space-9);
+    border-bottom: var(--border-structural);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .logo span { color: var(--color-accent); }
+  .nav-back { font-size: var(--text-sm); font-weight: 500; }
+
+  .legal-page {
+    flex: 1;
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: var(--space-10) var(--space-7);
+    width: 100%;
+  }
+
+  .legal-page h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 900;
+    margin-bottom: var(--space-4);
+    line-height: 1.2;
+  }
+
+  .legal-meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-9);
+  }
+
+  .legal-page h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-top: var(--space-9);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: var(--border-structural);
+  }
+
+  .legal-page h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin-top: var(--space-7);
+    margin-bottom: var(--space-5);
+  }
+
+  .legal-page p {
+    margin-bottom: var(--space-6);
+    color: var(--color-text-secondary);
+  }
+
+  .legal-page ul {
+    margin-bottom: var(--space-6);
+    padding-right: var(--space-7);
+    color: var(--color-text-secondary);
+  }
+  .legal-page ul li { margin-bottom: var(--space-4); }
+
+  .legal-card {
+    background: var(--color-bg-card);
+    border: var(--border-structural);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hard-md);
+    padding: var(--space-7);
+    margin: var(--space-7) 0;
+  }
+  .legal-card p:last-child { margin-bottom: 0; }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-7) 0;
+    border: var(--border-structural);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-hard-md);
+  }
+  .data-table th, .data-table td {
+    padding: var(--space-5) var(--space-6);
+    text-align: right;
+    border-bottom: 1.5px solid var(--color-border);
+    font-size: var(--text-sm);
+  }
+  .data-table th {
+    background: var(--color-bg-secondary);
+    font-weight: 600;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .data-table td { background: var(--color-bg-card); }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: 600;
+  }
+  .badge-green { background: #e6f9ee; color: var(--color-success); }
+
+  footer {
+    padding: var(--space-8) var(--space-9);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: var(--border-structural);
+    flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+  footer .logo { font-size: 1.1rem; }
+  footer p { font-size: var(--text-sm); color: var(--color-text-muted); }
+  .footer-links { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+  .footer-links a { font-size: var(--text-sm); color: var(--color-text-muted); }
+  .footer-links a:hover { color: var(--color-accent); }
+
+  @media (max-width: 768px) {
+    nav { padding: var(--space-6) var(--space-7); }
+    .legal-page { padding: var(--space-9) var(--space-7); }
+    footer { flex-direction: column; text-align: center; }
+    .data-table { font-size: var(--text-xs); }
+    .data-table th, .data-table td { padding: var(--space-4) var(--space-5); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Sylla<span>Bot</span></a>
+  <a href="index.html" class="nav-back" data-i18n="navBack">← חזרה לדף הבית</a>
+</nav>
+
+<main class="legal-page">
+  <h1 data-i18n="complianceTitle">מידע ותאימות נתונים</h1>
+  <p class="legal-meta" data-i18n="complianceMeta">עדכון אחרון: 23 ביוני 2026</p>
+
+  <p data-i18n="complianceIntro">דף זה מפרט כיצד SyllaBot מטפל בנתונים, עומד בדרישות רגולטוריות ומגן על המידע שלך. אנו מחויבים לשקיפות מלאה לגבי הארכיטקטורה והפרקטיקות שלנו.</p>
+
+  <h2 data-i18n="complianceRegTitle">1. תאימות רגולטורית</h2>
+
+  <h3 data-i18n="compliancePPATitle">חוק הגנת הפרטיות (ישראל)</h3>
+  <p data-i18n="compliancePPA">SyllaBot פועל בהתאם לחוק הגנת הפרטיות, התשמ"א-1981 ולתקנותיו. אנו מקפידים על:</p>
+  <ul>
+    <li data-i18n="compliancePPA1">איסוף מידע מינימלי — רק מה שנדרש לצורך מתן השירות</li>
+    <li data-i18n="compliancePPA2">מתן זכות עיון, תיקון ומחיקה למשתמשים</li>
+    <li data-i18n="compliancePPA3">אבטחת מידע בהתאם לתקנות אבטחת מידע, התשע"ז-2017</li>
+    <li data-i18n="compliancePPA4">שימוש במידע אישי רק למטרה שלשמה נאסף</li>
+  </ul>
+
+  <h3 data-i18n="complianceGDPRTitle">GDPR (במידה וחל)</h3>
+  <p data-i18n="complianceGDPR">למרות שהשירות מכוון לסטודנטים בישראל, אנו מיישמים עקרונות GDPR כפרקטיקה מיטבית:</p>
+  <ul>
+    <li data-i18n="complianceGDPR1">עיקרון מזעור הנתונים (Data Minimization)</li>
+    <li data-i18n="complianceGDPR2">זכות למחיקה (Right to Erasure) — דרך מחיקת חשבון בדשבורד</li>
+    <li data-i18n="complianceGDPR3">זכות לניידות (Data Portability) — ייצוא iCal</li>
+    <li data-i18n="complianceGDPR4">הגנה על נתונים כברירת מחדל (Privacy by Design)</li>
+  </ul>
+
+  <h2 data-i18n="complianceArchTitle">2. ארכיטקטורת נתונים</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th data-i18n="complianceTableType">סוג נתון</th>
+        <th data-i18n="complianceTableStorage">מיקום אחסון</th>
+        <th data-i18n="complianceTableEncryption">הצפנה</th>
+        <th data-i18n="complianceTableRetention">משך שמירה</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-i18n="complianceRow1Type">אימייל + סיסמה</td>
+        <td data-i18n="complianceRow1Storage">Supabase Auth</td>
+        <td><span class="badge badge-green">AES-256 + bcrypt</span></td>
+        <td data-i18n="complianceRow1Retention">עד מחיקת חשבון</td>
+      </tr>
+      <tr>
+        <td data-i18n="complianceRow2Type">סילבוס (JSON)</td>
+        <td data-i18n="complianceRow2Storage">Supabase DB</td>
+        <td><span class="badge badge-green">AES-256</span></td>
+        <td data-i18n="complianceRow2Retention">עד מחיקת חשבון</td>
+      </tr>
+      <tr>
+        <td data-i18n="complianceRow3Type">קובץ PDF מקורי</td>
+        <td data-i18n="complianceRow3Storage">לא נשמר</td>
+        <td>—</td>
+        <td data-i18n="complianceRow3Retention">נמחק מיד לאחר ניתוח</td>
+      </tr>
+      <tr>
+        <td data-i18n="complianceRow4Type">כתובת iCal</td>
+        <td data-i18n="complianceRow4Storage">Supabase DB</td>
+        <td><span class="badge badge-green">AES-256</span></td>
+        <td data-i18n="complianceRow4Retention">עד מחיקת חשבון</td>
+      </tr>
+      <tr>
+        <td data-i18n="complianceRow5Type">יומני שימוש</td>
+        <td data-i18n="complianceRow5Storage">Supabase DB</td>
+        <td><span class="badge badge-green">AES-256</span></td>
+        <td data-i18n="complianceRow5Retention">90 יום</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 data-i18n="complianceSecurityTitle">3. אמצעי אבטחה</h2>
+  <ul>
+    <li data-i18n="complianceSec1"><strong>הצפנה בהעברה:</strong> כל התקשורת מוצפנת באמצעות TLS 1.3</li>
+    <li data-i18n="complianceSec2"><strong>הצפנה באחסון:</strong> מסד הנתונים מוצפן באמצעות AES-256</li>
+    <li data-i18n="complianceSec3"><strong>בקרת גישה:</strong> Row Level Security (RLS) מבטיח שכל משתמש רואה רק את הנתונים שלו</li>
+    <li data-i18n="complianceSec4"><strong>אימות:</strong> JWT tokens עם תפוגה אוטומטית</li>
+    <li data-i18n="complianceSec5"><strong>הגנה מפני התקפות:</strong> Rate limiting, CORS, הגנת XSS באמצעות DOMPurify</li>
+    <li data-i18n="complianceSec6"><strong>מחיקת חשבון:</strong> מחיקה מלאה ובלתי הפיכה של כל הנתונים, כולל מטבלאות auth</li>
+  </ul>
+
+  <h2 data-i18n="complianceAITitle">4. עיבוד בינה מלאכותית</h2>
+  <div class="legal-card">
+    <p data-i18n="complianceAI1"><strong>ספק ה-AI:</strong> Anthropic (Claude API)</p>
+    <p data-i18n="complianceAI2"><strong>מה נשלח:</strong> תמונות עמודים מקבצי PDF של סילבוסים בלבד</p>
+    <p data-i18n="complianceAI3"><strong>שמירת נתונים על ידי Anthropic:</strong> Anthropic אינה שומרת את הנתונים שנשלחים דרך ה-API לאחר העיבוד, בהתאם ל-<a href="https://www.anthropic.com/policies/privacy" target="_blank" rel="noopener">מדיניות הפרטיות של Anthropic</a>.</p>
+    <p data-i18n="complianceAI4"><strong>אימון מודלים:</strong> הנתונים שלך אינם משמשים לאימון מודלי AI.</p>
+  </div>
+
+  <h2 data-i18n="complianceThirdTitle">5. ספקי צד שלישי</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th data-i18n="complianceVendor">ספק</th>
+        <th data-i18n="complianceVendorPurpose">שימוש</th>
+        <th data-i18n="complianceVendorData">נתונים שמועברים</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Supabase</td>
+        <td data-i18n="complianceV1Purpose">מסד נתונים, אימות</td>
+        <td data-i18n="complianceV1Data">כל נתוני המשתמש</td>
+      </tr>
+      <tr>
+        <td>Anthropic</td>
+        <td data-i18n="complianceV2Purpose">ניתוח סילבוסים</td>
+        <td data-i18n="complianceV2Data">תמונות עמודי PDF</td>
+      </tr>
+      <tr>
+        <td>Resend</td>
+        <td data-i18n="complianceV3Purpose">שליחת אימיילים</td>
+        <td data-i18n="complianceV3Data">כתובת אימייל, תוכן הודעה</td>
+      </tr>
+      <tr>
+        <td>Stripe</td>
+        <td data-i18n="complianceV4Purpose">תשלומים</td>
+        <td data-i18n="complianceV4Data">פרטי תשלום (Stripe בלבד)</td>
+      </tr>
+      <tr>
+        <td>GitHub Pages</td>
+        <td data-i18n="complianceV5Purpose">אירוח אתר</td>
+        <td data-i18n="complianceV5Data">קבצים סטטיים בלבד</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 data-i18n="complianceBreachTitle">6. תגובה לאירועי אבטחה</h2>
+  <p data-i18n="complianceBreach">במקרה של אירוע אבטחה המשפיע על נתוני משתמשים:</p>
+  <ul>
+    <li data-i18n="complianceBreach1">נודיע למשתמשים המושפעים תוך 72 שעות</li>
+    <li data-i18n="complianceBreach2">נדווח לרשות להגנת הפרטיות בהתאם לדרישות החוק</li>
+    <li data-i18n="complianceBreach3">ננקוט באמצעים מיידיים לצמצום הנזק</li>
+    <li data-i18n="complianceBreach4">נספק פירוט מלא של המידע שנחשף</li>
+  </ul>
+
+  <h2 data-i18n="complianceContactTitle">7. יצירת קשר</h2>
+  <p data-i18n="complianceContact">לשאלות בנוגע לאבטחת מידע ותאימות, ניתן לפנות אלינו בכתובת: <a href="mailto:syllabot.app@gmail.com">syllabot.app@gmail.com</a></p>
+</main>
+
+<footer>
+  <a href="index.html" class="logo">Sylla<span>Bot</span></a>
+  <div class="footer-links">
+    <a href="privacy.html" data-i18n="footerPrivacy">מדיניות פרטיות</a>
+    <a href="terms.html" data-i18n="footerTerms">תנאי שימוש</a>
+    <a href="compliance.html" data-i18n="footerCompliance">מידע ותאימות</a>
+    <a href="ip.html" data-i18n="footerIP">קניין רוחני</a>
+  </div>
+  <p data-i18n="footerCopy">&copy; 2026 SyllaBot &middot; כל הזכויות שמורות</p>
+</footer>
+
+</body>
+</html>

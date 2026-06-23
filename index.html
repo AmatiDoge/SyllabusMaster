@@ -800,7 +800,10 @@
   }
 
   footer .logo { font-size: 1.1rem; }
-  footer p, .footer-tagline { font-size: var(--text-sm); color: var(--color-text-muted); }
+  footer p { font-size: var(--text-sm); color: var(--color-text-muted); }
+  .footer-links { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+  .footer-links a { font-size: var(--text-sm); color: var(--color-text-muted); text-decoration: none; }
+  .footer-links a:hover { color: var(--color-accent); }
 
   /* ── SCROLL REVEAL ── */
   .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s, transform 0.7s; }
@@ -1171,8 +1174,13 @@
 <!-- FOOTER -->
 <footer>
   <a href="#" class="logo">Sylla<span>Bot</span></a>
+  <div class="footer-links">
+    <a href="privacy.html" data-i18n="footerPrivacy">מדיניות פרטיות</a>
+    <a href="terms.html" data-i18n="footerTerms">תנאי שימוש</a>
+    <a href="compliance.html" data-i18n="footerCompliance">מידע ותאימות</a>
+    <a href="ip.html" data-i18n="footerIP">קניין רוחני</a>
+  </div>
   <p data-i18n="footerCopy">© 2026 SyllaBot · כל הזכויות שמורות</p>
-  <p class="footer-tagline" data-i18n="footerTagline">נבנה עם ❤️ לסטודנטים</p>
 </footer>
 
 
@@ -1328,7 +1336,10 @@
       ctaNote: 'ללא כרטיס אשראי · ביטול בכל עת',
       pilotBanner: '🚀 גרסת פיילוט — אוניברסיטת רייכמן. השירות חינמי לחלוטין. נשמח לשמוע מה אתם חושבים!',
       footerCopy: '© 2026 SyllaBot · כל הזכויות שמורות',
-      footerTagline: 'נבנה עם ❤️ לסטודנטים',
+      footerPrivacy: 'מדיניות פרטיות',
+      footerTerms: 'תנאי שימוש',
+      footerCompliance: 'מידע ותאימות',
+      footerIP: 'קניין רוחני',
     },
     en: {
       skipLink: 'Skip to content',
@@ -1412,7 +1423,10 @@
       ctaNote: 'No credit card · Cancel anytime',
       pilotBanner: "🚀 Pilot version — Reichman University. Completely free. We'd love your feedback!",
       footerCopy: '© 2026 SyllaBot · All rights reserved',
-      footerTagline: 'Built with ❤️ for students',
+      footerPrivacy: 'Privacy Policy',
+      footerTerms: 'Terms of Use',
+      footerCompliance: 'Data & Compliance',
+      footerIP: 'Intellectual Property',
     },
   };
 
