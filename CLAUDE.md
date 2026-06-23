@@ -1,5 +1,7 @@
 # SyllabusMaster (SyllaBot)
 
+Notion project page: https://app.notion.com/p/387870a586fd81ae956fe74773f142db
+
 ## Project Overview
 SyllaBot is an AI-powered academic dashboard for students. It parses course syllabi (PDFs) using the Anthropic API and displays a unified weekly schedule, exams, and deadlines in a clean dashboard.
 

@@ -152,6 +152,31 @@
   .footer-links a { font-size: var(--text-sm); color: var(--color-text-muted); }
   .footer-links a:hover { color: var(--color-accent); }
 
+  .lang-toggle {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: var(--border-structural);
+    padding: 4px var(--space-6);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    box-shadow: 2px 2px 0 var(--color-border-ink);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .lang-toggle:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+
+  html[dir="ltr"] .legal-page ul,
+  html[dir="ltr"] .legal-page ol {
+    padding-right: 0;
+    padding-left: var(--space-7);
+  }
+
   @media (max-width: 768px) {
     nav { padding: var(--space-6) var(--space-7); }
     .legal-page { padding: var(--space-9) var(--space-7); }
@@ -163,7 +188,10 @@
 
 <nav>
   <a href="index.html" class="logo">Sylla<span>Bot</span></a>
-  <a href="index.html" class="nav-back" data-i18n="navBack">← חזרה לדף הבית</a>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" aria-label="Switch language">EN</button>
+    <a href="index.html" class="nav-back" data-i18n="navBack">← חזרה לדף הבית</a>
+  </div>
 </nav>
 
 <main class="legal-page">
@@ -250,6 +278,141 @@
   </div>
   <p data-i18n="footerCopy">&copy; 2026 SyllaBot &middot; כל הזכויות שמורות</p>
 </footer>
+
+<script>
+  const T = {
+    he: {
+      navBack: '← חזרה לדף הבית',
+      termsTitle: 'תנאי שימוש',
+      termsMeta: 'עדכון אחרון: 23 ביוני 2026',
+      termsIntro: 'ברוכים הבאים ל-SyllaBot. בשימוש בשירות, אתה מסכים לתנאים המפורטים להלן. אם אינך מסכים לתנאים אלו, אנא הימנע משימוש בשירות.',
+      termsServiceTitle: '1. תיאור השירות',
+      termsService: 'SyllaBot הוא כלי ניהול לימודים המשתמש בבינה מלאכותית לניתוח סילבוסים אקדמיים וסנכרון לוחות שנה. השירות מספק לוח זמנים אישי, תזכורות ומעקב מטלות לסטודנטים.',
+      termsPilotTitle: '2. גרסת פיילוט',
+      termsPilot: 'SyllaBot נמצא כרגע בגרסת פיילוט. השירות ניתן <strong>ללא תשלום</strong> במהלך תקופת הפיילוט. אנו שומרים את הזכות לשנות, להשהות או להפסיק את השירות בכל עת, עם או בלי הודעה מוקדמת.',
+      termsEligibilityTitle: '3. כשירות שימוש',
+      termsEligibility: 'השירות מיועד לסטודנטים בהשכלה גבוהה בגיל 18 ומעלה. בהרשמה, אתה מצהיר כי אתה עומד בדרישת הגיל המינימלי.',
+      termsAccountTitle: '4. חשבון משתמש',
+      termsAccount1: 'אתה אחראי לשמירה על סודיות פרטי הגישה לחשבונך',
+      termsAccount2: 'אתה אחראי לכל הפעילות המתבצעת תחת חשבונך',
+      termsAccount3: 'עליך להודיע לנו מיד על כל שימוש בלתי מורשה בחשבונך',
+      termsAccount4: 'אנו שומרים את הזכות לסגור חשבונות שמפרים את תנאי השימוש',
+      termsAcceptableTitle: '5. שימוש מקובל',
+      termsAcceptableIntro: 'בשימוש בשירות, אתה מתחייב:',
+      termsAcceptable1: 'להעלות רק סילבוסים של קורסים שאתה רשום אליהם',
+      termsAcceptable2: 'לא להשתמש בשירות לכל מטרה בלתי חוקית או בלתי מורשית',
+      termsAcceptable3: 'לא לנסות לגשת למידע של משתמשים אחרים',
+      termsAcceptable4: 'לא לנסות לעקוף את מנגנוני האבטחה של השירות',
+      termsAcceptable5: 'לא להעמיס על השרתים בצורה בלתי סבירה',
+      termsContentTitle: '6. תוכן משתמש',
+      termsContent1: 'אתה שומר על הבעלות על כל התוכן שאתה מעלה לשירות (סילבוסים, מטלות וכו\'). בהעלאת תוכן, אתה מעניק לנו רישיון מוגבל לעבד את התוכן לצורך מתן השירות בלבד.',
+      termsContent2: 'אתה מצהיר כי יש לך את הזכות להעלות את התוכן ושהשימוש בו אינו מפר זכויות של צדדים שלישיים.',
+      termsAITitle: '7. שימוש בבינה מלאכותית',
+      termsAI1: 'השירות משתמש בבינה מלאכותית (Anthropic Claude) לניתוח סילבוסים. תוצאות הניתוח הן אוטומטיות וייתכנו אי-דיוקים.',
+      termsAI2: '<strong>SyllaBot אינו תחליף לבדיקה ידנית של הסילבוס המקורי.</strong> באחריות המשתמש לוודא את נכונות הנתונים המוצגים מול מקורות רשמיים של המוסד האקדמי.',
+      termsDisclaimerTitle: '8. הגבלת אחריות',
+      termsDisclaimer1: 'השירות ניתן "כמות שהוא" (AS IS) ללא אחריות מכל סוג, מפורשת או משתמעת.',
+      termsDisclaimer2: 'איננו אחראים לנזק שנגרם כתוצאה מהסתמכות על מידע שסופק על ידי השירות',
+      termsDisclaimer3: 'איננו אחראים לאי-דיוקים בניתוח הסילבוסים',
+      termsDisclaimer4: 'איננו אחראים לאובדן נתונים כתוצאה מתקלות טכניות',
+      termsDisclaimer5: 'איננו אחראים לפספוס מועדים, בחינות או מטלות כתוצאה משימוש בשירות',
+      termsLiabilityTitle: '9. הגבלת חבות',
+      termsLiability: 'בשום מקרה לא תחול עלינו חבות בגין נזקים עקיפים, מיוחדים, תוצאתיים או עונשיים הנובעים מהשימוש בשירות או מחוסר היכולת להשתמש בו, גם אם הודענו על האפשרות לנזקים כאלה.',
+      termsTerminationTitle: '10. סיום שימוש',
+      termsTermination1: 'ניתן להפסיק את השימוש בשירות ולמחוק את חשבונך בכל עת מהגדרות הדשבורד',
+      termsTermination2: 'אנו רשאים להשהות או לסגור את חשבונך בשל הפרת תנאי השימוש',
+      termsTermination3: 'עם מחיקת החשבון, כל הנתונים שלך יימחקו באופן בלתי הפיך',
+      termsChangesTitle: '11. שינויים בתנאים',
+      termsChanges: 'אנו רשאים לעדכן תנאים אלו מעת לעת. שינויים מהותיים יפורסמו בדף זה. המשך שימוש בשירות לאחר עדכון מהווה הסכמה לתנאים המעודכנים.',
+      termsLawTitle: '12. דין חל וסמכות שיפוט',
+      termsLaw: 'תנאים אלו כפופים לדיני מדינת ישראל. סמכות השיפוט הבלעדית בכל סכסוך הנובע מתנאים אלו תהיה לבתי המשפט המוסמכים בתל אביב-יפו.',
+      termsContactTitle: '13. יצירת קשר',
+      termsContact: 'לשאלות בנוגע לתנאי השימוש, ניתן לפנות אלינו בכתובת: <a href="mailto:syllabot.app@gmail.com">syllabot.app@gmail.com</a>',
+      footerPrivacy: 'מדיניות פרטיות',
+      footerTerms: 'תנאי שימוש',
+      footerCompliance: 'מידע ותאימות',
+      footerIP: 'קניין רוחני',
+      footerCopy: '\u00a9 2026 SyllaBot \u00b7 כל הזכויות שמורות',
+    },
+    en: {
+      navBack: '\u2190 Back to home',
+      termsTitle: 'Terms of Use',
+      termsMeta: 'Last updated: June 23, 2026',
+      termsIntro: 'Welcome to SyllaBot. By using the Service, you agree to the terms set forth below. If you do not agree to these terms, please refrain from using the Service.',
+      termsServiceTitle: '1. Description of Service',
+      termsService: 'SyllaBot is an academic management tool that uses artificial intelligence to analyze academic syllabi and synchronize calendars. The Service provides a personal schedule, reminders, and assignment tracking for students.',
+      termsPilotTitle: '2. Pilot Version',
+      termsPilot: 'SyllaBot is currently in pilot. The Service is provided <strong>free of charge</strong> during the pilot period. We reserve the right to modify, suspend, or discontinue the Service at any time, with or without prior notice.',
+      termsEligibilityTitle: '3. Eligibility',
+      termsEligibility: 'The Service is intended for higher education students aged 18 and over. By registering, you represent that you meet the minimum age requirement.',
+      termsAccountTitle: '4. User Account',
+      termsAccount1: 'You are responsible for maintaining the confidentiality of your account credentials',
+      termsAccount2: 'You are responsible for all activity conducted under your account',
+      termsAccount3: 'You must notify us immediately of any unauthorized use of your account',
+      termsAccount4: 'We reserve the right to close accounts that violate the Terms of Use',
+      termsAcceptableTitle: '5. Acceptable Use',
+      termsAcceptableIntro: 'By using the Service, you agree to:',
+      termsAcceptable1: 'Upload only syllabi from courses in which you are enrolled',
+      termsAcceptable2: 'Not use the Service for any illegal or unauthorized purpose',
+      termsAcceptable3: 'Not attempt to access other users\u2019 data',
+      termsAcceptable4: 'Not attempt to bypass the Service\u2019s security mechanisms',
+      termsAcceptable5: 'Not place unreasonable load on the servers',
+      termsContentTitle: '6. User Content',
+      termsContent1: 'You retain ownership of all content you upload to the Service (syllabi, assignments, etc.). By uploading content, you grant us a limited license to process the content solely for the purpose of providing the Service.',
+      termsContent2: 'You represent that you have the right to upload the content and that its use does not infringe the rights of any third party.',
+      termsAITitle: '7. Use of Artificial Intelligence',
+      termsAI1: 'The Service uses artificial intelligence (Anthropic Claude) to analyze syllabi. Analysis results are automated and may contain inaccuracies.',
+      termsAI2: '<strong>SyllaBot is not a substitute for manually checking the original syllabus.</strong> It is the user\u2019s responsibility to verify the accuracy of displayed data against official sources from the academic institution.',
+      termsDisclaimerTitle: '8. Disclaimer',
+      termsDisclaimer1: 'The Service is provided "as is" without warranties of any kind, express or implied.',
+      termsDisclaimer2: 'We are not liable for damages resulting from reliance on information provided by the Service',
+      termsDisclaimer3: 'We are not liable for inaccuracies in syllabus analysis',
+      termsDisclaimer4: 'We are not liable for data loss resulting from technical failures',
+      termsDisclaimer5: 'We are not liable for missed deadlines, exams, or assignments resulting from use of the Service',
+      termsLiabilityTitle: '9. Limitation of Liability',
+      termsLiability: 'In no event shall we be liable for indirect, special, consequential, or punitive damages arising from the use of or inability to use the Service, even if we have been advised of the possibility of such damages.',
+      termsTerminationTitle: '10. Termination',
+      termsTermination1: 'You may stop using the Service and delete your account at any time from the dashboard settings',
+      termsTermination2: 'We may suspend or close your account for violation of the Terms of Use',
+      termsTermination3: 'Upon account deletion, all your data will be permanently and irreversibly deleted',
+      termsChangesTitle: '11. Changes to Terms',
+      termsChanges: 'We may update these terms from time to time. Material changes will be posted on this page. Continued use of the Service after an update constitutes acceptance of the updated terms.',
+      termsLawTitle: '12. Governing Law and Jurisdiction',
+      termsLaw: 'These terms are governed by the laws of the State of Israel. Exclusive jurisdiction for any dispute arising from these terms shall be the competent courts in Tel Aviv-Jaffa.',
+      termsContactTitle: '13. Contact',
+      termsContact: 'For questions about the Terms of Use, contact us at: <a href="mailto:syllabot.app@gmail.com">syllabot.app@gmail.com</a>',
+      footerPrivacy: 'Privacy Policy',
+      footerTerms: 'Terms of Use',
+      footerCompliance: 'Data & Compliance',
+      footerIP: 'Intellectual Property',
+      footerCopy: '\u00a9 2026 SyllaBot \u00b7 All rights reserved',
+    }
+  };
+
+  let currentLang = localStorage.getItem('landing-lang') || 'he';
+
+  function applyLang(lang) {
+    currentLang = lang;
+    const t = T[lang];
+    const isHe = lang === 'he';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = isHe ? 'rtl' : 'ltr';
+    document.title = isHe ? 'SyllaBot \u2013 תנאי שימוש' : 'SyllaBot \u2013 Terms of Use';
+    document.getElementById('lang-toggle').textContent = isHe ? 'EN' : '\u05e2\u05d1';
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (t[key] === undefined) return;
+      if (t[key].includes('<')) { el.innerHTML = t[key]; } else { el.textContent = t[key]; }
+    });
+    localStorage.setItem('landing-lang', lang);
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === 'he' ? 'en' : 'he');
+  }
+
+  applyLang(currentLang);
+</script>
 
 </body>
 </html>

@@ -158,6 +158,30 @@
   .footer-links a { font-size: var(--text-sm); color: var(--color-text-muted); }
   .footer-links a:hover { color: var(--color-accent); }
 
+  .lang-toggle {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: var(--border-structural);
+    padding: 4px var(--space-6);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    box-shadow: 2px 2px 0 var(--color-border-ink);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .lang-toggle:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+
+  html[dir="ltr"] .legal-page ul {
+    padding-right: 0;
+    padding-left: var(--space-7);
+  }
+
   @media (max-width: 768px) {
     nav { padding: var(--space-6) var(--space-7); }
     .legal-page { padding: var(--space-9) var(--space-7); }
@@ -169,7 +193,10 @@
 
 <nav>
   <a href="index.html" class="logo">Sylla<span>Bot</span></a>
-  <a href="index.html" class="nav-back" data-i18n="navBack">← חזרה לדף הבית</a>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()" aria-label="Switch language">EN</button>
+    <a href="index.html" class="nav-back" data-i18n="navBack">← חזרה לדף הבית</a>
+  </div>
 </nav>
 
 <main class="legal-page">
@@ -263,6 +290,145 @@
   </div>
   <p data-i18n="footerCopy">&copy; 2026 SyllaBot &middot; כל הזכויות שמורות</p>
 </footer>
+
+<script>
+  const T = {
+    he: {
+      navBack: '← חזרה לדף הבית',
+      privacyTitle: 'מדיניות פרטיות',
+      privacyMeta: 'עדכון אחרון: 23 ביוני 2026',
+      privacyIntro: 'מדיניות פרטיות זו מתארת כיצד SyllaBot ("אנחנו", "שלנו", "השירות") אוסף, משתמש ומגן על המידע האישי שלך בעת שימוש באפליקציית SyllaBot ובשירותים הנלווים.',
+      privacyCollectTitle: '1. מידע שאנו אוספים',
+      privacyAccountTitle: 'מידע חשבון',
+      privacyAccountEmail: 'כתובת אימייל (נדרשת להרשמה ולכניסה)',
+      privacyAccountName: 'שם מלא (אופציונלי)',
+      privacyAccountPassword: 'סיסמה מוצפנת (מאוחסנת בצורה מאובטחת באמצעות Supabase Auth)',
+      privacyAcademicTitle: 'מידע אקדמי',
+      privacyAcademicSyllabus: 'קבצי סילבוס (PDF) שאתה מעלה לניתוח',
+      privacyAcademicCalendar: 'כתובות URL של לוחות שנה (iCal) מ-Moodle ו/או ידיעון',
+      privacyAcademicSchedule: 'לוח הזמנים, בחינות ומטלות שנוצרו מניתוח הסילבוסים',
+      privacyAcademicProgress: 'סימון התקדמות (צ\'ק-בוקסים) במטלות',
+      privacyUsageTitle: 'מידע שימוש',
+      privacyUsageLogs: 'יומני שימוש (אירועי התחברות, העלאת קבצים, סנכרון לוח שנה)',
+      privacyUsagePrefs: 'העדפות תזכורת',
+      privacyUseTitle: '2. כיצד אנו משתמשים במידע',
+      privacyUse1: 'מתן השירות — ניתוח סילבוסים, הצגת לוח זמנים, שליחת תזכורות',
+      privacyUse2: 'אימות וניהול חשבונך',
+      privacyUse3: 'שיפור השירות על סמך דפוסי שימוש אנונימיים',
+      privacyUse4: 'תקשורת עמך בנוגע לשירות (תזכורות, עדכונים)',
+      privacyThirdTitle: '3. שיתוף מידע עם צדדים שלישיים',
+      privacyThirdMain: '<strong>אנו לא מוכרים, משכירים או משתפים את המידע האישי שלך עם צדדים שלישיים למטרות שיווקיות.</strong>',
+      privacyThirdProviders: 'אנו משתמשים בספקי שירות הבאים לצורך הפעלת השירות בלבד:',
+      privacyThirdSupabase: '<strong>Supabase</strong> — אחסון מסד נתונים ואימות משתמשים. הנתונים מוצפנים בזמן אחסון ובזמן העברה.',
+      privacyThirdAnthropic: '<strong>Anthropic (Claude API)</strong> — ניתוח קבצי PDF של סילבוסים. קבצי ה-PDF נשלחים ל-API לצורך ניתוח בלבד ו<strong>אינם נשמרים על ידי Anthropic לאחר העיבוד</strong>.',
+      privacyThirdResend: '<strong>Resend</strong> — שליחת הודעות אימייל (תזכורות ואימות). רק כתובת האימייל ותוכן ההודעה מועברים.',
+      privacyThirdStripe: '<strong>Stripe</strong> — עיבוד תשלומים (בגרסת הפרימיום). אנו לא מאחסנים פרטי כרטיס אשראי — אלו מנוהלים ישירות על ידי Stripe.',
+      privacySecurityTitle: '4. אבטחת מידע',
+      privacySecurity1: 'כל הנתונים מוצפנים בזמן העברה (TLS/SSL) ובזמן אחסון',
+      privacySecurity2: 'אימות מבוסס JWT עם Row Level Security (RLS) ברמת מסד הנתונים',
+      privacySecurity3: 'סיסמאות מוצפנות באמצעות bcrypt — לעולם לא מאוחסנות כטקסט רגיל',
+      privacySecurity4: 'גישה למידע מוגבלת לצוות הפיתוח בלבד, על בסיס need-to-know',
+      privacyRightsTitle: '5. הזכויות שלך',
+      privacyRightsIntro: 'יש לך את הזכויות הבאות בנוגע למידע האישי שלך:',
+      privacyRights1: '<strong>גישה</strong> — ניתן לצפות בכל הנתונים שלך דרך לוח הבקרה',
+      privacyRights2: '<strong>תיקון</strong> — ניתן לערוך את פרטי החשבון בכל עת',
+      privacyRights3: '<strong>מחיקה</strong> — ניתן למחוק את החשבון ואת כל הנתונים הנלווים מהגדרות הדשבורד. המחיקה היא בלתי הפיכה.',
+      privacyRights4: '<strong>ניידות</strong> — ניתן לייצא את לוח הזמנים שלך כקובץ iCal (.ics)',
+      privacyCookiesTitle: '6. עוגיות ואחסון מקומי',
+      privacyCookies: 'SyllaBot משתמש ב-localStorage בדפדפן לשמירת טוקן אימות והעדפות שפה. איננו משתמשים בעוגיות מעקב או בכלי ניתוח של צדדים שלישיים.',
+      privacyChildrenTitle: '7. קטינים',
+      privacyChildren: 'השירות מיועד לסטודנטים בהשכלה גבוהה (גיל 18+). איננו אוספים ביודעין מידע מקטינים מתחת לגיל 18.',
+      privacyChangesTitle: '8. שינויים במדיניות',
+      privacyChanges: 'אנו עשויים לעדכן מדיניות זו מעת לעת. שינויים מהותיים יפורסמו בדף זה ותאריך העדכון האחרון ישתנה בהתאם. המשך שימוש בשירות לאחר עדכון מהווה הסכמה למדיניות המעודכנת.',
+      privacyContactTitle: '9. יצירת קשר',
+      privacyContact: 'לשאלות בנוגע למדיניות הפרטיות, ניתן לפנות אלינו בכתובת: <a href="mailto:syllabot.app@gmail.com">syllabot.app@gmail.com</a>',
+      footerPrivacy: 'מדיניות פרטיות',
+      footerTerms: 'תנאי שימוש',
+      footerCompliance: 'מידע ותאימות',
+      footerIP: 'קניין רוחני',
+      footerCopy: '\u00a9 2026 SyllaBot \u00b7 כל הזכויות שמורות',
+    },
+    en: {
+      navBack: '\u2190 Back to home',
+      privacyTitle: 'Privacy Policy',
+      privacyMeta: 'Last updated: June 23, 2026',
+      privacyIntro: 'This Privacy Policy describes how SyllaBot ("we", "our", "the Service") collects, uses, and protects your personal information when you use the SyllaBot application and related services.',
+      privacyCollectTitle: '1. Information We Collect',
+      privacyAccountTitle: 'Account Information',
+      privacyAccountEmail: 'Email address (required for registration and login)',
+      privacyAccountName: 'Full name (optional)',
+      privacyAccountPassword: 'Encrypted password (stored securely via Supabase Auth)',
+      privacyAcademicTitle: 'Academic Information',
+      privacyAcademicSyllabus: 'Syllabus files (PDF) that you upload for analysis',
+      privacyAcademicCalendar: 'Calendar URLs (iCal) from Moodle and/or Yedion',
+      privacyAcademicSchedule: 'Schedule, exams, and assignments generated from syllabus analysis',
+      privacyAcademicProgress: 'Task completion checkboxes',
+      privacyUsageTitle: 'Usage Information',
+      privacyUsageLogs: 'Usage logs (login events, file uploads, calendar sync)',
+      privacyUsagePrefs: 'Reminder preferences',
+      privacyUseTitle: '2. How We Use Information',
+      privacyUse1: 'Providing the Service \u2014 analyzing syllabi, displaying schedules, sending reminders',
+      privacyUse2: 'Authenticating and managing your account',
+      privacyUse3: 'Improving the Service based on anonymous usage patterns',
+      privacyUse4: 'Communicating with you regarding the Service (reminders, updates)',
+      privacyThirdTitle: '3. Sharing Information with Third Parties',
+      privacyThirdMain: '<strong>We do not sell, rent, or share your personal information with third parties for marketing purposes.</strong>',
+      privacyThirdProviders: 'We use the following service providers solely for operating the Service:',
+      privacyThirdSupabase: '<strong>Supabase</strong> \u2014 database storage and user authentication. Data is encrypted at rest and in transit.',
+      privacyThirdAnthropic: '<strong>Anthropic (Claude API)</strong> \u2014 PDF syllabus analysis. PDF files are sent to the API for analysis only and <strong>are not retained by Anthropic after processing</strong>.',
+      privacyThirdResend: '<strong>Resend</strong> \u2014 sending email messages (reminders and verification). Only the email address and message content are transmitted.',
+      privacyThirdStripe: '<strong>Stripe</strong> \u2014 payment processing (premium version). We do not store credit card details \u2014 these are managed directly by Stripe.',
+      privacySecurityTitle: '4. Data Security',
+      privacySecurity1: 'All data is encrypted in transit (TLS/SSL) and at rest',
+      privacySecurity2: 'JWT-based authentication with Row Level Security (RLS) at the database level',
+      privacySecurity3: 'Passwords are hashed using bcrypt \u2014 never stored as plain text',
+      privacySecurity4: 'Data access is limited to the development team on a need-to-know basis',
+      privacyRightsTitle: '5. Your Rights',
+      privacyRightsIntro: 'You have the following rights regarding your personal information:',
+      privacyRights1: '<strong>Access</strong> \u2014 you can view all your data through the dashboard',
+      privacyRights2: '<strong>Correction</strong> \u2014 you can edit your account details at any time',
+      privacyRights3: '<strong>Deletion</strong> \u2014 you can delete your account and all associated data from the dashboard settings. Deletion is irreversible.',
+      privacyRights4: '<strong>Portability</strong> \u2014 you can export your schedule as an iCal (.ics) file',
+      privacyCookiesTitle: '6. Cookies and Local Storage',
+      privacyCookies: 'SyllaBot uses browser localStorage to store authentication tokens and language preferences. We do not use tracking cookies or third-party analytics tools.',
+      privacyChildrenTitle: '7. Minors',
+      privacyChildren: 'The Service is intended for higher education students (age 18+). We do not knowingly collect information from minors under the age of 18.',
+      privacyChangesTitle: '8. Policy Changes',
+      privacyChanges: 'We may update this policy from time to time. Material changes will be posted on this page and the last updated date will be changed accordingly. Continued use of the Service after an update constitutes acceptance of the updated policy.',
+      privacyContactTitle: '9. Contact',
+      privacyContact: 'For questions about the Privacy Policy, contact us at: <a href="mailto:syllabot.app@gmail.com">syllabot.app@gmail.com</a>',
+      footerPrivacy: 'Privacy Policy',
+      footerTerms: 'Terms of Use',
+      footerCompliance: 'Data & Compliance',
+      footerIP: 'Intellectual Property',
+      footerCopy: '\u00a9 2026 SyllaBot \u00b7 All rights reserved',
+    }
+  };
+
+  let currentLang = localStorage.getItem('landing-lang') || 'he';
+
+  function applyLang(lang) {
+    currentLang = lang;
+    const t = T[lang];
+    const isHe = lang === 'he';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = isHe ? 'rtl' : 'ltr';
+    document.title = isHe ? 'SyllaBot \u2013 מדיניות פרטיות' : 'SyllaBot \u2013 Privacy Policy';
+    document.getElementById('lang-toggle').textContent = isHe ? 'EN' : '\u05e2\u05d1';
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (t[key] === undefined) return;
+      if (t[key].includes('<')) { el.innerHTML = t[key]; } else { el.textContent = t[key]; }
+    });
+    localStorage.setItem('landing-lang', lang);
+  }
+
+  function toggleLang() {
+    applyLang(currentLang === 'he' ? 'en' : 'he');
+  }
+
+  applyLang(currentLang);
+</script>
 
 </body>
 </html>
