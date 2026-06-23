@@ -1444,6 +1444,7 @@
                     ? Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000)
                     : 999;
                 track('sync_stale', { hours_since_last_sync: hours, source_status: srcStatus });
+            }
         } else {
             connected.style.display = 'none';
             setup.style.display = 'block';
