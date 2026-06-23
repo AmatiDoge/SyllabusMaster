@@ -1397,8 +1397,10 @@
                 const ago = Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000);
                 text += ` · עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`;
             }
-            if (icalCredentials.event_count) {
-                text += ` · ${icalCredentials.event_count} אירועים`;
+            // event_count not stored in ical_credentials — derive from user_data
+            const evtCount = (userExams || []).length + (userSyllabus || []).filter(s => s.src === 'ical').length;
+            if (evtCount > 0) {
+                text += ` · ${evtCount} אירועים`;
             }
             statusText.textContent = text;
             // Next sync indicator
