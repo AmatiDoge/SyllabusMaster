@@ -417,40 +417,6 @@
   .demo-view { display: none; padding: var(--space-7); text-align: start; }
   .demo-view.active { display: block; }
 
-  /* ── Demo: Stats strip ── */
-  .demo-stats {
-    display: flex; align-items: center; gap: var(--space-5);
-    padding: var(--space-5) var(--space-6);
-    margin-bottom: var(--space-6);
-    background: var(--color-bg-secondary);
-    border: var(--border-structural);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-hard-sm);
-    font-size: var(--text-xs);
-    flex-wrap: wrap;
-  }
-  .demo-stat-item {
-    display: flex; align-items: center; gap: var(--space-3);
-    white-space: nowrap;
-  }
-  .demo-stat-num {
-    font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: var(--weight-black);
-    line-height: 1;
-  }
-  .demo-stat-num.green { color: var(--color-success); }
-  .demo-stat-num.red { color: var(--color-error); }
-  .demo-stat-label {
-    color: var(--color-text-muted);
-    font-weight: var(--weight-medium);
-  }
-  .demo-stat-sep {
-    width: 1px; height: 20px;
-    background: var(--color-border-strong);
-    flex-shrink: 0;
-  }
-
   /* ── Demo: Course filter pills ── */
   .demo-pills {
     display: flex; gap: var(--space-3);
@@ -479,57 +445,6 @@
     box-shadow: var(--shadow-hard-sm);
   }
   .demo-pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-  /* ── Demo: Exam countdown card ── */
-  .demo-exam-card {
-    margin-top: var(--space-6);
-    display: flex; align-items: center; gap: var(--space-6);
-    padding: var(--space-6);
-    background: var(--color-bg-card);
-    border: var(--border-structural);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-hard-md);
-    border-inline-start: 5px solid var(--color-error);
-  }
-  .demo-exam-countdown {
-    display: flex; flex-direction: column; align-items: center;
-    min-width: 56px;
-    padding: var(--space-4) var(--space-5);
-    background: var(--color-error-soft);
-    border: 1.5px solid var(--color-error);
-    border-radius: var(--radius-md);
-  }
-  .demo-exam-num {
-    font-family: var(--font-display);
-    font-size: var(--text-2xl);
-    font-weight: var(--weight-black);
-    color: var(--color-error);
-    line-height: 1;
-  }
-  .demo-exam-unit {
-    font-size: 0.6rem;
-    font-weight: var(--weight-bold);
-    color: var(--color-error);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-  }
-  .demo-exam-info { flex: 1; }
-  .demo-exam-course {
-    display: flex; align-items: center; gap: var(--space-2);
-    font-size: 0.68rem; color: var(--color-text-muted);
-    font-weight: var(--weight-medium);
-    margin-bottom: var(--space-2);
-  }
-  .demo-exam-name {
-    font-family: var(--font-display);
-    font-size: var(--text-base);
-    font-weight: var(--weight-bold);
-  }
-  .demo-exam-date {
-    font-size: var(--text-xs);
-    color: var(--color-text-muted);
-    margin-top: var(--space-2);
-  }
 
   /* Now view mock */
   .demo-tier { margin-bottom: var(--space-5); }
@@ -999,23 +914,6 @@
 
     <!-- NOW VIEW -->
     <div class="demo-view active" data-panel="now">
-      <!-- Stats strip -->
-      <div class="demo-stats">
-        <div class="demo-stat-item">
-          <span class="demo-stat-num">7</span>
-          <span class="demo-stat-label" data-i18n="demoStatWeek">שבוע מתוך 14</span>
-        </div>
-        <div class="demo-stat-sep"></div>
-        <div class="demo-stat-item">
-          <span class="demo-stat-num green">3</span><span class="demo-stat-label">/8</span>
-          <span class="demo-stat-label" data-i18n="demoStatDone">הושלמו</span>
-        </div>
-        <div class="demo-stat-sep"></div>
-        <div class="demo-stat-item">
-          <span class="demo-stat-num red">3</span>
-          <span class="demo-stat-label" data-i18n="demoStatExam">ימים למבחן הבא</span>
-        </div>
-      </div>
       <!-- Course filter pills -->
       <div class="demo-pills">
         <span class="demo-pill active"><span class="demo-pill-dot" style="background:var(--color-text)"></span> <span data-i18n="demoPillAll">הכל</span></span>
@@ -1075,21 +973,6 @@
             <span class="demo-fi-t" data-i18n="demoWriteDraft">לכתוב טיוטה ראשונה לדיון</span>
             <span class="badge-days-green" data-i18n="demoDays18">18 ימים</span>
           </div>
-        </div>
-      </div>
-      <!-- Exam countdown card -->
-      <div class="demo-exam-card">
-        <div class="demo-exam-countdown">
-          <span class="demo-exam-num">3</span>
-          <span class="demo-exam-unit" data-i18n="demoExamDays">ימים</span>
-        </div>
-        <div class="demo-exam-info">
-          <div class="demo-exam-course">
-            <span class="demo-pill-dot" style="background:#8e44ad"></span>
-            <span data-i18n="demoCogPsych">פסיכולוגיה קוגניטיבית</span>
-          </div>
-          <div class="demo-exam-name" data-i18n="demoExamMidterm">מבחן אמצע סמסטר</div>
-          <div class="demo-exam-date" data-i18n="demoExamMidDate">28 ביוני 2026</div>
         </div>
       </div>
     </div>
@@ -1425,9 +1308,7 @@
       demoWixted: 'Wixted וגולדשטיין',
       demoBadgeQuiz: 'בוחן',
       demoConsolidation: 'מיצוק ורה-קונסולידציה',
-      demoStatWeek: 'שבוע מתוך 14', demoStatDone: 'הושלמו', demoStatExam: 'ימים למבחן הבא',
       demoPillAll: 'הכל',
-      demoExamDays: 'ימים', demoExamMidterm: 'מבחן אמצע סמסטר', demoExamMidDate: '28 ביוני 2026',
       demoTabNow: 'עכשיו', demoTabCalendar: 'יומן', demoTabSchedule: 'לוח זמנים', demoTabCourses: 'קורסים',
       demoNowCrit: 'דחוף — היום-מחר', demoNowSoon: 'השבוע', demoNowUpcoming: 'בקרוב',
       demoNowToday: 'היום', demoNowTomorrow: 'מחר', demoDays5: '5 ימים',
@@ -1515,9 +1396,7 @@
       demoWixted: 'Wixted & Goldstein',
       demoBadgeQuiz: 'Quiz',
       demoConsolidation: 'Consolidation & Reconsolidation',
-      demoStatWeek: 'week of 14', demoStatDone: 'completed', demoStatExam: 'days to next exam',
       demoPillAll: 'All',
-      demoExamDays: 'days', demoExamMidterm: 'Midterm Exam', demoExamMidDate: 'June 28, 2026',
       demoTabNow: 'Now', demoTabCalendar: 'Calendar', demoTabSchedule: 'Schedule', demoTabCourses: 'Courses',
       demoNowCrit: 'Urgent — today/tomorrow', demoNowSoon: 'This week', demoNowUpcoming: 'Coming up',
       demoNowToday: 'Today', demoNowTomorrow: 'Tomorrow', demoDays5: '5 days',
