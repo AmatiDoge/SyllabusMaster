@@ -3379,7 +3379,7 @@ function addCourseChip(course) {
             if (!tag) return;
         }
         if (t && d) {
-            userExams.push({ t, d, tag });
+            userExams.push({ t, d, tag, source: 'manual' });
             document.getElementById('exT').value = '';
             document.getElementById('exD').value = '';
             document.getElementById('exCustomTag').value = '';
@@ -3891,7 +3891,7 @@ function addCourseChip(course) {
         if (!desc) return;
         const isExamType = ['מבחן','מועד-ב','בוחן'].includes(aeSelectedType);
         if (isExamType || date) {
-            userExams.push({ t: desc, d: date, tag: aeSelectedType, c: course });
+            userExams.push({ t: desc, d: date, tag: aeSelectedType, c: course, source: 'manual' });
         } else {
             const w = isNaN(weekNum) ? currentWeekIdx : Math.max(0, weekNum - 1);
             userSyllabus.push({ w, c: course, t: aeSelectedType, txt: desc });
