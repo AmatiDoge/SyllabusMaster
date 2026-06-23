@@ -2282,6 +2282,7 @@
                 currentRev = nextRev;
             }
             setSyncStatus('synced');
+            try { localStorage.removeItem(backupKey()); } catch (_) {}
         } catch (e) { console.error(e); setSyncStatus('error'); }
     }
 
@@ -3238,7 +3239,7 @@ function addCourseChip(course) {
             iso_date: i.iso_date || null, date_source: i.date_source || '', risk: i.risk || ''
         }));
         const exams = toSave.filter(i => i.source === 'exam').map(i => ({
-            t: i.t, d: i.d, tag: i.tag, c: i.c || ''
+            t: i.t, d: i.d, tag: i.tag, c: i.c || '', source: 'pdf'
         }));
 
         userSyllabus = [...userSyllabus, ...syllabus];
@@ -3262,6 +3263,7 @@ function addCourseChip(course) {
                 ...ex,
                 t: sanitize(ex.t || ''),
                 tag: sanitize(ex.tag || ''),
+                source: ex.source || 'pdf',
             }))];
         });
         userSyllabus = [...new Map(userSyllabus.map(i => [JSON.stringify(i), i])).values()];
@@ -4305,7 +4307,9 @@ function addCourseChip(course) {
         allCourses.forEach(course => {
             const color = getCourseColor(course);
             const safeName = DOMPurify.sanitize(course, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]});
-            const exams = userExams.filter(e => e.c === course).sort((a,b) => new Date(a.d) - new Date(b.d));
+            const exams = userExams.filter(e => e.c === course)
+                .filter((e, i, arr) => arr.findIndex(x => x.t === e.t && x.d?.slice(0,10) === e.d?.slice(0,10)) === i)
+                .sort((a,b) => new Date(a.d) - new Date(b.d));
             const sylItems = userSyllabus.filter(si => si.c === course);
             const totalItems = exams.length + sylItems.length;
 
