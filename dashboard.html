@@ -1479,7 +1479,9 @@
                     const horizonBanner = document.getElementById('horizon-warning');
                     if (horizonBanner) {
                         horizonBanner.style.display = 'block';
-                        horizonBanner.textContent = '⚠️ ייתכן ש-Moodle לא הציג עדיין את כל המועדים — בדוק שוב קרוב יותר לסוף הסמסטר';
+                        horizonBanner.textContent = currentLang === 'en'
+                            ? '⚠️ Moodle may not have published all dates yet — check again closer to end of semester'
+                            : '⚠️ ייתכן ש-Moodle לא הציג עדיין את כל המועדים — בדוק שוב קרוב יותר לסוף הסמסטר';
                     }
                 }
             }
@@ -1491,7 +1493,7 @@
 
             // Show reconnect banner if error
             if (status === 'error' && icalCredentials.consecutive_failures >= 3) {
-                statusText.textContent += ' — נא לבדוק שהכתובות תקינות';
+                statusText.textContent += currentLang === 'en' ? ' — please verify your URLs are correct' : ' — נא לבדוק שהכתובות תקינות';
             }
 
             // Track stale status
@@ -2595,7 +2597,9 @@
 
     window.obPdfPromptSkip = function() {
         document.getElementById('ob-pdf-prompt').style.display = 'none';
-        const dayNames = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+        const dayNames = currentLang === 'en'
+            ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+            : ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
         const dd = document.getElementById('ob-complete-day');
         if (dd) dd.textContent = dayNames[_reminderPrefs.digest_day || 0];
         document.getElementById('ob-complete-section').style.display = '';
