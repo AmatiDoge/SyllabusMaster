@@ -232,9 +232,11 @@
         .sync-dot.error { background: var(--color-error); }
         .sync-badge { font-size: 0.65rem; padding: 2px 7px; border-radius: 100px; font-weight: 600; }
         .sync-badge.ok { background: #e6f9ee; color: #1a7a42; }
+        .sync-badge.partial { background: #fff3e0; color: #b36b00; }
         .sync-badge.stale { background: #fff3e0; color: #b36b00; }
         .sync-badge.error { background: #ffeaea; color: #c0392b; }
         .sync-badge.pending { background: #f0f0f0; color: #666; }
+        .horizon-warning { display:none; background:#fff3e0; color:#8a6d3b; border:2px solid var(--color-border-ink); padding:10px 14px; border-radius:8px; font-size:var(--text-xs); font-weight:600; margin-bottom:var(--space-3); text-align:right; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
         .container { display: flex; flex-direction: column; gap: var(--space-7); width: 100%; max-width: var(--max-width-wide); align-items: stretch; }
@@ -1109,6 +1111,8 @@
     <div class="container" id="view-list" role="tabpanel" aria-labelledby="vb-list">
         <!-- Course filter bar -->
         <div class="now-filter-bar" id="now-filter-bar"></div>
+        <!-- Decision I: Moodle horizon warning (inline, impossible to miss) -->
+        <div id="horizon-warning" class="horizon-warning"></div>
         <!-- Merged urgency-sorted list -->
         <div id="now-list"></div>
         <!-- Tasks -->
@@ -1385,24 +1389,45 @@
             setup.style.display = 'none';
 
             const status = icalCredentials.sync_status || 'pending';
-            const labels = { ok: 'מסונכרן', stale: 'לא עדכני', error: 'שגיאה', pending: 'ממתין' };
+            const labels = { ok: 'מסונכרן', partial: 'חלקי', stale: 'לא עדכני', error: 'שגיאה', pending: 'ממתין' };
             badge.className = 'sync-badge ' + status;
             badge.textContent = labels[status] || status;
 
-            const sources = [];
-            if (icalCredentials.moodle_url) sources.push('Moodle');
-            if (icalCredentials.yedion_url) sources.push('Yedion');
-            let text = `מחובר: ${sources.join(' + ')}`;
-            if (icalCredentials.last_sync_at) {
-                const ago = Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000);
-                text += ` · עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`;
+            // Decision I+F: per-source status display
+            const srcStatus = icalCredentials.source_status || {};
+            const statusParts = [];
+            for (const [src, label] of [['moodle', 'Moodle'], ['yedion', 'Yedion']]) {
+                const url = icalCredentials[src + '_url'];
+                if (!url) continue;
+                const ss = srcStatus[src];
+                if (!ss) { statusParts.push(`${label}: ממתין`); continue; }
+                if (ss.status === 'ok' && ss.last_ok) {
+                    const ago = Math.round((Date.now() - new Date(ss.last_ok).getTime()) / 3600000);
+                    statusParts.push(`${label}: עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`);
+                } else if (ss.status === 'blocked') {
+                    statusParts.push(`${label}: ⚠️ חסום`);
+                } else if (ss.status === 'error') {
+                    statusParts.push(`${label}: ❌ שגיאה`);
+                } else {
+                    statusParts.push(`${label}: ${ss.status}`);
+                }
             }
-            // event_count not stored in ical_credentials — derive from user_data
-            const evtCount = (userExams || []).length + (userSyllabus || []).filter(s => s.src === 'ical').length;
-            if (evtCount > 0) {
-                text += ` · ${evtCount} אירועים`;
+            statusText.textContent = statusParts.join(' · ');
+
+            // Decision I: Moodle horizon warning
+            if (srcStatus.moodle?.horizon_date && semesterStart) {
+                const semEnd = new Date(new Date(semesterStart).getTime() + 14 * 7 * 86400000);
+                const horizonDate = new Date(srcStatus.moodle.horizon_date);
+                const gapWeeks = (semEnd - horizonDate) / (7 * 86400000);
+                if (gapWeeks > 3) {
+                    const horizonBanner = document.getElementById('horizon-warning');
+                    if (horizonBanner) {
+                        horizonBanner.style.display = 'block';
+                        horizonBanner.textContent = '⚠️ ייתכן ש-Moodle לא הציג עדיין את כל המועדים — בדוק שוב קרוב יותר לסוף הסמסטר';
+                    }
+                }
             }
-            statusText.textContent = text;
+
             // Next sync indicator
             if (status === 'ok' || status === 'pending') {
                 statusText.textContent += currentLang === 'en' ? ' · Syncs daily' : ' · מסתנכרן יומית';
@@ -1414,12 +1439,11 @@
             }
 
             // Track stale status
-            if (status === 'stale' || status === 'error') {
+            if (status === 'stale' || status === 'error' || status === 'partial') {
                 const hours = icalCredentials.last_sync_at
                     ? Math.round((Date.now() - new Date(icalCredentials.last_sync_at).getTime()) / 3600000)
                     : 999;
-                track('sync_stale', { hours_since_last_sync: hours });
-            }
+                track('sync_stale', { hours_since_last_sync: hours, source_status: srcStatus });
         } else {
             connected.style.display = 'none';
             setup.style.display = 'block';
@@ -3451,7 +3475,8 @@ function addCourseChip(course) {
         const currentIdx = group.findIndex(x => x.selected !== false);
         // Deselect current, select next (wrap around)
         const nextIdx = (currentIdx + 1) % group.length;
-        group.forEach((item, i) => { item.selected = (i === nextIdx); });
+        // Decision J: flag all items in group as manually chosen — sync won't overwrite
+        group.forEach((item, i) => { item.selected = (i === nextIdx); item.manual_moed = true; });
         render();
         save();
     }
@@ -3512,6 +3537,8 @@ function addCourseChip(course) {
         if (current >= 0 && current < group.length - 1) {
             group[current].selected = false;
             group[current + 1].selected = true;
+            // Decision J: flag as manual choice — sync won't overwrite
+            group.forEach(item => { item.manual_moed = true; });
         }
         const dismissed = JSON.parse(localStorage.getItem('moed_dismissed') || '{}');
         dismissed[groupId] = true;
@@ -3622,6 +3649,7 @@ function addCourseChip(course) {
 
         // 2. Syllabus items (מטלה, בוחן, קריאה, צפייה)
         // Build dedup keys from exam items already collected
+        // Decision E+N: derive week from date consistently for both sides
         const examKeys = new Set();
         for (const x of items) {
             if (x.c && x.tag) {
@@ -3633,9 +3661,10 @@ function addCourseChip(course) {
         for (const s of userSyllabus) {
             const tag = s.t; // syllabus uses 't' for type (tag)
             if (!NOW_SYLLABUS_TAGS.has(tag)) continue;
-            if (s.w == null) continue;
+            if (s.w == null && !s.iso_date) continue;
 
-            const resolvedDate = resolveWeekDate(s.w);
+            // Decision E+N: use iso_date when available, fall back to resolveWeekDate
+            const resolvedDate = s.iso_date || resolveWeekDate(s.w);
             const days = Math.floor((new Date(resolvedDate) - now) / 86400000);
             if (days < -1) continue;
 
@@ -3643,7 +3672,9 @@ function addCourseChip(course) {
             if (PREP_TAGS.has(tag) && days > 14) continue;
 
             // Dedup: skip if an exam item covers this course+week
-            const weekKey = `${(s.c || '').trim()}|${s.w}`;
+            // Decision E+N: derive week from resolved date (consistent with exam side)
+            const syllabusWeek = Math.floor((new Date(resolvedDate) - new Date(semesterStart)) / (7 * 86400000));
+            const weekKey = `${(s.c || '').trim()}|${syllabusWeek}`;
             if (HARD_DEADLINE_TAGS.has(tag) && examKeys.has(weekKey)) continue;
 
             items.push({
