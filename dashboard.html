@@ -1445,7 +1445,9 @@
             setup.style.display = 'none';
 
             const status = icalCredentials.sync_status || 'pending';
-            const labels = { ok: 'מסונכרן', partial: 'חלקי', stale: 'לא עדכני', error: 'שגיאה', pending: 'ממתין' };
+            const labels = currentLang === 'en'
+                ? { ok: 'Synced', partial: 'Partial', stale: 'Outdated', error: 'Error', pending: 'Pending' }
+                : { ok: 'מסונכרן', partial: 'חלקי', stale: 'לא עדכני', error: 'שגיאה', pending: 'ממתין' };
             badge.className = 'sync-badge ' + status;
             badge.textContent = labels[status] || status;
 
@@ -1456,14 +1458,16 @@
                 const url = icalCredentials[src + '_url'];
                 if (!url) continue;
                 const ss = srcStatus[src];
-                if (!ss) { statusParts.push(`${label}: ממתין`); continue; }
+                if (!ss) { statusParts.push(`${label}: ${currentLang === 'en' ? 'Pending' : 'ממתין'}`); continue; }
                 if (ss.status === 'ok' && ss.last_ok) {
                     const ago = Math.round((Date.now() - new Date(ss.last_ok).getTime()) / 3600000);
-                    statusParts.push(`${label}: עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`);
+                    statusParts.push(currentLang === 'en'
+                        ? `${label}: Updated ${ago < 1 ? 'less than an hour ago' : ago + ' hours ago'}`
+                        : `${label}: עודכן לפני ${ago < 1 ? 'פחות משעה' : ago + ' שעות'}`);
                 } else if (ss.status === 'blocked') {
-                    statusParts.push(`${label}: ⚠️ חסום`);
+                    statusParts.push(`${label}: ⚠️ ${currentLang === 'en' ? 'Blocked' : 'חסום'}`);
                 } else if (ss.status === 'error') {
-                    statusParts.push(`${label}: ❌ שגיאה`);
+                    statusParts.push(`${label}: ❌ ${currentLang === 'en' ? 'Error' : 'שגיאה'}`);
                 } else {
                     statusParts.push(`${label}: ${ss.status}`);
                 }
@@ -1594,13 +1598,14 @@
         const banner = document.createElement('div');
         banner.id = 'accuracy-banner';
         banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid #27ae60;border-radius:14px;padding:14px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:800;display:flex;align-items:center;gap:12px;max-width:420px;width:90%';
+        const isEn = currentLang === 'en';
         banner.innerHTML = `
             <div style="flex:1">
-                <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px">המערכת מדויקת?</div>
-                <div style="font-size:0.78rem;color:#666">האם המשימות והמבחנים שמופיעים כאן תואמים למציאות?</div>
+                <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px">${isEn ? 'Is the schedule accurate?' : 'המערכת מדויקת?'}</div>
+                <div style="font-size:0.78rem;color:#666">${isEn ? 'Do the assignments and exams shown here match reality?' : 'האם המשימות והמבחנים שמופיעים כאן תואמים למציאות?'}</div>
             </div>
-            <button onclick="answerAccuracy(true)" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:0.8rem">כן ✓</button>
-            <button onclick="answerAccuracy(false)" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:0.8rem">לא ✗</button>
+            <button onclick="answerAccuracy(true)" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:0.8rem">${isEn ? 'Yes ✓' : 'כן ✓'}</button>
+            <button onclick="answerAccuracy(false)" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;font-size:0.8rem">${isEn ? 'No ✗' : 'לא ✗'}</button>
             <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#999;font-size:1.1rem">✕</button>
         `;
         document.body.appendChild(banner);
@@ -1613,7 +1618,9 @@
         track('accuracy_check_answered', { accurate, week_number: weekNum });
         const banner = document.getElementById('accuracy-banner');
         if (banner) {
-            banner.innerHTML = `<div style="flex:1;text-align:center;font-size:0.85rem;font-weight:500">${accurate ? 'תודה! 🎯' : 'תודה — נבדוק את הסנכרון'}</div>`;
+            banner.innerHTML = `<div style="flex:1;text-align:center;font-size:0.85rem;font-weight:500">${accurate
+                ? (currentLang === 'en' ? 'Thanks! 🎯' : 'תודה! 🎯')
+                : (currentLang === 'en' ? 'Thanks, we\'ll check the sync' : 'תודה — נבדוק את הסנכרון')}</div>`;
             setTimeout(() => banner.remove(), 2000);
         }
     }
@@ -3845,17 +3852,17 @@ function addCourseChip(course) {
     async function handleMoodleFileUpload(file) {
         if (!file) return;
         const statusEl = document.getElementById('moodle-upload-status');
-        statusEl.textContent = 'מעבד...';
+        statusEl.textContent = currentLang === 'en' ? 'Processing...' : 'מעבד...';
         statusEl.style.color = 'var(--color-text-muted)';
         try {
             const text = await file.text();
             if (!text.trimStart().startsWith('BEGIN:VCALENDAR')) {
-                statusEl.textContent = 'הקובץ אינו קובץ לוח שנה תקין (.ics)';
+                statusEl.textContent = currentLang === 'en' ? 'File is not a valid calendar file (.ics)' : 'הקובץ אינו קובץ לוח שנה תקין (.ics)';
                 statusEl.style.color = '#c0392b';
                 return;
             }
             const { data: { session } } = await sb.auth.getSession();
-            if (!session) { statusEl.textContent = 'לא מחובר'; return; }
+            if (!session) { statusEl.textContent = currentLang === 'en' ? 'Not logged in' : 'לא מחובר'; return; }
             const resp = await fetch(SUPABASE_URL + '/functions/v1/client-ingest', {
                 method: 'POST',
                 headers: {
@@ -3866,12 +3873,12 @@ function addCourseChip(course) {
             });
             const result = await resp.json();
             if (!resp.ok) throw new Error(result.error || 'Upload failed');
-            statusEl.textContent = `סונכרנו ${result.countdown} פריטים מ-Moodle`;
+            statusEl.textContent = currentLang === 'en' ? `Synced ${result.countdown} items from Moodle` : `סונכרנו ${result.countdown} פריטים מ-Moodle`;
             statusEl.style.color = '#27ae60';
             // Reload data from Supabase to show new items
             await loadFromSupabase();
         } catch (err) {
-            statusEl.textContent = 'שגיאה: ' + (err.message || 'Unknown error');
+            statusEl.textContent = (currentLang === 'en' ? 'Error: ' : 'שגיאה: ') + (err.message || 'Unknown error');
             statusEl.style.color = '#c0392b';
         }
     }
