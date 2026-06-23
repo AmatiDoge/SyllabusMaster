@@ -1107,7 +1107,7 @@
     </div>
 
     <!-- Post-review iCal prompt (PDF path → connect calendar) -->
-    <div id="ob-post-review-ical" style="display:none">
+    <div id="ob-post-review-ical" class="ob-card" style="display:none">
         <div style="text-align:center;padding:32px 24px">
             <div style="font-size:2.5rem;margin-bottom:12px">🔗</div>
             <h2 class="ob-title" id="ob-post-ical-title" style="font-size:1.3rem;margin-bottom:8px">רוצה לחבר גם יומן?</h2>
@@ -3420,13 +3420,13 @@ function addCourseChip(course) {
         const item = reviewItems.find(i => i.id === id);
         if (item) item[field] = value;
         const active = reviewItems.filter(i => !i.deleted).length;
-        document.getElementById('rv-counter').innerHTML = `<strong>${active}</strong> פריטים יישמרו`;
+        document.getElementById('rv-counter').innerHTML = (STRINGS[currentLang] || STRINGS.he).rvCounter(active);
     }
 
     async function confirmReview(mode) {
         const btn = document.querySelector('.rv-btn-all');
         btn.disabled = true;
-        btn.textContent = 'שומר...';
+        btn.textContent = currentLang === 'en' ? 'Saving...' : 'שומר...';
 
         let toSave = reviewItems.filter(i => !i.deleted);
 
@@ -3457,7 +3457,6 @@ function addCourseChip(course) {
         const _s = STRINGS[currentLang] || STRINGS.he;
         const isEn = currentLang === 'en';
         document.getElementById('ob-review').classList.remove('visible');
-        document.querySelector('.ob-card').style.display = '';
         document.getElementById('ob-post-review-ical').style.display = '';
 
         // Apply i18n
