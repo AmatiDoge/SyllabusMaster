@@ -2398,12 +2398,31 @@
                     .update(payload).eq('user_id', currentUser.id).eq('rev', currentRev).select('rev');
                 if (error) throw error;
                 if (!updated || updated.length === 0) {
-                    setSyncStatus('error');
-                    const _cs = STRINGS[currentLang] || STRINGS.he;
-                    showBanner(_cs.concurrencyBanner, _cs.concurrencyReload, () => location.reload());
-                    return;
+                    // Rev mismatch — likely pg_cron bumped the rev. Re-fetch and retry once.
+                    const { data: fresh, error: fetchErr } = await sb.from('user_data')
+                        .select('rev').eq('user_id', currentUser.id).single();
+                    if (fetchErr || !fresh) {
+                        setSyncStatus('error');
+                        const _cs = STRINGS[currentLang] || STRINGS.he;
+                        showBanner(_cs.concurrencyBanner, _cs.concurrencyReload, () => location.reload());
+                        return;
+                    }
+                    currentRev = fresh.rev;
+                    const retryRev = currentRev + 1;
+                    payload.rev = retryRev;
+                    const { data: retried, error: retryErr } = await sb.from('user_data')
+                        .update(payload).eq('user_id', currentUser.id).eq('rev', currentRev).select('rev');
+                    if (retryErr) throw retryErr;
+                    if (!retried || retried.length === 0) {
+                        setSyncStatus('error');
+                        const _cs = STRINGS[currentLang] || STRINGS.he;
+                        showBanner(_cs.concurrencyBanner, _cs.concurrencyReload, () => location.reload());
+                        return;
+                    }
+                    currentRev = retryRev;
+                } else {
+                    currentRev = nextRev;
                 }
-                currentRev = nextRev;
             }
             setSyncStatus('synced');
             try { localStorage.removeItem(backupKey()); } catch (_) {}

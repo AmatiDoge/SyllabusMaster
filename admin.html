@@ -657,6 +657,10 @@
         applyLang(currentLang);
     }
 
+    // Wire up the lang button via addEventListener (onclick alone can fail in some contexts)
+    const _langBtn = document.querySelector('.admin-lang-btn');
+    if (_langBtn) _langBtn.addEventListener('click', toggleLang);
+
     // ── Charts ──
     let syncChart = null;
     let accuracyChart = null;
