@@ -4920,7 +4920,7 @@ function addCourseChip(course) {
         }
     };
 
-    document.getElementById('feedback-overlay').addEventListener('click', function(e) {
+    document.getElementById('feedback-overlay')?.addEventListener('click', function(e) {
         if (e.target === this) closeFeedback();
     });
 </script>
