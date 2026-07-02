@@ -9,10 +9,8 @@
     <link rel="manifest" href="/SyllabusMaster/manifest.json">
     <link rel="apple-touch-icon" href="/SyllabusMaster/icons/icon-192.png">
     <title>SyllaBot – Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- CDN scripts moved to end of <body> (non-blocking render); pdf.js lazy-loads at wizard open -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -1253,6 +1251,8 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script>
     // ── Service Worker Registration ──
     if ('serviceWorker' in navigator) {
@@ -2776,8 +2776,25 @@
     const obPageSelections = {}; // i → Set of selected page numbers
     const obPdfCache = {};       // i → loaded pdfjsLib document
 
+    // Lazy-load pdf.js (≈350KB) only when the wizard actually needs it
+    let pdfJsPromise = null;
+    function loadPdfJs() {
+        if (window.pdfjsLib) return Promise.resolve();
+        if (!pdfJsPromise) {
+            pdfJsPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                s.onload = resolve;
+                s.onerror = () => { pdfJsPromise = null; reject(new Error('pdf.js failed to load')); };
+                document.head.appendChild(s);
+            });
+        }
+        return pdfJsPromise;
+    }
+
     async function loadPageCount(i) {
         try {
+            await loadPdfJs();
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             const arrayBuffer = await obFiles[i].arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -2853,6 +2870,7 @@
     };
 
     async function extractPages(file, pages) {
+        await loadPdfJs();
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         const fileIdx = obFiles.indexOf(file);
         const pdf = (fileIdx >= 0 && obPdfCache[fileIdx])
