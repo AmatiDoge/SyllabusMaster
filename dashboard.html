@@ -2760,7 +2760,7 @@
                     <span class="file-spinner" id="fsp-${i}"></span>
                     <span>📄</span>
                     <span style="flex:1;display:flex;flex-direction:column;gap:1px;min-width:0;overflow:hidden">
-                        <span style="font-weight:700;color:#2d3436;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${courseName}">${courseName}</span>
+                        <span style="font-weight:700;color:#2d3436;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(courseName)}">${courseName}</span>
                         <span style="font-size:0.68rem;color:#bbb;direction:${fnDir};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sanitize(f.name)}</span>
                     </span>
                     <span class="file-status s-waiting" id="fs-${i}" style="flex-shrink:0;margin-inline-start:auto">${_s.statusWaiting}</span>
@@ -3681,6 +3681,13 @@ function addCourseChip(course) {
     }
 
     function sanitize(str) { return DOMPurify.sanitize(String(str || ''), {ALLOWED_TAGS: [], ALLOWED_ATTR: []}); }
+    // For HTML *attribute* contexts (title="", value="", data-*="") — escapes quotes too,
+    // which sanitize()/DOMPurify text-mode does not.
+    function escAttr(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
     function esc(str) { return DOMPurify.sanitize(String(str || ''), {ALLOWED_TAGS: [], ALLOWED_ATTR: []}); }
 
     function addEx() {
@@ -3744,13 +3751,16 @@ function addCourseChip(course) {
         if (courses.length < 2) { bar.innerHTML = ''; return; }
         const allActive = !nowFilterCourse;
         bar.innerHTML =
-            `<button class="now-pill${allActive ? ' active' : ''}" onclick="nowFilterCourse=null;render();">הכל</button>` +
+            `<button class="now-pill${allActive ? ' active' : ''}" data-course="">הכל</button>` +
             courses.map(c => {
                 const color = getCourseColor(c);
                 const active = nowFilterCourse === c;
-                const safe = c.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-                return `<button class="now-pill${active ? ' active' : ''}" style="border-color:${color};color:${color};${active ? `background:${color}1a` : ''}" onclick="nowFilterCourse='${safe}';render();"><span class="now-pill-dot" style="background:${color}"></span>${sanitize(c)}</button>`;
+                return `<button class="now-pill${active ? ' active' : ''}" style="border-color:${color};color:${color};${active ? `background:${color}1a` : ''}" data-course="${escAttr(c)}"><span class="now-pill-dot" style="background:${color}"></span>${sanitize(c)}</button>`;
             }).join('');
+        bar.querySelectorAll('.now-pill').forEach(btn => btn.addEventListener('click', () => {
+            nowFilterCourse = btn.dataset.course || null;
+            render();
+        }));
     }
 
     function cycleMoed(examIdx) {
@@ -3803,11 +3813,14 @@ function addCourseChip(course) {
             <div class="moed-prompt-inner" dir="rtl">
                 <p class="moed-prompt-title">איך הלך ${sanitize(title)}? 🎯</p>
                 <div class="moed-prompt-actions">
-                    <button onclick="moedDone('${prompt.groupId}', ${prompt.examIdx})" class="moed-btn moed-btn-done">✅ סיימתי</button>
-                    <button onclick="moedNext('${prompt.groupId}', ${prompt.examIdx})" class="moed-btn moed-btn-next">📝 מועד ${nextSlot}׳</button>
-                    <button onclick="moedDismiss('${prompt.groupId}')" class="moed-btn moed-btn-skip">⏭️ דלג</button>
+                    <button class="moed-btn moed-btn-done">✅ סיימתי</button>
+                    <button class="moed-btn moed-btn-next">📝 מועד ${sanitize(nextSlot)}׳</button>
+                    <button class="moed-btn moed-btn-skip">⏭️ דלג</button>
                 </div>
             </div>`;
+        el.querySelector('.moed-btn-done').addEventListener('click', () => moedDone(prompt.groupId, prompt.examIdx));
+        el.querySelector('.moed-btn-next').addEventListener('click', () => moedNext(prompt.groupId, prompt.examIdx));
+        el.querySelector('.moed-btn-skip').addEventListener('click', () => moedDismiss(prompt.groupId));
         document.getElementById('now-list').prepend(el);
     }
 
@@ -4033,10 +4046,9 @@ function addCourseChip(course) {
                 const moedBtn = isFromExams && x.moed_group ? `<button class="moed-toggle" onclick="cycleMoed(${oi})" title="החלף מועד">${x.moed_slot ? 'מועד ' + x.moed_slot + '׳' : ''} ↻</button>` : '';
                 const delBtn = isFromExams ? `<button onclick="if(confirm('${s.confirmDeleteExam||"Delete this item?"}')){userExams.splice(${oi},1);render();save();}" class="del-btn">×</button>` : '';
                 const key = nowItemKey(x);
-                const safeKey = key.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
                 const isDone = doneMap[key];
                 return `<div class="focus-item focus-item-urgency ${urgency} ${isDone ? 'is-done' : ''}">
-                    <div class="focus-checkbox now-checkbox ${isDone ? 'checked' : ''}" data-key="${safeKey}" onclick="toggleNowItem('${safeKey}')" role="checkbox" aria-checked="${isDone || false}" tabindex="0">${checkSvg}</div>
+                    <div class="focus-checkbox now-checkbox ${isDone ? 'checked' : ''}" data-key="${escAttr(key)}" role="checkbox" aria-checked="${isDone || false}" tabindex="0">${checkSvg}</div>
                     <div class="focus-item-text">
                         <span class="badge ${tagCls}">${safeTag}</span>
                         ${courseInfo}<span>${safeT}</span>
@@ -4067,6 +4079,10 @@ function addCourseChip(course) {
             renderTierSection(tierUrgent, s.nowTierUrgent, 'tier-urgent');
             renderTierSection(tierSoon, s.nowTierSoon, 'tier-soon');
             renderTierSection(tierUpcoming, s.nowTierUpcoming, 'tier-upcoming');
+
+            // Checkbox toggles via listeners (dataset decodes entities back to the raw key)
+            nowEl.querySelectorAll('.now-checkbox[data-key]').forEach(cb =>
+                cb.addEventListener('click', () => toggleNowItem(cb.dataset.key)));
 
             // ADHD-core: celebration when all non-past items are done
             const nonPastItems = sorted.filter(x => !x._isPast);
@@ -4165,7 +4181,7 @@ function addCourseChip(course) {
         // Populate course dropdown
         const courseSel = document.getElementById('ae-course');
         const courses = [...new Set([...userSyllabus.map(i => i.c), ...userExams.map(i => i.c)].filter(Boolean))];
-        courseSel.innerHTML = courses.map(c => `<option value="${DOMPurify.sanitize(c, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}">${DOMPurify.sanitize(c, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}</option>`).join('');
+        courseSel.innerHTML = courses.map(c => `<option value="${escAttr(c)}">${DOMPurify.sanitize(c, {ALLOWED_TAGS:[], ALLOWED_ATTR:[]})}</option>`).join('');
         // Populate type chips
         const chipsEl = document.getElementById('ae-type-chips');
         chipsEl.innerHTML = '';
@@ -4634,7 +4650,7 @@ function addCourseChip(course) {
             const sylItems = userSyllabus.filter(si => si.c === course);
             const totalItems = exams.length + sylItems.length;
 
-            html += `<div class="course-card" id="cc-${safeName.replace(/\s/g,'-')}">
+            html += `<div class="course-card" id="cc-${escAttr(safeName.replace(/\s/g,'-'))}">
                 <div class="course-card-header" onclick="this.parentElement.classList.toggle('open')">
                     <div class="course-card-dot" style="background:${color}"></div>
                     <div class="course-card-name">${safeName}</div>
